@@ -314,3 +314,30 @@ na última observação. As contagens, módulos e datas coincidiram com a API
 filtrada. Os endpoints continuaram HTTP 200, `no-store` e `MISS`, sem erros
 de página ou API. Os aprovados mantiveram-se em zero. A prova e captura estão
 em `browser.json` e `browser.png` na mesma pasta.
+
+### MVP — fase 1, 23/10/2026
+
+O branch `feat/mvp-wallet-signals` preserva o baseline local `d8e8c0d`.
+Antes da alteração passaram os 298 testes existentes; após a fase 1 passaram
+342 testes, a compilação dos profiles YAML e o build Cloudflare. Os três ciclos
+locais de workerd mantiveram 15/14/14 pedidos RPC; o ensaio real local usou 23.
+
+Antes de aplicar `0002_mvp_records.sql`, foi guardado um ponto de recuperação
+integral D1 Time Travel em `runtime/backups/pre-mvp-time-travel.json` e um
+manifesto com os hashes das migrações. A exportação SQL falhou com erro de
+autenticação 10000: não existe backup SQL offline. O Time Travel gratuito tem
+retenção de sete dias. A migração foi aditiva e preservou as tabelas existentes.
+
+O collector `755f82fe-6322-4c30-a549-6483549bbcd6` foi publicado a 100%.
+O cron natural `e2ad96cb-13e5-4ba6-aec7-90fa376940ef`, às **13:58:25 UTC**,
+confirmou `mvp.recording: true`: 12 tokens, 17 eventos de observação, duas
+decisões canónicas, seis eventos de decisão e oito jobs de outcomes pendentes.
+A prova está em `runtime/mvp-phase1/production-first-records.json`. Os outcomes
+ainda não estavam disponíveis; não foram fabricados preços ou resultados.
+
+A Vercel Hobby ganhou uma Function de leitura `/api/market`, sem cron ou
+serviços pagos. O deployment `dpl_4EFMLQg9Nu5gBTkXsGvGKwP7jrQw` ficou READY,
+com cinco ficheiros, e devolveu dados reais com HTTP 200. O collector usa essa
+rota para contornar os 429 do fornecedor observados na saída Cloudflare.
+Na primeira prova de gravação, o collector ainda reportava `STALE_SOURCE`;
+a recuperação do mercado tem de ser comprovada separadamente.

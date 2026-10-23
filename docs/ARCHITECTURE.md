@@ -42,6 +42,10 @@ O collector publica snapshots parciais identificados com os dados efetivamente o
 
 O collector preserva confirmações estritas ainda válidas durante a rotação de contratos, com limites de idade e quantidade. O scanner CLI continua a tratar cada input como um lote completo. `src/cloudflare/public-report.mjs` revalida evidência e cabeça em cada leitura e publica separadamente `marketSignalsAvailable`/`signals.marketAlerts` e `currentSignalsAvailable`/`signals.tradeCandidates`. Dados expirados não mantêm um alerta atual durante uma falha de recolha.
 
+## Arquivo MVP e configuração de fases
+
+A fase 1 acrescenta `src/mvp/`, `config/profiles.yaml` validado/compilado e tabelas D1 `mvp_*` independentes da retenção dos relatórios. Primeiro avistamento, primeira decisão por token/versão/perfil e features são imutáveis; eventos e tentativas preservam o histórico, incluindo falhas e rejeições. Jobs de outcomes 15m/1h/24h/7d usam o cron existente. Não há ainda score de wallets, alertas dry-run do novo modo A ou relatório semanal: estes pertencem às fases 2/3. Ver [dados](MVP-DATA.md) e [progresso](MVP-PROGRESS.md).
+
 ## Persistência e jobs
 
 O worker em `src/worker/` usa disco persistente na máquina Linux: arquivos gzip, fsync/rename atómico, lock do kernel e estado de saúde. Retoma catálogo/cursores, invalida confirmação após falha e preserva evidência referenciada na retenção. O limite de arquivo evita crescimento ilimitado; um orçamento ocupado por provas protegidas suspende a recolha. Ver [operação gratuita](FREE-HOSTING.md). A CLI conserva ficheiros separados para execução manual. O adaptador Vercel Blob da versão anterior foi retirado para cumprir o orçamento zero.
@@ -52,7 +56,9 @@ O adaptador principal em `src/cloudflare/` usa este fluxo:
 flowchart LR
   Cron[Worker Free: cron por minuto, CPU 10 ms] --> DO[DO SQLite Free: Collector/main, CPU 30 s por pedido]
   DO --> RPC[RPC Pinax: Robinhood Chain 4663]
-  DO --> D1[D1: catálogo, cursores, lease, relatórios e evidência]
+  DO --> D1[D1: catálogo, cursores, lease, relatórios, evidência e arquivo MVP]
+  DO --> Gateway[Vercel Hobby: API de mercado limitada]
+  Gateway --> DEX[DEXScreener: endpoint fixo Robinhood]
   Browser[Painel: consulta a cada 30 s] --> Public[GET público: health/latest]
   Assets[Static Assets: HTML e JavaScript] --> Browser
   Public --> D1
@@ -78,7 +84,7 @@ Sequência futura: criar o repositório, importar estes ficheiros, correr CI e a
 
 A página deverá mostrar dois separadores, estado do worker, hora e expiração da evidência, candidatos, watchlist, tokens bloqueados e razões. Mostrar o score por componente, os limiares e a proveniência; não apenas uma seta de compra. Não apresentar um candidato expirado como atual. Não mostrar fixtures como oportunidades reais.
 
-`public/index.html` e `public/dashboard.js` apresentam o painel no próprio Worker através do binding `ASSETS`. O browser consulta `/health` e `/latest` no mesmo domínio a cada 30 segundos enquanto está visível, sem lançar recolhas. A interface distingue a última consulta do browser da última recolha persistida, preserva os dados anteriores em caso de falha e mostra a perda de atualidade. Os endpoints JSON continuam disponíveis para integrações. O [espelho na Vercel Hobby](https://memecoin-radar-six.vercel.app) está publicado desde 23/10/2026 e encaminha os dois endpoints através de rewrites na mesma origem, com cache desativado. Ver [configuração publicada](VERCEL.md). Manter chaves fora do browser e não aceitar snapshots do utilizador como evidência de mercado.
+`public/index.html` e `public/dashboard.js` apresentam o painel no próprio Worker através do binding `ASSETS`. O browser consulta `/health` e `/latest` no mesmo domínio a cada 30 segundos enquanto está visível, sem lançar recolhas. A interface distingue a última consulta do browser da última recolha persistida, preserva os dados anteriores em caso de falha e mostra a perda de atualidade. Os endpoints JSON continuam disponíveis para integrações. O [espelho na Vercel Hobby](https://memecoin-radar-six.vercel.app) está publicado desde 23/10/2026 e encaminha os dois endpoints através de rewrites na mesma origem, com cache desativado. Uma Function Node em `/api/market` permite ao collector consultar o endpoint fixo de mercado, com cache CDN de 30s que conserva o timestamp original; não substitui o cron ou o D1. Ver [configuração publicada](VERCEL.md). Manter chaves fora do browser e não aceitar snapshots do utilizador como evidência de mercado.
 
 A restrição atual é orçamento zero e sem cartão. O collector foi publicado em Workers Free + DO SQLite Free + D1 em 21/10/2026, com cron por minuto. A persistência foi verificada nos ciclos naturais do fluxo inicial anterior ao DO e nos ciclos locais com DO; as primeiras amostras remotas após a mudança estão registadas em [operação](OPERATIONS.md). Usa o RPC público Pinax, listado nos docs Robinhood. Tem âmbito menor que o Node: descoberta/metadados e avaliação parcial; reservas/swaps completos permanecem no worker Node. A evidência tem retenção de três horas e o catálogo é podado para 50.000 pools por dia de ciclos. Os pipelines continuam `INCOMPLETE` quando faltam provas. Ver [limites gratuitos](FREE-HOSTING.md). A página Vercel Hobby já está publicada e lê os resultados existentes; o cron e a persistência permanecem na Cloudflare. O worker Linux é uma alternativa para uma máquina já existente. Não foram comprados planos nem provisionados recursos pagos.
 

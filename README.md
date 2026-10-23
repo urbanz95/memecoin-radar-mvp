@@ -2,6 +2,8 @@
 
 Dois pipelines configuráveis para triagem de memecoins **Robinhood Chain mainnet (EVM, chain ID 4663)**, com recolha automática no Cloudflare Free e listas de acompanhamento no dashboard. Os parâmetros e a evidência explicam cada decisão. O painel distingue alertas de atividade `MARKET_ALERT`, com segurança pendente, de candidatos `CANDIDATE` que passam a política estrita. Sem ordens, carteira, compras automáticas ou promessas de valorização.
 
+O MVP em curso está limitado às **fases 1–3**, em `dryRun`: arquivo de dados, filtros/alertas do modo A <24h e score de wallets com relatório semanal. A fase 1 já grava dados em produção; fases 2/3 ainda não estão implementadas. A atualização do mercado no collector continua em investigação (`STALE_SOURCE`), apesar de o gateway responder. As tabelas abaixo descrevem os pipelines antigos preservados por compatibilidade, não os novos perfis YAML. Ver [estado do MVP](docs/MVP-PROGRESS.md) e [auditoria](docs/MVP-AUDIT.md).
+
 | | Novos lançamentos | Tokens estabelecidos |
 |---|---|---|
 | Idade do contrato | 15 minutos–48 horas | ≥7 dias |
@@ -45,6 +47,7 @@ Node.js 22 ou superior. Instalar as dependências fixadas no lockfile:
 npm ci --ignore-scripts
 npm test
 npm run validate
+npm run profiles:check
 npm run demo
 ```
 
@@ -59,7 +62,7 @@ O check não altera recursos remotos. Exige uma conta inequívoca; se existirem 
 
 O [painel com atualização automática na Vercel Hobby](https://memecoin-radar-six.vercel.app) consulta os dados a cada 30 segundos enquanto está visível. Mostra separadamente a última consulta e a última recolha. O cron Cloudflare continua a recolher quando o browser está fechado. Os endpoints JSON são respostas únicas, sem atualização automática de um separador aberto. A Vercel encaminha `/health` e `/latest` para o worker, que serve [estado operacional](https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/health) e [observações datadas](https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/latest), com cobertura e resultados registados. `/latest` calcula `marketSignalsAvailable` para alertas de mercado frescos e `currentSignalsAvailable` para candidatos estritos válidos. Ambos podem permanecer `false` quando não há resultados que cumpram os respetivos critérios. A resposta revalida as expirações e a cabeça da rede em cada leitura; `MARKET_ALERT` mantém segurança pendente e não autoriza uma operação. Ver a [configuração publicada na Vercel](docs/VERCEL.md).
 
-O mesmo cron analisa um contrato por vez e mantém a pool durante três ciclos para holders, LP e simulação; a descoberta continua a cada ciclo. A seleção aproximada de pools entre 20 minutos e 48 horas apenas escolhe o que ler; a classificação exige provas reais de idade. Até 20 entradas ficam retidas durante seis horas, com limite de 64 KiB no estado D1 existente e sem nova migration. O progresso de segurança tem limite separado de 512 KiB. Cada contrato e cada módulo conservam a sua hora de análise; observações com mais de dez minutos ficam desatualizadas. As métricas externas usadas pelos alertas expiram após 120 segundos, independentemente da atualização do resto da página. A prioridade de análise não equivale a aprovação de compra. Ver [listas e critérios](docs/SCREENING.md).
+O mesmo cron analisa um contrato por vez e mantém a pool durante três ciclos para holders, LP e simulação; a descoberta continua a cada ciclo. A seleção aproximada de pools entre 20 minutos e 48 horas apenas escolhe o que ler; a classificação exige provas reais de idade. Até 20 entradas ficam retidas durante seis horas, com limite de 64 KiB no estado D1 existente e sem nova migration. O progresso de segurança tem limite separado de 512 KiB. A fase 1 acrescenta um arquivo `mvp_*` independente para avistamentos, primeiras decisões, eventos e outcomes de 15m/1h/24h/7d, sem herdar a retenção de três horas dos relatórios; o armazenamento Free continua limitado. Cada contrato e cada módulo conservam a sua hora de análise; observações com mais de dez minutos ficam desatualizadas. As métricas externas usadas pelos alertas expiram após 120 segundos, independentemente da atualização do resto da página. A prioridade de análise não equivale a aprovação de compra. Ver [listas e critérios](docs/SCREENING.md).
 
 A recolha direta no Worker mediu cerca de 23–55 ms de CPU, acima dos 10 ms do Workers Free, e foi movida para o DO. O Worker conserva o cron leve e os GET públicos `/health` e `/latest`. A nova arquitetura passou testes locais, incluindo dois ciclos com DO e RPC real. As primeiras métricas remotas do Worker após a mudança registaram p99 de 0,854 ms no cron e 3,227 ms num GET. Estas amostras não comprovam estabilidade durante 24 horas nem medem a CPU e duração do DO. Um único objeto nomeado `main` recebe cerca de 1.440 chamadas/dia, sem alarmes ou timers recorrentes. Workers, DO e D1 têm quotas gratuitas; esgotá-las causa erros ou suspensão até ao reset, sem upgrade automático.
 
@@ -103,6 +106,10 @@ O campo `finalityStage` distingue confirmação pelo sequenciador, publicação 
 
 ## Documentação
 
+- [Estado e âmbito das fases do MVP](docs/MVP-PROGRESS.md)
+- [Auditoria e recuperação dos dados](docs/MVP-AUDIT.md)
+- [Arquivo de features e outcomes](docs/MVP-DATA.md)
+- [Alterações](CHANGELOG.md)
 - [Parâmetros, score e estados](docs/PARAMETERS.md)
 - [Análise automática, idade e listas de acompanhamento](docs/SCREENING.md)
 - [Contrato dos dados e regras de normalização](docs/DATA-CONTRACT.md)
