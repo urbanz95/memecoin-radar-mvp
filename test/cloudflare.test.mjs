@@ -114,6 +114,19 @@ test('cron apenas delega ao Durable Object estável, sem ler D1 ou RPC no chamad
   assert.deepEqual(logged.map(value => JSON.parse(value)), [result]);
 });
 
+test('a collector instance can be rotated without changing the D1 identity or giving the cron database access', async t => {
+  t.mock.method(console, 'log', () => {});
+  const names = [];
+  const env = { COLLECTOR_INSTANCE: 'main-mvp-v3', COLLECTOR: {
+    idFromName(name) { names.push(name); return name; },
+    get(id) { assert.equal(id, 'main-mvp-v3'); return { async fetch() { return Response.json({ status: 'SKIPPED' }); } }; }
+  } };
+  await worker.scheduled({}, env);
+  assert.deepEqual(names, ['main-mvp-v3']);
+  env.COLLECTOR_INSTANCE = 'invalid/instance';
+  await assert.rejects(worker.scheduled({}, env), /INVALID_COLLECTOR_INSTANCE/);
+});
+
 test('POST público não aciona Durable Object, D1 ou RPC, mesmo na rota interna de recolha', async () => {
   const env = new Proxy({}, { get(_target, name) { throw new Error(`Unexpected public binding access: ${String(name)}`); } });
   for (const path of ['/', '/index.html', '/dashboard.js', '/collect', '/health', '/latest']) {

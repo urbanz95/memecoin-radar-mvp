@@ -16,7 +16,11 @@ export class Collector {
 
 export default {
   async scheduled(_event, env) {
-    const collector = env.COLLECTOR.get(env.COLLECTOR.idFromName('main'));
+    const instance = Object.hasOwn(env, 'COLLECTOR_INSTANCE') ? env.COLLECTOR_INSTANCE : 'main';
+    if (typeof instance !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(instance)) throw new Error('INVALID_COLLECTOR_INSTANCE');
+    // All cursors, evidence and the lease live in D1. Rotating this routing
+    // identity replaces the in-memory actor while preserving that durable state.
+    const collector = env.COLLECTOR.get(env.COLLECTOR.idFromName(instance));
     const response = await collector.fetch('https://collector.internal/collect', { method: 'POST' });
     console.log(JSON.stringify(await response.json()));
   },
