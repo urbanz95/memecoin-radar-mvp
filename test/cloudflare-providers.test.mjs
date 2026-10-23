@@ -146,6 +146,40 @@ test('bulk market refresh maps exact token identities in one request and leaves 
   assert.equal(entries[0].externalMarket, undefined);
 });
 
+test('gateway timestamps generated during the fetch are checked against receipt time rather than request start', async () => {
+  let current = time;
+  const result = await refreshMarketData([{ address: TOKEN }], undefined, { now: () => current,
+    fetchImpl: async () => {
+      current += 1250;
+      return Response.json([pair()], { headers: { 'x-radar-fetched-at': new Date(current).toISOString() } });
+    } });
+  assert.equal(result.diagnostics.status, 'REFRESHED');
+  assert.equal(result.entries[0].externalMarket.fetchedAt, new Date(current).toISOString());
+  assert.equal(result.entries[0].marketData.expiresAt, new Date(current + 120000).toISOString());
+});
+
+test('source data that expires during a fetch is not refreshed or assigned a new timestamp', async () => {
+  let current = time;
+  const sourceTime = time - 119000;
+  const result = await refreshMarketData([{ address: TOKEN }], undefined, { now: () => current,
+    fetchImpl: async () => {
+      current += 2000;
+      return Response.json([pair()], { headers: { 'x-radar-fetched-at': new Date(sourceTime).toISOString() } });
+    } });
+  assert.equal(result.diagnostics.status, 'STALE_SOURCE');
+  assert.equal(result.entries[0].externalMarket, undefined);
+  assert.equal(result.providerState.cache.dexscreener.length, 0);
+});
+
+test('fallback cache that expires during a failed request is removed at response time', async () => {
+  const first = await refreshMarketData([{ address: TOKEN }], undefined, { now, fetchImpl: async () => Response.json([pair()]) });
+  let current = time + 119000;
+  const second = await refreshMarketData(first.entries, first.providerState, { now: () => current,
+    fetchImpl: async () => { current += 2000; return new Response('', { status: 429 }); } });
+  assert.equal(second.diagnostics.status, 'RATE_LIMITED');
+  assert.equal(second.entries[0].externalMarket, undefined);
+});
+
 test('bulk and single market requests share the persisted provider cooldown and honor Retry-After', async () => {
   let calls = 0;
   const first = await refreshMarketData([{ address: TOKEN }], undefined, { now, fetchImpl: async () => {

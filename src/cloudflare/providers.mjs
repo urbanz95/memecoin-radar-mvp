@@ -359,7 +359,7 @@ export async function readProviders(address, { fetchImpl = fetch, now = Date.now
 
 /** Refresh up to twenty exact token identities in one official batch request. */
 export async function refreshMarketData(entries, state, { fetchImpl = fetch, now = Date.now } = {}) {
-  const time = clock(now);
+  let time = clock(now);
   if (!Number.isFinite(time)) return { entries: Array.isArray(entries) ? entries : [], providerState: state, diagnostics: { status: 'INVALID_CLOCK' } };
   const nextState = providerState(state, time);
   const input = (Array.isArray(entries) ? entries : []).filter(entry => entry && addressOf(entry.address));
@@ -372,6 +372,13 @@ export async function refreshMarketData(entries, state, { fetchImpl = fetch, now
     control.nextRequestAt = time + PROVIDER_INTERVAL;
     const response = await boundedGet(source, fetchImpl);
     diagnostics.httpStatus = response.status ?? null;
+    // The gateway stamps evidence while this request is in flight. Compare its
+    // source time and fallback cache TTL against receipt time, not request start.
+    time = clock(now);
+    if (!Number.isFinite(time)) return {
+      entries: input.map(({ externalMarket, ...entry }) => ({ ...entry, marketData: { status: 'INVALID_CLOCK' } })),
+      providerState: trimState(nextState), diagnostics: { ...diagnostics, status: 'INVALID_CLOCK' },
+    };
     if (response.error || bodyRateLimited(response.body)) {
       diagnostics.status = response.status === 429 || bodyRateLimited(response.body) ? 'RATE_LIMITED' : response.error;
       failProvider(nextState, 'dexscreener', diagnostics.status, time, response.retryAfter);
