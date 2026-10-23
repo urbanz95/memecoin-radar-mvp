@@ -73,11 +73,14 @@ async function boundedGet(url, fetchImpl) {
       let body;
       try { body = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(buffer)); }
       catch { throw new Error('INVALID_JSON'); }
-      return { body, status, bytes };
+      const sourceTimestamp = response.headers.get('x-radar-fetched-at');
+      if (sourceTimestamp && (!Number.isFinite(Date.parse(sourceTimestamp))
+        || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(sourceTimestamp))) throw new Error('INVALID_SOURCE_TIME');
+      return { body, status, bytes, ...(sourceTimestamp ? { fetchedAt: sourceTimestamp } : {}) };
     })()]);
   } catch (error) {
     const code = controller.signal.aborted ? 'TIMEOUT' :
-      ['TIMEOUT', 'RESPONSE_LIMIT', 'INVALID_JSON'].includes(error?.message) || /^HTTP_[1-5]\d{2}$/.test(error?.message)
+      ['TIMEOUT', 'RESPONSE_LIMIT', 'INVALID_JSON', 'INVALID_SOURCE_TIME'].includes(error?.message) || /^HTTP_[1-5]\d{2}$/.test(error?.message)
         ? error.message : 'REQUEST_FAILED';
     return { error: code, ...(Number.isInteger(status) ? { status } : {}) };
   } finally { clearTimeout(timer); }
@@ -374,9 +377,11 @@ export async function refreshMarketData(entries, state, { fetchImpl = fetch, now
       failProvider(nextState, 'dexscreener', diagnostics.status, time, response.retryAfter);
     } else if (!Array.isArray(response.body)) {
       diagnostics.status = 'INVALID_RESPONSE'; failProvider(nextState, 'dexscreener', 'INVALID_RESPONSE', time);
+    } else if (response.fetchedAt && !fresh(response.fetchedAt, time, MARKET_TTL)) {
+      diagnostics.status = 'STALE_SOURCE'; failProvider(nextState, 'dexscreener', 'STALE_SOURCE', time);
     } else {
       diagnostics.status = 'REFRESHED'; control.failures = 0; control.until = 0; delete control.lastError;
-      const fetchedAt = new Date(time).toISOString();
+      const fetchedAt = response.fetchedAt ?? new Date(time).toISOString();
       for (const address of addresses) {
         const gaps = []; const market = dexScreener(response.body, address, fetchedAt, gaps);
         // A successful complete response without this token invalidates its old

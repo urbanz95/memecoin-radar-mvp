@@ -21,11 +21,14 @@
     "demo": "node scripts/demo.mjs",
     "scan": "node src/cli.mjs",
     "watch": "node src/cli.mjs --watch",
-    "validate": "node src/cli.mjs --validate-config"
+    "validate": "node src/cli.mjs --validate-config",
+    "profiles:compile": "node scripts/compile-profiles.mjs",
+    "profiles:check": "node scripts/compile-profiles.mjs --check"
   },
   "dependencies": {
     "undici": "^7.30.1",
-    "viem": "^2.57.7"
+    "viem": "^2.57.7",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "wrangler": "^4.151.2"

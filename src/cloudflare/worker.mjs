@@ -1,5 +1,6 @@
 import { collectFree } from './collector.mjs';
 import { publicReport } from './public-report.mjs';
+import { getMvpStats } from '../mvp/records.mjs';
 
 export class Collector {
   constructor(_ctx, env) { this.env = env; }
@@ -34,7 +35,9 @@ export default {
         const row = await env.DB.prepare('SELECT report_json FROM runs ORDER BY completed_at DESC LIMIT 1').first();
         if (!row) return Response.json({ status: 'NOT_STARTED', currentSignalsAvailable: false }, { status: 404, headers: { 'cache-control': 'no-store' } });
         const report = JSON.parse(row.report_json);
-        return Response.json(publicReport(report),
+        const published = publicReport(report);
+        if (report.mvp?.recording) published.mvp = { ...published.mvp, archive: await getMvpStats(env.DB) };
+        return Response.json(published,
         { headers: { 'cache-control': 'no-store' } });
       }
       const control = await env.DB.prepare("SELECT status,last_success,lease_until,last_error,json_extract(state_json,'$.signalAvailability') AS signals_json FROM control WHERE id=1").first();

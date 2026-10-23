@@ -11,6 +11,9 @@ import { refreshMarketData } from './providers.mjs';
 import { evaluateMarketSignals, mergeIncrementalEvaluationState } from './market-signals.mjs';
 import marketSignalPolicy from '../../config/market-signals.json' with { type: 'json' };
 import { publicReport } from './public-report.mjs';
+import { providerFetch } from '../mvp/provider-fetch.mjs';
+import { prepareDecisionRecords } from '../mvp/records.mjs';
+import { queryDueOutcomes, prepareOutcomeUpdates } from '../mvp/outcomes.mjs';
 
 const TOPICS = { v2: '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
   v3: '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118',
@@ -64,6 +67,9 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const rpc = supplied ?? new FreeRpc({ url: env.ROBINHOOD_RPC_URL || NETWORK.rpcUrl, fetchImpl, signal: AbortSignal.timeout(60000) });
     const chunk = integer(env.LOG_CHUNK, 2048, 1, 2048); const maxLogs = integer(env.MAX_LOGS, 4, 1, 4);
     const analysisEnabled = env.ANALYSIS_ENABLED === '1';
+    const recordingEnabled = env.MVP_RECORDING_ENABLED === '1';
+    const marketTransport = env.MARKET_GATEWAY_URL || 'direct';
+    const fetchMarket = providerFetch(fetchImpl, env.MARKET_GATEWAY_URL);
     let saved = JSON.parse(held.state_json); let reorg = false;
     if (quantity(await rpc.request('eth_chainId')) !== NETWORK.chainId) throw new Error('WRONG_CHAIN');
     const head = await rpc.block();
@@ -138,6 +144,11 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const pool = selected ? JSON.parse(selected.pool_json) : discovered[0];
     let safetyStates = reorg ? [] : saved.safetyStates;
     let providerState = saved.providerState;
+    if (providerState && saved.marketTransport !== marketTransport) {
+      providerState = structuredClone(providerState);
+      providerState.cooldowns = { ...providerState.cooldowns,
+        dexscreener: { until: 0, nextRequestAt: 0, failures: 0 } };
+    }
     const snapshots = []; const tokenFacts = []; const errors = []; let analysis;
     if (pool) {
       try {
@@ -196,14 +207,26 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const scan = runScan(snapshots, policy, { now: now(), state: reorg ? {} : saved.evaluationState ?? {} });
     let screeningEntries = analysisEnabled ? screeningHistory(reorg ? [] : saved.screeningEntries, analysis?.entry, scan.results, now()) : undefined;
     let marketData; let marketSignals;
+    const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4 }) : [];
+    let outcomeUpdates = { commands: [], diagnostics: [] };
     if (analysisEnabled) {
-      const refreshed = await refreshMarketData(screeningEntries, providerState, { fetchImpl, now });
+      const visibleAddresses = new Set(screeningEntries.map(entry => entry.address));
+      const outcomeAddresses = new Set(outcomeJobs.map(job => job.address));
+      const outcomeTargets = [...outcomeAddresses].map(address => screeningEntries.find(entry => entry.address === address) ?? { address });
+      const refreshed = await refreshMarketData([...outcomeTargets, ...screeningEntries.filter(entry => !outcomeAddresses.has(entry.address))],
+        providerState, { fetchImpl: fetchMarket, now });
       providerState = refreshed.providerState;
       marketData = refreshed.diagnostics;
       // Persist bounded observations, not repeated derived criteria. Each run
       // archives its full evaluated signal while confirmation state stays small.
-      screeningEntries = screeningHistory(refreshed.entries, null, [], now());
+      screeningEntries = screeningHistory(refreshed.entries.filter(entry => visibleAddresses.has(entry.address)), null, [], now());
       marketSignals = evaluateMarketSignals(screeningEntries, reorg ? {} : saved.marketSignalState, { now: now() });
+      if (recordingEnabled) outcomeUpdates = prepareOutcomeUpdates(env.DB, outcomeJobs.map(job => {
+        const market = refreshed.entries.find(entry => entry.address === job.address)?.externalMarket;
+        return { job, observation: market ? { priceUsd: market.priceUsd, liquidityUsd: market.liquidityUsd,
+          sourceTimestamp: market.fetchedAt, source: { provider: market.source, pairAddress: market.pairAddress,
+            chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : null };
+      }), { runId: owner, now });
     }
     const report = { runId: owner, completedAt: new Date(now()).toISOString(), chainId: NETWORK.chainId,
       operationalStatus: errors.length ? 'DEGRADED' : 'PARTIAL', observedHead: head, snapshots,
@@ -213,6 +236,9 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         currentSignalsAvailable: false, marketSignalsAvailable: false,
         scope: 'Alertas de mercado avaliados separadamente da aprovação estrita para trade.' },
         marketData, signals: { policy: marketSignalPolicy } } : {}),
+      ...(recordingEnabled ? { mvp: { phase: 1, dryRun: true, recording: true,
+        scoreVersion: policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
+        futurePhasesEnabled: false } } : {}),
       coverage: { recentRange: [recent.from, recent.to],
         recentBacklogBlocks: head.number - recent.to, olderRange: older ? [older.from, older.to] : null,
         latestSampleRange: latestSample ? [latestSample.from, latestSample.to] : null,
@@ -239,7 +265,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
       evaluationState: mergeIncrementalEvaluationState(saved.evaluationState, scan.state,
         { now: now(), policyHash: scan.policyHash, pipelines: policy.pipelines, reorg }),
       ...(analysisEnabled ? { screeningEntries, safetyStates,
-        providerState, marketSignalState: marketSignals.state,
+        providerState, marketTransport, marketSignalState: marketSignals.state,
         signalAvailability: {
           tradeExpiresAt: Math.max(0, ...published.signals.tradeCandidates.map(value => Date.parse(value.evidenceExpiresAt))),
           marketExpiresAt: Math.min(head.timestamp * 1000 + 60000,
@@ -247,6 +273,27 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         safetyFocus: analysis?.entry ? nextSafetyFocus(pool, safetyPhase, resumedFocus?.startedAt, now()) : null } : {}) };
     // D1 batch é uma transação. CHECK aborta toda a transação se o lease foi perdido.
     const commands = [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)];
+    if (recordingEnabled) {
+      const observedAt = now();
+      const source = { collector: 'cloudflare-readonly-rpc', runId: owner,
+        blockNumber: head.number, blockHash: head.hash, reorgDetected: reorg };
+      const records = prepareDecisionRecords(env.DB, { runId: owner, observedAt, source,
+        scoreVersion: policy.version, policyHash: scan.policyHash,
+        seenTokens: [...discovered, ...(pool ? [pool] : [])].map(item => ({ address: target(item), poolId: item.id, source })),
+        decisions: scan.results.map(result => {
+          const snapshot = snapshots.find(item => item.address === result.address);
+          const entry = screeningEntries?.find(item => item.address === result.address);
+          const createdAt = Date.parse(entry?.age?.contractCreatedAt);
+          const isLaunch = result.pipeline === 'new' && (Number.isFinite(createdAt)
+            ? observedAt - createdAt >= 0 && observedAt - createdAt < 86400000
+            : entry?.age?.lowerBoundMinutes >= 0 && entry.age.upperBoundMinutes < 1440);
+          return { address: result.address, profile: `legacy_${result.pipeline}`, status: result.status,
+            isLaunch: Boolean(isLaunch), features: { snapshot, externalMarket: entry?.externalMarket ?? null,
+              score: result.score, reasons: result.reasons, age: entry?.age ?? null,
+              riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
+        }) });
+      commands.push(...records.commands, ...outcomeUpdates.commands);
+    }
     if (reorg) commands.push(env.DB.prepare('DELETE FROM pools'));
     for (const p of discovered) commands.push(env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p)));
     if (pool) commands.push(env.DB.prepare('UPDATE pools SET last_enriched=? WHERE id=?').bind(now(), pool.id));

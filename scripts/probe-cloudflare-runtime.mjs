@@ -1,6 +1,6 @@
 import { Miniflare, convertV4MiniflareOptions, Response as LocalResponse } from 'miniflare';
 import { fetch as proxyFetch, EnvHttpProxyAgent } from 'undici';
-import { readFile, mkdir, writeFile, rm } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, rm, readdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import assert from 'node:assert/strict';
@@ -45,6 +45,9 @@ function providerFor(rawUrl) {
     && url.searchParams.size === 1 && new RegExp(`^${address}$`).test(url.searchParams.get('contract_addresses') ?? '')) return 'goplus';
   if (url.origin === 'https://api.dexscreener.com' && new RegExp(`^/(?:token-pairs|tokens)/v1/robinhood/${address}(?:,${address}){0,19}$`).test(url.pathname)
     && !url.search) return 'dexscreener';
+  const gateway = config.vars?.MARKET_GATEWAY_URL ? new URL(config.vars.MARKET_GATEWAY_URL) : null;
+  if (gateway && url.origin === gateway.origin && url.pathname === gateway.pathname
+    && url.searchParams.size === 1 && new RegExp(`^${address}(?:,${address}){0,19}$`).test(url.searchParams.get('addresses') ?? '')) return 'dexscreener';
   return null;
 }
 const fixtureReads = new Map();
@@ -130,14 +133,27 @@ const mf = new Miniflare(convertV4MiniflareOptions({
     // encoding headers when constructing the local bridge response.
     return new LocalResponse(body, {
       status: upstream.status,
-      headers: { 'content-type': upstream.headers.get('content-type') ?? 'application/json' }
+      headers: { 'content-type': upstream.headers.get('content-type') ?? 'application/json',
+        ...(upstream.headers.get('x-radar-fetched-at') ? { 'x-radar-fetched-at': upstream.headers.get('x-radar-fetched-at') } : {}),
+        ...(upstream.headers.get('retry-after') ? { 'retry-after': upstream.headers.get('retry-after') } : {}) }
     });
   }
 }));
 try {
   const db = await mf.getD1Database('DB');
-  const schema = await readFile('cloudflare/migrations/0001_collector.sql', 'utf8');
-  for (const sql of schema.split(';').map(s => s.trim()).filter(Boolean)) await db.prepare(sql).run();
+  for (const name of (await readdir('cloudflare/migrations')).filter(name => /^\d+_[a-z0-9_]+\.sql$/.test(name)).sort()) {
+    const schema = await readFile(join('cloudflare/migrations', name), 'utf8');
+    let statement = '';
+    for (const line of schema.split('\n')) {
+      if (!statement && (!line.trim() || line.trimStart().startsWith('--'))) continue;
+      statement += line + '\n';
+      const trigger = /^\s*CREATE\s+TRIGGER\b/i.test(statement);
+      if (trigger ? /\bEND;\s*$/i.test(statement) : /;\s*$/.test(line)) {
+        await db.prepare(statement).run(); statement = '';
+      }
+    }
+    if (statement.trim()) throw new Error('INCOMPLETE_LOCAL_MIGRATION');
+  }
   const worker = await mf.getWorker();
   let previousRunId;
   let previousSafety;
@@ -172,7 +188,7 @@ try {
             status: value.status, checkedAt: value.checkedAt, reason: value.reason,
             ...(value.coverage ? { coverage: value.coverage } : {}),
             ...(typeof value.coveragePct === 'number' ? { coveragePct: value.coveragePct } : {}) }])) })) } } : {}) } : null,
-      cpuLimitVerified: false
+      ...(published.mvp ? { mvp: published.mvp } : {}), cpuLimitVerified: false
     };
     cycleProofs.push(result);
     await writeFile(fixture ? resolve('runtime/cloudflare-runtime-fixture-proof.json') : join(root, 'cycles-proof.json'), JSON.stringify(cycleProofs, null, 2), { mode: 0o600 });
@@ -189,6 +205,11 @@ try {
     assert.equal(published.dataStale, false);
     assert.deepEqual(published.observations, report.snapshots);
     assert.deepEqual(published.recordedResults, report.results);
+    if (config.vars?.MVP_RECORDING_ENABLED === '1') {
+      assert.equal(published.mvp?.recording, true);
+      assert.ok(published.mvp.archive.decisions >= 2, 'Both legacy evaluations must enter durable recording');
+      assert.ok(published.mvp.archive.outcomeJobs.pending >= 8, 'Each initial decision must schedule four horizons');
+    }
     if (analysisEnabled) {
       assert.equal(report.screening?.version, 2, 'Analysis must publish a versioned screening history');
       assert.equal(report.screening.currentSignalsAvailable, false);

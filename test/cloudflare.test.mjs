@@ -10,6 +10,7 @@ import { EVENTS } from '../src/onchain/abi.mjs';
 import { QUOTE_ASSETS } from '../src/network.mjs';
 
 const schema = await readFile(new URL('../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
+const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -24,6 +25,7 @@ class SqliteD1 {
     return {
       bind(...args) { values = args; return this; },
       async first() { return db.sqlite.prepare(sql).get(...values) ?? null; },
+      async all() { return { results: db.sqlite.prepare(sql).all(...values) }; },
       async run() { const r = db.sqlite.prepare(sql).run(...values); return { success: true, meta: { changes: Number(r.changes) } }; }
     };
   }
@@ -201,6 +203,37 @@ test('análise adicional publica filtros e histórico persistente sem aprovar da
   assert.ok(report.screening.entries.every(entry => entry.signal?.tradeApproved === false));
   const response = await worker.fetch(new Request('https://example.test/latest'), f.env);
   assert.deepEqual((await response.json()).screening, report.screening);
+});
+
+test('MVP archival records real collector inputs and preserves rejected decisions after operational run expiry', async t => {
+  const f = setup(t); f.DB.sqlite.exec(mvpSchema);
+  f.env.ANALYSIS_ENABLED = '1'; f.env.MVP_RECORDING_ENABLED = '1';
+  const fetchImpl = async () => Response.json({}, { status: 404 });
+  assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now, fetchImpl })).status, 'COMPLETED');
+  const first = f.DB.sqlite.prepare('SELECT run_id,first_status FROM mvp_decisions JOIN mvp_decision_events USING(decision_key) LIMIT 1').get();
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decisions').get().n, 2);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_outcome_jobs').get().n, 8);
+  assert.equal(f.DB.sqlite.prepare('SELECT tokens_seen FROM mvp_stats WHERE id=1').get().tokens_seen, 1);
+  const output = await (await worker.fetch(new Request('https://example.test/latest'), f.env)).json();
+  assert.equal(output.mvp.phase, 1);
+  assert.equal(output.mvp.dryRun, true);
+  assert.equal(output.mvp.archive.decisions, 2);
+  assert.equal(output.observations[0].address, TOKEN);
+  f.advance(4 * 3600000); f.changes.head += 14400;
+  assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now, fetchImpl })).status, 'COMPLETED');
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM runs WHERE id=?').get(first.run_id).n, 0);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decisions').get().n, 2);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decision_events').get().n, 4);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_outcomes').get().n, 0);
+});
+
+test('a lost collector fence rolls back archival rows and their exact counters', async t => {
+  const f = setup(t); f.DB.sqlite.exec(mvpSchema);
+  f.env.MVP_RECORDING_ENABLED = '1';
+  f.DB.beforeBatch = () => f.DB.sqlite.prepare("UPDATE control SET lease_owner='other'").run();
+  assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now })).status, 'ERROR');
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decisions').get().n, 0);
+  assert.equal(f.DB.sqlite.prepare('SELECT tokens_seen FROM mvp_stats WHERE id=1').get().tokens_seen, 0);
 });
 
 test('retornos ABI volumosos não são duplicados fora do audit limitado e não bloqueiam a recolha', async t => {

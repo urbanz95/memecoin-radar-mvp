@@ -18,6 +18,8 @@
   },
   "vars": {
     "ANALYSIS_ENABLED": "1",
+    "MVP_RECORDING_ENABLED": "1",
+    "MARKET_GATEWAY_URL": "https://memecoin-radar-six.vercel.app/api/market",
     "LOG_CHUNK": "2048",
     "MAX_LOGS": "4",
     "ROBINHOOD_RPC_URL": "https://robinhood.rpc.pinax.network"

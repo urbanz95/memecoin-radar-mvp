@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "c2949ca99b88ef091cb3a63d1aee85dac8a1d1e6ce4121555d7f8b1b16893bbd",
+  "config": {
+    "schemaVersion": 1,
+    "network": {
+      "chain": "robinhood",
+      "chainId": 4663,
+      "environment": "mainnet"
+    },
+    "dryRun": true,
+    "pollingSeconds": 60,
+    "outcomeWindows": [
+      "15m",
+      "1h",
+      "24h",
+      "7d"
+    ],
+    "evaluation": {
+      "minLabeledLaunches": 300
+    },
+    "profiles": {
+      "profile_new": {
+        "enabled": true,
+        "age": {
+          "minHours": 0,
+          "maxHours": 24,
+          "maxExclusive": true
+        },
+        "weights": {
+          "wallets": 50,
+          "security": 30,
+          "momentum": 20
+        },
+        "minWalletTrades": 5,
+        "minScore": 75
+      },
+      "profile_existing": {
+        "enabled": false,
+        "age": {
+          "minHours": 2880,
+          "maxHours": null,
+          "maxExclusive": false
+        },
+        "weights": {
+          "walletFlow": 40,
+          "trend": 30,
+          "liquiditySecurity": 20,
+          "x": 10
+        },
+        "minScore": 75
+      }
+    }
+  }
+}

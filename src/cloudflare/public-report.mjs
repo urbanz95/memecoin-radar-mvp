@@ -50,6 +50,7 @@ export function publicReport(report, now = Date.now()) {
     dataQuality: report.operationalStatus, coverage: report.coverage,
     observations: report.snapshots, recordedResults: report.results, alerts: report.alerts ?? [], errors: report.errors,
     signals, ...(report.marketData ? { marketData: report.marketData } : {}),
+    ...(report.mvp ? { mvp: report.mvp } : {}),
     ...(report.screening ? { screening: { ...report.screening, entries,
       currentSignalsAvailable: tradeCandidates.length > 0, marketSignalsAvailable: marketAlerts.length > 0 } } : {}) };
 }

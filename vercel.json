@@ -4,6 +4,9 @@
   "buildCommand": "",
   "installCommand": "",
   "outputDirectory": "public",
+  "functions": {
+    "api/market.mjs": { "maxDuration": 10 }
+  },
   "rewrites": [
     { "source": "/health", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/health" },
     { "source": "/latest", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/latest" }

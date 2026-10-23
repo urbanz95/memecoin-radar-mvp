@@ -1,0 +1,39 @@
+# MVP phases 1–3 only. This configuration does not enable future services.
+schemaVersion: 1
+network:
+  chain: robinhood
+  chainId: 4663
+  environment: mainnet
+dryRun: true
+pollingSeconds: 60
+outcomeWindows: [15m, 1h, 24h, 7d]
+evaluation:
+  # Reserved for a later evaluation phase; no backtest is enabled here.
+  minLabeledLaunches: 300
+profiles:
+  profile_new:
+    enabled: true
+    age:
+      minHours: 0
+      maxHours: 24
+      maxExclusive: true
+    weights:
+      wallets: 50
+      security: 30
+      momentum: 20
+    minWalletTrades: 5
+    minScore: 75
+  profile_existing:
+    # Reserved configuration only. Mode B is not active in this MVP.
+    enabled: false
+    age:
+      # 120 days × 24 hours. This is 2880 HOURS, not minutes.
+      minHours: 2880
+      maxHours: null
+      maxExclusive: false
+    weights:
+      walletFlow: 40
+      trend: 30
+      liquiditySecurity: 20
+      x: 10
+    minScore: 75
