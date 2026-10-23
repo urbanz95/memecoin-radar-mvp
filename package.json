@@ -1,0 +1,33 @@
+{
+  "name": "memecoin-radar",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "description": "Dois pipelines de análise de memecoins na Robinhood Chain mainnet, sem execução de ordens.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "cloudflare:dev": "wrangler dev --test-scheduled",
+    "cloudflare:check": "wrangler deploy --dry-run --outdir /tmp/memecoin-cloudflare-build",
+    "cloudflare:deploy": "node scripts/deploy-cloudflare.mjs",
+    "cloudflare:activate": "node scripts/activate-cloudflare.mjs",
+    "cloudflare:probe": "node scripts/probe-cloudflare-runtime.mjs",
+    "worker": "bash scripts/worker.sh",
+    "worker:health": "node src/worker/health.mjs",
+    "collect": "node src/onchain/cli.mjs",
+    "collect:watch": "node src/onchain/cli.mjs --watch",
+    "test": "node --test test/*.test.mjs",
+    "demo": "node scripts/demo.mjs",
+    "scan": "node src/cli.mjs",
+    "watch": "node src/cli.mjs --watch",
+    "validate": "node src/cli.mjs --validate-config"
+  },
+  "dependencies": {
+    "undici": "^7.30.1",
+    "viem": "^2.57.7"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.2"
+  }
+}

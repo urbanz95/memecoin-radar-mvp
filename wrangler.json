@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "memecoin-radar-collector",
+  "main": "src/cloudflare/worker.mjs",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "triggers": {
+    "crons": [
+      "* * * * *"
+    ]
+  },
+  "vars": {
+    "ANALYSIS_ENABLED": "1",
+    "LOG_CHUNK": "2048",
+    "MAX_LOGS": "4",
+    "ROBINHOOD_RPC_URL": "https://robinhood.rpc.pinax.network"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "COLLECTOR",
+        "class_name": "Collector"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-collector-do",
+      "new_sqlite_classes": ["Collector"]
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "memecoin-radar",
+      "database_id": "ccd7316b-521b-4c2a-9bc9-8e2eff648c54",
+      "migrations_dir": "cloudflare/migrations"
+    }
+  ],
+  "account_id": "605437d4ee90a0de71772eb374eb5b94"
+}

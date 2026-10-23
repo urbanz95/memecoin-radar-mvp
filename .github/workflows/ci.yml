@@ -1,0 +1,25 @@
+name: Validate pipelines
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci --ignore-scripts
+      - run: npm run validate
+      - run: npm test
+      - run: npm run demo
+      - run: npm run cloudflare:check
+        if: matrix.node == 24
+      - run: npm run cloudflare:probe -- --fixture 3
+        if: matrix.node == 24

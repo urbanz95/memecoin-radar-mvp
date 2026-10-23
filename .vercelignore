@@ -1,0 +1,9 @@
+node_modules
+runtime
+test
+.git
+.env*
+*.zip
+.wrangler
+cloudflare
+deploy

@@ -1,0 +1,50 @@
+{
+  "version": "market-alerts-v1",
+  "kind": "MARKET_ALERT",
+  "tradeApproved": false,
+  "maxMarketAgeSeconds": 120,
+  "maxObservationAgeSeconds": 600,
+  "maxFutureSkewSeconds": 30,
+  "maxTrackedStates": 128,
+  "minScore": 75,
+  "scoreWeights": { "liquidity": 35, "volume": 40, "momentum": 25 },
+  "scope": "Alertas de atividade para revisão; não aprovam trades nem substituem os filtros de segurança estritos.",
+  "pipelines": {
+    "new": {
+      "ageMinMinutes": 15,
+      "ageMaxMinutes": 2880,
+      "liquidityMinUsd": 50000,
+      "fdvMinUsd": 100000,
+      "fdvMaxUsd": 10000000,
+      "volumeWindow": "m5",
+      "volumeMinUsd": 5000,
+      "priceChangeWindow": "m5",
+      "priceChangeMinPct": -5,
+      "priceChangeMaxPct": 20,
+      "minTransactions": 30,
+      "minBuySharePct": 60,
+      "accelerationMin": 1.2,
+      "accelerationMethod": "volume-m5-versus-prior-55m-average",
+      "scoreTargets": { "liquidityUsd": 250000, "volumeUsd": 25000, "momentumPct": 10 },
+      "confirmation": { "minObservations": 3, "minSpanSeconds": 120, "maxGapSeconds": 150 }
+    },
+    "established": {
+      "ageMinMinutes": 10080,
+      "ageMaxMinutes": null,
+      "liquidityMinUsd": 150000,
+      "fdvMinUsd": 500000,
+      "fdvMaxUsd": 100000000,
+      "volumeWindow": "h24",
+      "volumeMinUsd": 100000,
+      "priceChangeWindow": "h1",
+      "priceChangeMinPct": -5,
+      "priceChangeMaxPct": 25,
+      "minTransactions": 150,
+      "minBuySharePct": 60,
+      "accelerationMin": 1.5,
+      "accelerationMethod": "volume-h1-versus-prior-23h-average",
+      "scoreTargets": { "liquidityUsd": 750000, "volumeUsd": 500000, "momentumPct": 15 },
+      "confirmation": { "minObservations": 2, "minSpanSeconds": 900, "maxGapSeconds": 660 }
+    }
+  }
+}

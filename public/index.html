@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151c">
+  <title>Memecoin Radar — sinais e acompanhamento</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10151c;--panel:#18212b;--line:#2d3b49;--text:#e7edf3;--muted:#a9b7c5;--green:#97e9c1;--amber:#f6cd83;--red:#ffb2aa}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1040px;margin:auto;padding:48px 24px 32px}header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}h1{font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.04em;margin:0 0 8px;line-height:1.15}h2{font-size:1.1rem;margin:0 0 14px}p{margin:0 0 12px}.eyebrow{color:var(--green);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}.muted,dt{color:var(--muted)}a{color:var(--green);text-underline-offset:4px}button{font:inherit;cursor:pointer;background:var(--green);color:#12251c;border:0;border-radius:8px;padding:11px 16px;font-weight:650;white-space:nowrap}button:disabled{opacity:.6;cursor:wait}button:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:4px}.status{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:28px 0 16px;background:var(--panel)}.badge{display:inline-block;color:var(--amber);font-weight:700;margin-bottom:5px}.badge[data-tone="good"]{color:var(--green)}.badge[data-tone="error"]{color:var(--red)}.status p{margin:0;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}.wide{grid-column:1/-1}dl{margin:0}dt{font-size:.82rem;margin:0 0 4px}dd{margin:0 0 16px;font-weight:600;overflow-wrap:anywhere}dd:last-child{margin-bottom:0}.value{font-size:1.3rem;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.mono{font: .85rem/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.note{font-size:.88rem;color:var(--muted)}.pipeline{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}.pipeline:first-of-type{padding-top:0}.pipeline:last-of-type{border:0}.pipeline strong{color:var(--amber);font-size:.82rem;align-self:center}.notice{border-left:3px solid var(--amber);padding:0 0 0 14px;margin:22px 0;color:var(--muted)}footer{margin-top:24px;font-size:.85rem;color:var(--muted)}footer a{margin-right:18px}@media(max-width:620px){main{padding:28px 16px}header{display:block}header button{margin-top:10px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.card{padding:18px}.pipeline{flex-wrap:wrap;gap:4px 12px}}
+    .watchlists{margin:26px 0}.list-heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.list-heading h2{margin:0}.list-count{color:var(--green);font-size:.82rem}.watch-entry{border-top:1px solid var(--line);padding:18px 0 0;margin-top:18px;min-width:0}.watch-entry h3{font-size:1rem;margin:0 0 4px;overflow-wrap:anywhere}.entry-state{color:var(--amber);font-size:.85rem;font-weight:650}.entry-state[data-blocked="true"]{color:var(--red)}.entry-age,.entry-time{font-size:.8rem;color:var(--muted);margin-top:8px}.entry-time[data-stale="true"]{color:var(--amber)}.entry-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:14px 0}.entry-metrics dt{font-size:.75rem}.entry-metrics dd{font-size:.88rem;margin:0}.entry-metric{min-width:0}.entry-source{font-size:.75rem;color:var(--muted)}details{margin-top:12px;font-size:.85rem}summary{cursor:pointer;color:var(--green)}details ul{padding-left:20px;color:var(--muted);margin-bottom:8px}details li{margin-bottom:6px}.empty-list{font-size:.9rem;color:var(--muted);margin:16px 0 0}.watch-summary{color:var(--muted);font-size:.9rem;margin-bottom:14px}.unclassified{margin-top:16px}.section-title{font-size:1.2rem;margin-bottom:8px}
+    .safety-checks{margin:18px 0}.safety-checks h4{font-size:.85rem;margin:0 0 10px}.safety-check{border:1px solid var(--line);border-radius:7px;padding:10px 12px;margin-top:8px}.safety-check summary{font-size:.82rem;color:var(--text)}.safety-check summary strong{color:var(--amber);font-weight:600}.safety-check[data-tone="error"] summary strong{color:var(--red)}.safety-check .entry-time{margin:10px 0 6px}.safety-check .entry-metrics{margin:10px 0}.safety-check .note{font-size:.8rem}
+    .signal-overview{margin:24px 0}.signal-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:14px}.signal-counts dt{font-size:.85rem}.signal-counts dd{font-size:1.6rem;margin:0}.signal-counts .pending{color:var(--amber)}.signal-summary{margin:0;color:var(--muted)}.signal-list:empty{display:none}.signal-list{padding-left:20px;margin-bottom:0}.signal-list li{margin-top:10px}.signal-state{font-size:.9rem;font-weight:700;margin:12px 0 5px;color:var(--amber)}.signal-state[data-status="MARKET_ALERT"]{color:var(--green)}.signal-reasons{font-size:.82rem;color:var(--muted);margin:8px 0;padding-left:18px}.signal-reasons li{margin:4px 0}.signal-criteria{margin-bottom:14px}.signal-criteria li{font-size:.8rem}.market-time{font-size:.78rem;color:var(--muted);margin-top:8px}.market-time[data-stale="true"]{color:var(--amber)}.data-health{margin:12px 0 0;font-size:.85rem;color:var(--amber)}
+  </style>
+  <script src="/dashboard.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <div><p class="eyebrow">Robinhood Chain · Mainnet 4663</p><h1>Memecoin Radar</h1><p class="muted">Recolha automática a cada minuto. Esta vista consulta os dados a cada 30 segundos.</p></div>
+    <button id="refresh" type="button">Atualizar vista</button>
+  </header>
+
+  <section class="status" aria-label="Estado da recolha" aria-live="polite" aria-atomic="true">
+    <span id="status" class="badge" data-tone="pending">A consultar o serviço…</span>
+    <p id="status-detail">A aguardar a primeira resposta. A recolha continua no servidor quando esta página está fechada.</p>
+  </section>
+
+  <section class="card signal-overview" aria-labelledby="signals-title" aria-live="polite">
+    <h2 id="signals-title">Sinais</h2>
+    <dl class="signal-counts"><div><dt>Alertas de mercado · segurança pendente</dt><dd id="market-alerts-count" class="pending">0</dd></div><div><dt>Sinais aprovados para trade</dt><dd id="trade-count">0</dd></div></dl>
+    <p id="signal-summary" class="signal-summary">A consultar critérios de mercado e verificações de segurança.</p>
+    <ul id="signals-list" class="signal-list"></ul>
+    <p id="data-health" class="data-health" hidden></p>
+  </section>
+
+  <section class="watchlists" aria-labelledby="watchlists-title">
+    <h2 id="watchlists-title" class="section-title">Oportunidades em avaliação</h2>
+    <p id="screening-summary" class="watch-summary">Enriquecimento a iniciar. As listas vão mostrar apenas observações reais recebidas.</p>
+    <div class="grid">
+      <section class="card" aria-labelledby="watch-new-title">
+        <div class="list-heading"><h2 id="watch-new-title">Novos · 15 min–48 h</h2><span id="new-pipeline" class="list-count">Sem tokens neste intervalo</span></div>
+        <div id="watch-new"><p class="empty-list">A aguardar análises neste intervalo.</p></div>
+      </section>
+      <section class="card" aria-labelledby="watch-established-title">
+        <div class="list-heading"><h2 id="watch-established-title">Estabelecidos · ≥ 7 dias</h2><span id="established-pipeline" class="list-count">Sem tokens neste intervalo</span></div>
+        <div id="watch-established"><p class="empty-list">A aguardar análises neste intervalo.</p></div>
+      </section>
+    </div>
+    <section id="unclassified-section" class="card unclassified" aria-labelledby="watch-unclassified-title" hidden>
+      <h2 id="watch-unclassified-title">Idade ainda por classificar</h2>
+      <div id="watch-unclassified"></div>
+    </section>
+    <p class="note" style="margin-top:12px">Os tokens bloqueados são ocultados automaticamente. A monitorização organiza a análise. A aprovação exige os filtros de segurança completos. Limites obtidos por presença de código são identificados em cada observação.</p>
+  </section>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="collection-title">
+      <h2 id="collection-title">Última recolha</h2>
+      <dl><dt>Hora de Lisboa · gravada pelo servidor</dt><dd id="collected-at" class="value">A aguardar dados</dd><dt>Bloco observado</dt><dd id="block" class="value">—</dd><dt>Identificador da recolha</dt><dd id="run-id" class="mono">—</dd></dl>
+    </section>
+    <section class="card" aria-labelledby="view-title">
+      <h2 id="view-title">Atualização desta vista</h2>
+      <dl><dt>Última consulta · hora de Lisboa</dt><dd id="checked-at" class="value">Ainda não consultado</dd><dt>Resultado da consulta</dt><dd id="check-result">A aguardar dados</dd><dt>Consulta automática</dt><dd id="poll-state">A cada 30 segundos enquanto a página está visível</dd></dl>
+      <p class="note">Consultar a página não inicia uma recolha. A hora da última recolha só muda quando o servidor grava uma nova recolha.</p>
+    </section>
+    <section class="card" aria-labelledby="pipelines-title">
+      <h2 id="pipelines-title">Validação estrita da última recolha</h2>
+      <div class="pipeline"><span>Tokens novos</span><strong id="strict-new">SEM DADOS</strong></div>
+      <div class="pipeline"><span>Tokens estabelecidos</span><strong id="strict-established">SEM DADOS</strong></div>
+      <p class="note" style="margin-top:14px">INCOMPLETE significa que faltam provas para aprovar. BLOCKED identifica um risco conhecido. Os tokens bloqueados são ocultados das listas de acompanhamento.</p>
+    </section>
+    <section class="card" aria-labelledby="quality-title">
+      <h2 id="quality-title">Qualidade e sinais</h2>
+      <dl><dt>Qualidade da última recolha</dt><dd id="quality">A aguardar dados</dd><dt>Tokens aprovados para sinalização</dt><dd id="approved" class="value">0</dd><dt>Sinais atuais disponíveis</dt><dd id="signals-available">A aguardar avaliação</dd></dl>
+    </section>
+    <section class="card wide" aria-labelledby="observation-title">
+      <h2 id="observation-title">Última observação</h2>
+      <dl><dt>Contrato observado · ainda sem classificação como memecoin</dt><dd id="token" class="mono">A aguardar dados</dd><dt>Cobertura desta recolha</dt><dd id="coverage">A aguardar dados</dd></dl>
+      <p class="note">A descoberta é parcial e abrange os deployments Uniswap configurados. Um contrato observado não representa uma aprovação.</p>
+    </section>
+  </div>
+  <p class="notice">Cada verificação mostra a sua cobertura, hora e provas em falta. Código verificado, saldos de holders, proteção de uma pool ou uma simulação favorável não garantem a segurança futura do token. As métricas USD identificam o fornecedor externo.</p>
+  <noscript><p class="notice">Ativa JavaScript para atualizar esta vista automaticamente. Os links abaixo permitem consultar as respostas do serviço.</p></noscript>
+  <footer><a href="/health">Estado em JSON</a><a href="/latest">Última recolha em JSON</a><p style="margin-top:12px">Cloudflare Free · Sem ligação a carteiras nem execução de ordens.</p></footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,37 @@
+[Unit]
+Description=Memecoin Radar - Robinhood Chain collector
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=memecoin-radar
+Group=memecoin-radar
+WorkingDirectory=/opt/memecoin-radar
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=NODE_OPTIONS=--max-old-space-size=768
+Environment=RADAR_DATA_DIR=/var/lib/memecoin-radar
+EnvironmentFile=-/etc/memecoin-radar.env
+StateDirectory=memecoin-radar
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/bin/bash /opt/memecoin-radar/scripts/worker.sh
+Restart=always
+RestartSec=15
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/memecoin-radar
+RestrictSUIDSGID=true
+MemoryMax=1G
+CPUQuota=100%
+TasksMax=64
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
