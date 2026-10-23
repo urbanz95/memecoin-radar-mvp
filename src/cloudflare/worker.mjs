@@ -2,6 +2,8 @@ import { collectFree } from './collector.mjs';
 import { publicReport } from './public-report.mjs';
 import { getMvpStats } from '../mvp/records.mjs';
 import { getDryRunAlertStats, getRecentDryRunAlerts } from '../mvp/alerts.mjs';
+import { getWalletLedgerStats } from '../mvp/wallet-ledger.mjs';
+import { getLatestWeeklyReport } from '../mvp/weekly-report.mjs';
 
 export class Collector {
   constructor(_ctx, env) { this.env = env; }
@@ -40,6 +42,10 @@ export default {
         if (report.mvp?.recording) published.mvp = { ...published.mvp, archive: await getMvpStats(env.DB) };
         if (report.mvp?.phase >= 2) published.mvp.outbox = { ...published.mvp.outbox,
           stats: await getDryRunAlertStats(env.DB), recent: await getRecentDryRunAlerts(env.DB) };
+        if (report.mvp?.phase >= 3) {
+          published.mvp.wallets = await getWalletLedgerStats(env.DB);
+          published.mvp.weeklyReport = await getLatestWeeklyReport(env.DB);
+        }
         return Response.json(published,
         { headers: { 'cache-control': 'no-store' } });
       }

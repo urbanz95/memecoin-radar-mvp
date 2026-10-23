@@ -12,6 +12,8 @@ import { QUOTE_ASSETS } from '../src/network.mjs';
 const schema = await readFile(new URL('../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
 const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
 const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_outbox.sql', import.meta.url), 'utf8');
+const walletSchema = await readFile(new URL('../cloudflare/migrations/0004_mvp_wallets.sql', import.meta.url), 'utf8');
+const weeklySchema = await readFile(new URL('../cloudflare/migrations/0005_mvp_weekly.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -613,4 +615,24 @@ test('MVP phase 2 archives its own profile and keeps legacy results without manu
   const published = await response.json();
   assert.equal(published.mvp.outbox.stats.queuedDryRun, 0);
   assert.deepEqual(published.mvp.outbox.recent, []);
+});
+
+test('MVP phase 3 integrates the permanent wallet ledger and one weekly report without claiming an absent wallet history', async t => {
+  const f = setup(t);
+  for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema]) f.DB.sqlite.exec(sql);
+  Object.assign(f.env, { MVP_RECORDING_ENABLED: '1', MVP_PHASE: '3' });
+  for (let i = 0; i < 2; i++) {
+    assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now })).status, 'COMPLETED');
+    f.advance(1000);
+  }
+  const body = await (await worker.fetch(new Request('https://example.test/latest'), f.env)).json();
+  assert.equal(body.mvp.phase, 3);
+  assert.equal(body.mvp.wallets.tracked, 0);
+  assert.equal(body.mvp.wallets.eligible, 0);
+  assert.equal(body.mvp.outbox.stats.queuedDryRun, 0);
+  assert.equal(body.recordedResults.length, 2);
+  assert.equal(body.mvp.futurePhasesEnabled, false);
+  assert.equal(body.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 1);
+  assert.equal(f.DB.sqlite.prepare("SELECT count(*) AS n FROM mvp_decisions WHERE profile='profile_new'").get().n, 1);
 });

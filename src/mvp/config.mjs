@@ -49,7 +49,7 @@ export function validateProfiles(config) {
   integer(config.evaluation.minLabeledLaunches, 300, 1000000, 'evaluation.minLabeledLaunches');
   shape(config.profiles, PROFILE_IDS, 'profiles');
   const fresh = config.profiles.profile_new;
-  shape(fresh, ['enabled', 'age', 'weights', 'minWalletTrades', 'minScore'], 'profiles.profile_new');
+  shape(fresh, ['enabled', 'age', 'weights', 'minWalletTrades', 'minScore', 'walletScoring', 'momentum'], 'profiles.profile_new');
   exact(fresh.enabled, true, 'profiles.profile_new.enabled');
   shape(fresh.age, ['minHours', 'maxHours', 'maxExclusive'], 'profiles.profile_new.age');
   exact(fresh.age.minHours, 0, 'profiles.profile_new.age.minHours');
@@ -58,6 +58,41 @@ export function validateProfiles(config) {
   weights(fresh.weights, ['wallets', 'security', 'momentum'], 'profiles.profile_new.weights');
   integer(fresh.minWalletTrades, 5, 1000000, 'profiles.profile_new.minWalletTrades');
   integer(fresh.minScore, 75, 100, 'profiles.profile_new.minScore');
+  const wallet = fresh.walletScoring;
+  const walletPath = 'profiles.profile_new.walletScoring';
+  shape(wallet, ['version', 'minRealizedTrades', 'minScore', 'minIndependentGroups', 'timeDecayHalfLifeDays',
+    'maxProfileAgeSeconds', 'maxEntryAgeSeconds', 'maxFutureSkewSeconds', 'maxWallets', 'maxEntries', 'weights', 'targets'], walletPath);
+  exact(wallet.version, 'wallet-manual-v1', `${walletPath}.version`);
+  integer(wallet.minRealizedTrades, fresh.minWalletTrades, 1000000, `${walletPath}.minRealizedTrades`);
+  integer(wallet.minScore, 70, 100, `${walletPath}.minScore`);
+  integer(wallet.minIndependentGroups, 2, 128, `${walletPath}.minIndependentGroups`);
+  integer(wallet.timeDecayHalfLifeDays, 1, 365, `${walletPath}.timeDecayHalfLifeDays`);
+  integer(wallet.maxProfileAgeSeconds, 1, 600, `${walletPath}.maxProfileAgeSeconds`);
+  integer(wallet.maxEntryAgeSeconds, 1, 600, `${walletPath}.maxEntryAgeSeconds`);
+  integer(wallet.maxFutureSkewSeconds, 0, 30, `${walletPath}.maxFutureSkewSeconds`);
+  integer(wallet.maxWallets, 2, 128, `${walletPath}.maxWallets`);
+  integer(wallet.maxEntries, 2, 256, `${walletPath}.maxEntries`);
+  weights(wallet.weights, ['profit', 'winRate', 'earlyEntry', 'drawdown', 'holding'], `${walletPath}.weights`);
+  shape(wallet.targets, ['netRealizedPnlUsd', 'winRatePct', 'earlyEntryPct', 'drawdownCapPct', 'holdingSeconds'], `${walletPath}.targets`);
+  integer(wallet.targets.netRealizedPnlUsd, 1, 1000000000, `${walletPath}.targets.netRealizedPnlUsd`);
+  for (const name of ['winRatePct', 'earlyEntryPct', 'drawdownCapPct']) integer(wallet.targets[name], 1, 100, `${walletPath}.targets.${name}`);
+  integer(wallet.targets.holdingSeconds, 1, 86400, `${walletPath}.targets.holdingSeconds`);
+  const momentum = fresh.momentum;
+  const momentumPath = 'profiles.profile_new.momentum';
+  shape(momentum, ['version', 'weights', 'holderGrowthTargetPct', 'liquidityGrowthTargetPct', 'minObservationSpanSeconds',
+    'maxObservationSpanSeconds', 'maxObservationAgeSeconds', 'maxHoldersAgeSeconds', 'maxLiquidityAgeSeconds',
+    'maxFutureSkewSeconds', 'maxObservations'], momentumPath);
+  exact(momentum.version, 'launch-growth-v1', `${momentumPath}.version`);
+  weights(momentum.weights, ['holders', 'liquidity'], `${momentumPath}.weights`);
+  integer(momentum.holderGrowthTargetPct, 1, 100, `${momentumPath}.holderGrowthTargetPct`);
+  integer(momentum.liquidityGrowthTargetPct, 1, 100, `${momentumPath}.liquidityGrowthTargetPct`);
+  integer(momentum.minObservationSpanSeconds, 60, 900, `${momentumPath}.minObservationSpanSeconds`);
+  integer(momentum.maxObservationSpanSeconds, momentum.minObservationSpanSeconds, 900, `${momentumPath}.maxObservationSpanSeconds`);
+  integer(momentum.maxObservationAgeSeconds, 1, 600, `${momentumPath}.maxObservationAgeSeconds`);
+  integer(momentum.maxHoldersAgeSeconds, 1, 300, `${momentumPath}.maxHoldersAgeSeconds`);
+  integer(momentum.maxLiquidityAgeSeconds, 1, 120, `${momentumPath}.maxLiquidityAgeSeconds`);
+  integer(momentum.maxFutureSkewSeconds, 0, 30, `${momentumPath}.maxFutureSkewSeconds`);
+  integer(momentum.maxObservations, 2, 16, `${momentumPath}.maxObservations`);
   const existing = config.profiles.profile_existing;
   shape(existing, ['enabled', 'age', 'weights', 'minScore'], 'profiles.profile_existing');
   exact(existing.enabled, false, 'profiles.profile_existing.enabled');

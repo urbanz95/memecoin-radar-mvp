@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { prepareDecisionRecords, decisionKey, projectDecisionFeatures } from '../src/mvp/records.mjs';
+import { decodeEventFeatures } from '../src/mvp/feature-codec.mjs';
 import { setup, decision, TOKEN, time, version, profile, policyHash, mvpSchema } from './helpers/mvp-sqlite.mjs';
 
 const count = (DB, table) => DB.sqlite.prepare(`SELECT count(*) AS count FROM ${table}`).get().count;
@@ -61,6 +62,20 @@ test('canonical first-decision features are immutable and per-run observations a
   assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_decisions'), /MVP_DECISION_APPEND_ONLY/);
   assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_token_seen_events'), /MVP_SEEN_APPEND_ONLY/);
   assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_decision_events'), /MVP_EVENT_APPEND_ONLY/);
+});
+
+test('optional event compression preserves every decision feature and keeps canonical JSON compatible with existing queries', async t => {
+  const DB = setup(t);
+  const prepared = prepareDecisionRecords(DB, { runId: 'compressed', observedAt: time,
+    decisions: [decision()], eventFeaturesEncoding: 'gzip-base64/v1' });
+  await DB.batch(prepared.commands);
+  const first = DB.sqlite.prepare('SELECT features_json FROM mvp_decisions').get().features_json;
+  const event = DB.sqlite.prepare('SELECT features_json FROM mvp_decision_events').get().features_json;
+  assert.equal(JSON.parse(event).encoding, 'gzip-base64/v1');
+  assert.equal(decodeEventFeatures(event), first);
+  assert.equal(JSON.parse(first).values.observedAt, new Date(time).toISOString());
+  assert.throws(() => prepareDecisionRecords(DB, { runId: 'bad-codec', observedAt: time,
+    decisions: [decision()], eventFeaturesEncoding: 'unknown' }), /MVP_INVALID_EVENT_ENCODING/);
 });
 
 test('canonical identity is one normalized token/version/profile with distinct versions and profiles', async t => {

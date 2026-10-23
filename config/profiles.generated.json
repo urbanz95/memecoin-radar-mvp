@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSha256": "c2949ca99b88ef091cb3a63d1aee85dac8a1d1e6ce4121555d7f8b1b16893bbd",
+  "sourceSha256": "fcec64398246f5e1722abf76181eadb39a3765d2151e77c218eaee35cc7e74b1",
   "config": {
     "schemaVersion": 1,
     "network": {
@@ -33,7 +33,49 @@
           "momentum": 20
         },
         "minWalletTrades": 5,
-        "minScore": 75
+        "minScore": 75,
+        "walletScoring": {
+          "version": "wallet-manual-v1",
+          "minRealizedTrades": 5,
+          "minScore": 70,
+          "minIndependentGroups": 2,
+          "timeDecayHalfLifeDays": 30,
+          "maxProfileAgeSeconds": 600,
+          "maxEntryAgeSeconds": 600,
+          "maxFutureSkewSeconds": 30,
+          "maxWallets": 128,
+          "maxEntries": 256,
+          "weights": {
+            "profit": 30,
+            "winRate": 25,
+            "earlyEntry": 20,
+            "drawdown": 15,
+            "holding": 10
+          },
+          "targets": {
+            "netRealizedPnlUsd": 1000,
+            "winRatePct": 70,
+            "earlyEntryPct": 70,
+            "drawdownCapPct": 50,
+            "holdingSeconds": 300
+          }
+        },
+        "momentum": {
+          "version": "launch-growth-v1",
+          "weights": {
+            "holders": 50,
+            "liquidity": 50
+          },
+          "holderGrowthTargetPct": 5,
+          "liquidityGrowthTargetPct": 10,
+          "minObservationSpanSeconds": 60,
+          "maxObservationSpanSeconds": 900,
+          "maxObservationAgeSeconds": 600,
+          "maxHoldersAgeSeconds": 300,
+          "maxLiquidityAgeSeconds": 120,
+          "maxFutureSkewSeconds": 30,
+          "maxObservations": 16
+        }
       },
       "profile_existing": {
         "enabled": false,

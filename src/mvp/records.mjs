@@ -1,4 +1,5 @@
 import { isEvmAddress } from '../network.mjs';
+import { encodeEventFeatures } from './feature-codec.mjs';
 
 export const MVP_SCHEMA_VERSION = 1;
 export const MAX_FEATURE_BYTES = 65536;
@@ -47,7 +48,7 @@ export function sourceRecord(value, fallback) {
   if (object(source) && !Object.keys(source).length) throw new Error('MVP_SOURCE_REQUIRED');
   return json({ schemaVersion: MVP_SCHEMA_VERSION, provenance: source }, MAX_SOURCE_BYTES, 'MVP_SOURCE_LIMIT_EXCEEDED');
 }
-const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp']);
+const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp', 'lastRealizedAt', 'firstEntryAt', 'holdersCheckedAt', 'liquidityFetchedAt', 'observedLastDisposalAt']);
 function assertNoFuture(value, capturedAt, depth = 0) {
   if (depth > 32) throw new Error('MVP_FEATURE_DEPTH_EXCEEDED');
   if (Array.isArray(value)) { for (const item of value) assertNoFuture(item, capturedAt, depth + 1); return; }
@@ -85,9 +86,11 @@ function optionalMetric(decision, name, features, key) {
  * seenTokens includes discoveries even when there is no evaluation or market.
  */
 export function prepareDecisionRecords(DB, { runId, observedAt, seenTokens = [], decisions = [],
-  chainId = 4663, scoreVersion, profile, policyHash, source = 'cloudflare-readonly-collector', allowedOutcomeLagMs = 300000 } = {}) {
+  chainId = 4663, scoreVersion, profile, policyHash, source = 'cloudflare-readonly-collector', allowedOutcomeLagMs = 300000,
+  eventFeaturesEncoding = 'json' } = {}) {
   recordLabel(runId, 'RUN_ID');
   const at = recordTime(observedAt);
+  if (!['json', 'gzip-base64/v1'].includes(eventFeaturesEncoding)) throw new Error('MVP_INVALID_EVENT_ENCODING');
   if (!Array.isArray(seenTokens) || !Array.isArray(decisions)) throw new Error('MVP_INVALID_RECORD_ARRAY');
   if (!Number.isSafeInteger(allowedOutcomeLagMs) || allowedOutcomeLagMs < 0 || allowedOutcomeLagMs > 86400000)
     throw new Error('MVP_INVALID_OUTCOME_LAG');
@@ -129,7 +132,7 @@ export function prepareDecisionRecords(DB, { runId, observedAt, seenTokens = [],
       .bind(key, token.chainId, token.address, version, cohort, hash, at, runId, status, decision.isLaunch === true ? 1 : 0,
         baselinePrice, baselineLiquidity, features, provenance));
     commands.push(DB.prepare('INSERT OR IGNORE INTO mvp_decision_events(decision_key,run_id,observed_at,status,policy_hash,features_json,source_json) VALUES(?,?,?,?,?,?,?)')
-      .bind(key, runId, at, status, hash, features, provenance));
+      .bind(key, runId, at, status, hash, eventFeaturesEncoding === 'gzip-base64/v1' ? encodeEventFeatures(features) : features, provenance));
     // Registration derives due_at from the immutable first decision, including
     // when this is a retry or a later observation of an existing token.
     for (const [horizon, offset] of Object.entries({ '15m': 900000, '1h': 3600000, '24h': 86400000, '7d': 604800000 }))

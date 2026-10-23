@@ -69,7 +69,7 @@ export function priorityScore(market, pipeline) {
 
 export async function screenToken(rpc, pool, head, created, facts,
   { address, fetchImpl = fetch, now = Date.now, safetyState = null, safetyPhase = 0, evidenceRef, providerState,
-    include23HourBoundary = false } = {}) {
+    include23HourBoundary = false, onValidatedEvents } = {}) {
   const token = { decimals: null, totalSupplyRaw: null, symbol: null };
   const decimals = read(facts[1], 'decimals');
   const supply = read(facts[2], 'totalSupply');
@@ -140,7 +140,7 @@ export async function screenToken(rpc, pool, head, created, facts,
   }
   catch { unknowns.push('Não foi possível confirmar a idade por recibo ou bytecode histórico.'); }
   let native = { identityVerified: null, activeLiquidity: null };
-  try { native = await analysePool(rpc, pool, head, token, { maxRequests: 28 }); }
+  try { native = await analysePool(rpc, pool, head, token, { maxRequests: 28, onValidatedEvents }); }
   catch { unknowns.push('Leitura do estado da pool indisponível nesta execução.'); }
   const providers = await providersPromise;
   risks.push(...(native.risks ?? [])); checks.push(...(native.checks ?? []));
@@ -187,7 +187,8 @@ export async function screenToken(rpc, pool, head, created, facts,
         creation: creation ? { ...creation, deployer: age.deployer } : undefined,
         observedFromBlock: pool.createdBlock, verifiedPoolAddresses: native.identityVerified === true && pool.address ? [pool.address] : [],
         candidateAddresses: providerSecurity?.providerReported?.holderCandidates?.map(value => value.address) ?? [],
-        pipeline, maxRequests: 30, maxHttpRequests: 2, now });
+        pipeline, maxRequests: 30, maxHttpRequests: 2, now, onValidatedEvents,
+        ...(onValidatedEvents ? { maxLogs: 32 } : {}) });
       safety.holders = holders.assessment;
     } else if (safetyPhase === 1) {
       liquidity = await assessLiquidityProtection(rpc, pool, head, { identityVerified: native.identityVerified === true,

@@ -5,7 +5,8 @@
   const ids = ['refresh', 'status', 'status-detail', 'collected-at', 'block', 'run-id', 'checked-at', 'check-result',
     'poll-state', 'new-pipeline', 'established-pipeline', 'quality', 'approved', 'token', 'coverage',
     'strict-new', 'strict-established', 'screening-summary', 'watch-new', 'watch-established', 'watch-unclassified', 'unclassified-section',
-    'market-alerts-count', 'trade-count', 'signal-summary', 'signals-list', 'signals-available', 'data-health'];
+    'market-alerts-count', 'trade-count', 'signal-summary', 'signals-list', 'signals-available', 'data-health',
+    'mvp-status', 'mvp-data', 'mvp-wallets', 'mvp-outcomes', 'mvp-alerts', 'mvp-weekly', 'mvp-preview'];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
   const dateFormat = new Intl.DateTimeFormat('pt-PT', { timeZone: 'Europe/Lisbon', day: '2-digit', month: '2-digit',
     year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -584,6 +585,42 @@
     text('data-health', marketLimited && !hasRecentMarket ? 'O fornecedor de mercado limitou temporariamente as consultas. A recolha voltará a tentar automaticamente; os dados em falta não geram sinais.' : '');
   }
 
+  function renderMvp(report) {
+    const mvp = report.mvp;
+    if (!validObject(mvp) || mvp.recording !== true) {
+      text('mvp-status', 'O serviço ainda não confirmou a gravação deste modo.');
+      return;
+    }
+    text('mvp-status', `Gravação ativa · avaliação em ${date(report.capturedAt)} (Lisboa) · dry-run.`);
+    const archive = mvp.archive;
+    const count = value => integer(value) ? numberFormat.format(value) : '—';
+    text('mvp-data', `${count(archive?.tokensSeen)} tokens · ${count(archive?.decisions)} decisões versionadas`);
+    text('mvp-outcomes', `${count(archive?.outcomesComplete)} observações · ${count(archive?.outcomeJobs?.pending)} pendentes · ${count(archive?.outcomeJobs?.retry)} a repetir`);
+    const wallets = mvp.wallets;
+    text('mvp-wallets', validObject(wallets)
+      ? `${count(wallets.eligible)} elegíveis · ${count(wallets.tracked)} acompanhadas. ${wallets.eligible ? 'Exige pelo menos cinco trades realizados e custos comprovados.' : 'PnL por comprovar: faltam histórico completo, custo inicial e taxas.'}`
+      : 'Ainda sem PnL realizado comprovado.');
+    text('mvp-alerts', `${count(mvp.outbox?.stats?.queuedDryRun)} guardados · envio desativado`);
+    const weekly = mvp.weeklyReport;
+    text('mvp-weekly', validObject(weekly)
+      ? `Relatório semanal: ${shortText(weekly.cohortStart ?? weekly.weekStart, 40)} · ${count(weekly.totals?.realDecisions)} decisões reais. Resultados por faixa de score e cobertura disponíveis na última recolha em JSON.`
+      : 'O relatório semanal aguarda uma semana de lançamentos com a janela de sete dias concluída.');
+    const blocked = new Set((report.screening?.entries ?? []).filter(entry => entry.status === 'BLOCKED').map(entry => entry.address?.toLowerCase()));
+    const alerts = Array.isArray(mvp.outbox?.recent) ? mvp.outbox.recent.filter(alert => alert?.dryRun === true
+      && alert.synthetic !== true && typeof alert.address === 'string' && /^0x[0-9a-f]{40}$/i.test(alert.address)
+      && !blocked.has(alert.address.toLowerCase())).slice(0, 5) : [];
+    const list = ui['mvp-preview']; list.replaceChildren();
+    if (!alerts.length) list.append(node('p', 'empty-list', 'Sem alertas elegíveis guardados.'));
+    for (const alert of alerts) {
+      const article = node('article', 'dry-run-entry');
+      article.append(node('h3', '', `[NOVO] ${shortText(alert.symbol, 32) || alert.address} · score ${amount(alert.score) ?? '—'}/100`),
+        node('p', 'mono', alert.address), node('p', 'note', `Dry-run histórico · ${date(alert.observedAt)} (Lisboa)`));
+      const reasons = node('ul');
+      for (const reason of (Array.isArray(alert.reasons) ? alert.reasons : []).slice(0, 3)) reasons.append(node('li', '', shortText(reason, 240)));
+      article.append(reasons); list.append(article);
+    }
+  }
+
   function renderReport(report) {
     text('collected-at', date(report.capturedAt));
     text('run-id', typeof report.runId === 'string' ? report.runId : 'Não disponível');
@@ -594,6 +631,7 @@
     const qualities = { PARTIAL: 'PARTIAL · dados parciais', DEGRADED: 'DEGRADED · recolha degradada' };
     text('quality', qualities[report.dataQuality] || 'Qualidade não comprovada');
     renderSignals(report);
+    renderMvp(report);
     const observations = Array.isArray(report.observations) ? report.observations : [];
     const blockedAddresses = new Set((Array.isArray(report.screening?.entries) ? report.screening.entries : [])
       .filter(entry => entry?.status === 'BLOCKED' && typeof entry.address === 'string')

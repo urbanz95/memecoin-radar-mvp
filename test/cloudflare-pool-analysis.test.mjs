@@ -254,3 +254,21 @@ test('a dense activity sample is marked incomplete instead of truncating or clai
   assert.equal(result.activity.reason, 'ACTIVITY_LOG_LIMIT_EXCEEDED');
   assert.equal(result.activity.volumeQuoteRaw, undefined); assert.equal(f.requests.length, 3);
 });
+
+test('optional wallet sink receives each validated raw swap once and never receives invalid or incomplete samples', async () => {
+  const pool = makePool(); const log = swap(pool, 'buy', 1000000n); const captured = [];
+  const f = fixture(pool, { logs: [log, log] });
+  const result = await analysePool(f.rpc, pool, head, token, { onValidatedEvents: value => captured.push(value) });
+  assert.equal(result.activity.swaps, 1); assert.equal(captured.length, 1);
+  assert.equal(captured[0].kind, 'SWAP'); assert.equal(captured[0].events.length, 1);
+  assert.equal(captured[0].events[0].transactionHash, log.transactionHash);
+  assert.equal(captured[0].events[0].data, log.data); assert.equal(captured[0].events[0].args.amount0In, '1000000');
+  assert.equal(captured[0].events[0].pool.quoteAddress, QUOTE_ASSETS.USDG);
+  assert.equal(captured[0].range.historyComplete, false);
+  assert.equal(result.ledger, undefined); assert.doesNotThrow(() => JSON.stringify(captured));
+  for (const logs of [[log, { ...log, removed: true }], Array.from({ length: 65 }, (_, i) => swap(pool, 'buy', 1n, i))]) {
+    const invalid = fixture(pool, { logs }); const values = [];
+    await analysePool(invalid.rpc, pool, head, token, { onValidatedEvents: value => values.push(value) });
+    assert.equal(values.length, 0);
+  }
+});

@@ -44,3 +44,12 @@ test('Mode A excludes exact 24h boundary while preserving the recorded decision'
   assert.equal(result.status, 'OUT_OF_SCOPE');
   assert.equal(result.alertEligible, false);
 });
+
+test('chart links use an exact external pair or parsed legacy pool identity, never an opaque path', () => {
+  const pair = '0x' + '12'.repeat(20); const id = '0x' + 'ab'.repeat(32);
+  assert.equal(evaluateNewToken(fixture(), { poolId: `v2:${pair}` }, { now: DEMO_TIME }).chartUrl,
+    `https://dexscreener.com/robinhood/${pair}`);
+  assert.equal(evaluateNewToken(fixture(), { poolId: `v4:${id}` }, { now: DEMO_TIME }).chartUrl,
+    `https://dexscreener.com/robinhood/${id}`);
+  assert.equal(evaluateNewToken(fixture(), { poolId: '../evil?key=secret' }, { now: DEMO_TIME }).chartUrl, null);
+});

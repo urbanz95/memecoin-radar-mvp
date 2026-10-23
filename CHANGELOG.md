@@ -1,5 +1,13 @@
 # Alterações
 
+## MVP — fase 3, implementação preparada
+
+- Ledger aditivo de swaps/transfers, intervalos, recibos e perfis por geração, reutilizando evidência dos módulos existentes. Contabilidade FIFO incremental, montantes racionais/decimais exatos, taxas e replay explícito dentro de 16 KiB de estado.
+- Score manual de wallets com ≥5 trades realizados, PnL positivo, mínimo 70, meia-vida de 30 dias e ≥2 grupos independentes comprovados. Composição do token 50% wallets/30% segurança/20% momentum, sem preencher componentes desconhecidos.
+- Momentum com dois pontos canónicos da mesma pool e datas originais de holders/liquidez; relatório semanal por score band, cobertura e retornos observados. Segunda-feira 00:15 UTC, coorte de duas semanas antes; não é backtest/modelo.
+- Compressão gzip apenas das novas features de eventos, com decoder compatível com JSON antigo; primeiras features canónicas e histórico anterior preservados. Free continua limitado, sem promessa de arquivo indefinido.
+- Validação final, migrations remotas e publicação desta fase ainda pendentes de confirmação. Perfis reais permanecem inelegíveis quando falta histórico/custos/clustering; fixtures sintéticas aprovadas não são sinais reais. X, novo modo B e backtest/modelo não ativados.
+
 ## MVP — fase 2, 23/10/2026
 
 - Filtros duros do modo A <24h, com provas de idade e estados `PASS`/`REJECTED`/`INCOMPLETE`/`OUT_OF_SCOPE`, preservando os pipelines antigos. Inclui histórico tipado do criador, bundles e manipulação de lançamento; desconhecido não passa.

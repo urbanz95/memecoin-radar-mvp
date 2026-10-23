@@ -29,7 +29,39 @@ A migration aditiva [`0003_mvp_outbox.sql`](../cloudflare/migrations/0003_mvp_ou
 
 Só entram decisões globais `PASS`, score ≥75, score/segurança/wallets completos e pelo menos cinco trades realizados em cada wallet elegível. Clusters repetidos não contam como wallets independentes. Conteúdo sintético fica identificado como tal. Texto, links e tamanho são validados; credenciais e destinos reais não integram o envelope. O módulo não lê ambiente nem faz pedidos Telegram.
 
-`/latest` acrescenta `mvp.outbox` com diagnósticos, contadores e pré-visualizações recentes. Filtros `REJECTED`/`OUT_OF_SCOPE` são arquivados, mas ficam fora das decisões MVP visíveis. A fase 2 não calcula PnL: dados de wallets ausentes mantêm score nulo e outbox vazia. Não existe estado de entrega nem envio externo implementado.
+`/latest` acrescenta `mvp.outbox` com diagnósticos, contadores e pré-visualizações recentes. Filtros `REJECTED`/`OUT_OF_SCOPE` são arquivados, mas ficam fora das decisões MVP visíveis. A fase 2 não calculava PnL; a fase 3 acrescenta contabilidade e scoring para evidência completa. No adaptador real atual, dados de wallets ainda ausentes mantêm score nulo e outbox vazia. Não existe estado de entrega nem envio externo implementado.
+
+## Ledger e contabilidade de wallets
+
+A migration [`0004_mvp_wallets.sql`](../cloudflare/migrations/0004_mvp_wallets.sql) acrescenta:
+
+- Eventos SWAP/TRANSFER e intervalos observados (`mvp_wallet_events`, `mvp_wallet_ranges`), com identidade canónica e deduplicação por chain/bloco/log. Conflitos de conteúdo falham explicitamente.
+- Recibos, jobs e membros token/wallet (`mvp_wallet_receipts`, `mvp_wallet_receipt_jobs`, `mvp_wallet_token_members`). Recibos e eventos são preservados; jobs de enriquecimento têm retry dentro do orçamento.
+- Eventos de perfil imutáveis, projeção atual e contadores (`mvp_wallet_profile_events`, `mvp_wallet_profiles`, `mvp_wallet_stats`). A geração/epoch e os registos de reorg invalidam a elegibilidade anterior sem apagar evidência histórica.
+
+Os hooks reutilizam os logs já validados pelos módulos de pool/holders. O enriquecimento é limitado, sem um segundo scanner da rede. Uma lista de recibos observados não prova cobertura de toda a vida da wallet.
+
+A contabilidade [`wallet-accounting.mjs`](../src/mvp/wallet-accounting.mjs) concilia fluxos líquidos do recibo e custos **FIFO**, com aritmética racional/BigInt. Conserva o PnL exato como numerador/denominador e a representação USD de 18 casas; não usa ponto flutuante para somar dinheiro. Taxas de compra entram no custo; taxas de venda reduzem o produto realizado. Uma transferência recebida sem custo conhecido impede assumir custo zero.
+
+As métricas só ficam completas com prova do histórico desde o início, saldo inicial, custos USD, taxas e atribuição. Uma realização corresponde a uma venda atribuída por transação/token, não ao número de logs ou às compras. Tempo de posição usa lotes FIFO; entrada cedo exige criação comprovada e janela de 300s. Drawdown usa capital inicial comprovado mais PnL líquido realizado, sem inferir preços de posições não realizadas. O estado incremental tem teto de 16 KiB/128 lotes; falta de capacidade ou reordenação exige replay, sem truncar contabilidade para aprovar o perfil.
+
+O scorer [`wallet-scoring.mjs`](../src/mvp/wallet-scoring.mjs) exige ≥5 trades realizados, PnL positivo e score ≥70 após decaimento com meia-vida de 30 dias. Os pesos e alvos manuais são configurados no YAML, sem backtest. Compradores coordenados são agregados num grupo e são necessários ≥2 grupos com independência comprovada. Flags positivas de insider/bundler/wash trading excluem; risco ou clustering desconhecidos não passam.
+
+**Limite do adaptador atual:** amostras de pools/recibos não fornecem histórico vitalício, custos/taxas USD e clustering completos. Os perfis reais mantêm as respetivas flags falsas, PnL nulo e `eligible: false`; o motor disponível para dados completos não implica PnL real já comprovado. `/latest` acrescenta `mvp.wallets` com contadores do ledger quando a fase 3 está ativa.
+
+## Compressão dos eventos de decisão
+
+Novos `mvp_decision_events.features_json` usam envelope JSON `gzip-base64/v1`, com SHA-256 e tamanho descomprimido verificados, limitado a 64 KiB de conteúdo original. `decodeEventFeatures` aceita envelopes novos e JSON antigo sem alterar os bytes originais. As primeiras features canónicas em `mvp_decisions.features_json` continuam em JSON simples; relatórios SQL e coortes não dependem de descomprimir eventos. Não há reescrita destrutiva do histórico anterior.
+
+O benchmark local observou cerca de 46–54% de poupança nos dados ensaiados; a taxa varia. A amostra da base antes da publicação da fase 3 era de cerca de **42,8 MB**, perante o limite Free de **500 MB por base**. Compressão e limites por registo não garantem retenção indefinida; ainda falta arquivo externo/retenção de longo prazo, sem apagar informalmente a evidência append-only.
+
+## Relatório semanal
+
+A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescenta índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. O cron existente gera o relatório na segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se o cron regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
+
+A fonte é a primeira decisão/score congelados, com outcomes armazenados até ao cutoff. As bandas são 0–49, 50–64, 65–74, 75–84 e 85–100, mais `UNKNOWN`. Cada versão/perfil mantém a sua coorte. Sintéticos e proveniência desconhecida ficam excluídos e contabilizados separadamente; decisões reais rejeitadas, mortas e incompletas permanecem no denominador. Somar coortes pode repetir um token, pelo que membros de coorte não são apresentados como tokens únicos globais.
+
+Por horizonte, publica amostras, outcomes desconhecidos, cobertura e retorno médio bruto de preço contra o baseline inicial. Não mede execução, gas/slippage ou PnL de estratégia; não é backtest nem modelo. Um token morto sem observação de preço continua desconhecido, sem fabricar −100%. `/latest` disponibiliza `mvp.weeklyReport` ou `null` quando ainda não há relatório gerado.
 
 ## Outcomes
 

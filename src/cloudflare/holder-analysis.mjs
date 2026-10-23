@@ -92,7 +92,7 @@ function transfers(logs, address, from, to, knownHeaders) {
       continue;
     }
     if (fromAddress === ZERO && toAddress === ZERO && amount !== 0n) throw new Error('HOLDER_INVALID_ZERO_TRANSFER');
-    entries.set(id, { block, index, tx, from: fromAddress, to: toAddress, amount, fingerprint });
+    entries.set(id, { block, blockHash, index, tx, from: fromAddress, to: toAddress, amount, fingerprint });
   }
   return [...entries.values()].sort((a, b) => a.block - b.block || a.index - b.index);
 }
@@ -220,7 +220,7 @@ export async function analyseHolders(rpc, address, head, token = {}, options = {
     if (!nextOrigin.proven) gap('HOLDER_DEPLOYMENT_START_UNPROVEN');
     state.origin = nextOrigin;
     const logs = hasRange ? first.at(-1)?.value : [];
-    let proposed = state; let observedBalances = state.balances;
+    let proposed = state; let observedBalances = state.balances; let validatedTransfers = null;
     if (!Array.isArray(logs) || logs.length > maxLogs) {
       output.state.window = Math.max(1, Math.floor(state.window / 2));
       gap(state.window === 1 ? 'HOLDER_SINGLE_BLOCK_TOO_DENSE' : 'HOLDER_RANGE_SHRUNK');
@@ -234,7 +234,7 @@ export async function analyseHolders(rpc, address, head, token = {}, options = {
           returnedLogs: logs.length, uniqueTransfers: parsed.length });
         if (proposed.balances.length > maxAddresses || bytes(proposed) > maxStateBytes - 256) {
           proposed = state; gap('HOLDER_LEDGER_CAPACITY_REACHED');
-        }
+        } else validatedTransfers = parsed;
       } catch (error) { gap(/^HOLDER_/.test(error.message) ? error.message : 'HOLDER_INVALID_TRANSFER'); }
     }
     const sampleBlock = proposed !== state || !hasRange ? end : head.number;
@@ -268,6 +268,22 @@ export async function analyseHolders(rpc, address, head, token = {}, options = {
       coverage(); return output;
     }
     output.state = proposed; coverage();
+    if (hasRange && validatedTransfers && proposed !== state && typeof options.onValidatedEvents === 'function') {
+      const originals = new Map(logs.map(log => [`${log.blockHash.toLowerCase()}:${quantity(log.logIndex)}`, log]));
+      const events = validatedTransfers.map(log => {
+        const original = originals.get(`${log.blockHash}:${log.index}`);
+        return { chainId: 4663, kind: 'TRANSFER', tokenAddress: address, address, blockNumber: log.block,
+          blockHash: original.blockHash.toLowerCase(), transactionHash: log.tx, logIndex: log.index,
+          topics: original.topics.map(value => value.toLowerCase()), data: original.data.toLowerCase(),
+          args: { from: log.from, to: log.to, value: log.amount.toString() } };
+      });
+      try { options.onValidatedEvents({ kind: 'TRANSFER', tokenAddress: address,
+        range: { kind: 'TRANSFER', tokenAddress: address, address, fromBlock: state.nextBlock, toBlock: end,
+          headBlock: head.number, headHash: head.hash, endpointHash: confirmed.hash, source: 'validated-holder-transfers/v1',
+          historyComplete: false, tokenHistoryComplete: assessment.coverage.transferHistoryComplete,
+          origin: nextOrigin, nextBlock: proposed.nextBlock }, events }); }
+      catch { gap('WALLET_EVENT_SINK_FAILED'); }
+    }
     const supplied = sampleBlock === head.number ? raw(token?.totalSupplyRaw) : null;
     const supply = readUint(second[1]) ?? supplied;
     evidence.blockNumber = sampleBlock; evidence.blockHash = confirmed.hash;

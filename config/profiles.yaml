@@ -23,6 +23,46 @@ profiles:
       momentum: 20
     minWalletTrades: 5
     minScore: 75
+    walletScoring:
+      # Manual hypotheses, not fitted or backtested probabilities.
+      version: wallet-manual-v1
+      minRealizedTrades: 5
+      minScore: 70
+      minIndependentGroups: 2
+      timeDecayHalfLifeDays: 30
+      maxProfileAgeSeconds: 600
+      maxEntryAgeSeconds: 600
+      maxFutureSkewSeconds: 30
+      maxWallets: 128
+      maxEntries: 256
+      weights:
+        profit: 30
+        winRate: 25
+        earlyEntry: 20
+        drawdown: 15
+        holding: 10
+      # Components are clamped to 0–100% before weighting. Dollar profit
+      # is capped before bounded numeric conversion; stored PnL stays exact.
+      targets:
+        netRealizedPnlUsd: 1000
+        winRatePct: 70
+        earlyEntryPct: 70
+        drawdownCapPct: 50
+        holdingSeconds: 300
+    momentum:
+      version: launch-growth-v1
+      weights:
+        holders: 50
+        liquidity: 50
+      holderGrowthTargetPct: 5
+      liquidityGrowthTargetPct: 10
+      minObservationSpanSeconds: 60
+      maxObservationSpanSeconds: 900
+      maxObservationAgeSeconds: 600
+      maxHoldersAgeSeconds: 300
+      maxLiquidityAgeSeconds: 120
+      maxFutureSkewSeconds: 30
+      maxObservations: 16
   profile_existing:
     # Reserved configuration only. Mode B is not active in this MVP.
     enabled: false

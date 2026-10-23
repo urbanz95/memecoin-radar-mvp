@@ -79,6 +79,23 @@ test('genesis absence + complete transfers + every balance at the same canonical
   assert.equal(Object.hasOwn(result.snapshot.holders, 'linkedInsidersPct'), false);
 });
 
+test('optional wallet sink receives deduplicated transfers only after the range endpoint is confirmed', async () => {
+  const values = []; const log = transfer(ZERO, A, 1000n);
+  const f = fixture({ logs: [log, log], balances: { [A]: 1000n }, options: { onValidatedEvents: value => values.push(value) } });
+  await run(f);
+  assert.equal(values.length, 1); assert.equal(values[0].kind, 'TRANSFER'); assert.equal(values[0].events.length, 1);
+  assert.deepEqual(values[0].events[0].args, { from: ZERO, to: A, value: '1000' });
+  assert.equal(values[0].events[0].data, log.data); assert.equal(values[0].range.endpointHash, HEAD.hash);
+  assert.equal(values[0].range.historyComplete, false, 'Token transfer coverage is not wallet-wide trade history');
+  assert.doesNotThrow(() => JSON.stringify(values));
+  for (const changes of [{ logs: [{ ...log, removed: true }] },
+    { header: (n, batch) => batch === 2 && n === HEAD.number ? { hash: blockHash(n + 1) } : {} }]) {
+    const invalid = [];
+    await run(fixture({ ...changes, options: { onValidatedEvents: value => invalid.push(value) } }));
+    assert.equal(invalid.length, 0);
+  }
+});
+
 test('a transient view aggregator verifies every holder above six within two read-only batches', async () => {
   const balances = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [address(i + 10), 125n]));
   const logs = Object.keys(balances).map((a, i) => transfer(ZERO, a, 125n, 10, i));

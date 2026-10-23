@@ -43,7 +43,7 @@ function spotPrice(pool, state, quote, targetDecimals, quoteDecimals) {
   return scaled > 0n ? { value: formatUnits(scaled, 96), quoteAsset: quote.quoteAsset } : null;
 }
 
-function analyseLogs(logs, pool, head, quote, quoteDecimals, fromBlock) {
+function analyseLogs(logs, pool, head, quote, quoteDecimals, fromBlock, events) {
   const scope = { scope: 'single-pool-block-range-sample', fromBlock, toBlock: head.number,
     fromTimestamp: null, toTimestamp: whole(head.timestamp) ? head.timestamp : null };
   if (!Array.isArray(logs)) throw new Error('INVALID_ACTIVITY_LOGS');
@@ -77,6 +77,14 @@ function analyseLogs(logs, pool, head, quote, quoteDecimals, fromBlock) {
     }
     seen.set(id, fingerprint);
     const { args } = decodeEventLog({ abi: [event], topics: log.topics, data: log.data, strict: true });
+    if (events) events.push({ chainId: 4663, kind: 'SWAP', tokenAddress: quote.index === 0 ? pool.token1.toLowerCase() : pool.token0.toLowerCase(),
+      address: pool.address.toLowerCase(), ...(pool.type === 'v4' ? { poolId: pool.poolId.toLowerCase() } : {}),
+      blockNumber: block, blockHash, transactionHash, logIndex: index,
+      topics: log.topics.map(value => value.toLowerCase()), data: log.data.toLowerCase(),
+      args: Object.fromEntries(Object.entries(args).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])),
+      pool: { type: pool.type, address: pool.address.toLowerCase(), token0: pool.token0.toLowerCase(), token1: pool.token1.toLowerCase(),
+        ...(pool.type === 'v4' ? { poolId: pool.poolId.toLowerCase() } : {}), quoteAddress: quote.quoteAddress,
+        quoteDecimals: decimals(quoteDecimals) ? quoteDecimals : null } });
     if (pool.type === 'v2') {
       const input = quote.index === 0 ? args.amount0In : args.amount1In;
       const output = quote.index === 0 ? args.amount0Out : args.amount1Out;
@@ -106,7 +114,7 @@ function analyseLogs(logs, pool, head, quote, quoteDecimals, fromBlock) {
  * maxRequests is an absolute RPC counter ceiling (30 leaves two final calls).
  * Identity compares the caller's deployment metadata; it is not DEX/token approval.
  */
-export async function analysePool(rpc, pool, head, token, { maxRequests = 30 } = {}) {
+export async function analysePool(rpc, pool, head, token, { maxRequests = 30, onValidatedEvents } = {}) {
   const result = { identityVerified: null, poolState: {}, activeLiquidity: null, risks: [], checks: [],
     gaps: ['TOKEN_SAFETY_AND_TRADE_APPROVAL_NOT_EVALUATED', 'USD_CONVERSION_UNAVAILABLE', 'ACTIVITY_IS_NOT_A_TIME_WINDOW'] };
   const gap = code => { if (!result.gaps.includes(code)) result.gaps.push(code); };
@@ -217,8 +225,17 @@ export async function analysePool(rpc, pool, head, token, { maxRequests = 30 } =
       topics: [topic(SWAPS[pool.type]), ...(pool.type === 'v4' ? [pool.poolId] : [])],
       fromBlock: hex(fromBlock), toBlock: hex(head.number) }]]]);
     if (response?.error !== undefined) throw new Error('ACTIVITY_RPC_ERROR');
-    result.activity = analyseLogs(response?.value, pool, head, quote, quoteDecimals, fromBlock);
+    const events = typeof onValidatedEvents === 'function' ? [] : null;
+    result.activity = analyseLogs(response?.value, pool, head, quote, quoteDecimals, fromBlock, events);
     if (!result.activity.complete) gap(result.activity.reason);
+    else if (events) {
+      for (const event of events) event.pool.tokenDecimals = decimals(token?.decimals) ? token.decimals : null;
+      try { onValidatedEvents({ kind: 'SWAP', tokenAddress: quote.index === 0 ? pool.token1.toLowerCase() : pool.token0.toLowerCase(),
+        range: { kind: 'SWAP', tokenAddress: quote.index === 0 ? pool.token1.toLowerCase() : pool.token0.toLowerCase(),
+          address: pool.address.toLowerCase(), fromBlock, toBlock: head.number, headBlock: head.number, headHash: head.hash,
+          source: 'validated-pool-activity/v1', historyComplete: false }, events }); }
+      catch { gap('WALLET_EVENT_SINK_FAILED'); }
+    }
   } catch { gap('ACTIVITY_UNAVAILABLE_OR_INVALID'); }
   return result;
 }

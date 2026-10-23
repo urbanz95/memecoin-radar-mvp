@@ -34,8 +34,23 @@
     <p id="data-health" class="data-health" hidden></p>
   </section>
 
+  <section class="card signal-overview" aria-labelledby="mvp-title" aria-live="polite">
+    <h2 id="mvp-title">Modo A · lançamentos com menos de 24 horas</h2>
+    <p id="mvp-status" class="muted">A consultar o registo de avaliações.</p>
+    <dl class="entry-metrics">
+      <div><dt>Tokens guardados · inclui rejeitados</dt><dd id="mvp-data">—</dd></div>
+      <div><dt>Resultados recolhidos após a decisão</dt><dd id="mvp-outcomes">—</dd></div>
+      <div><dt>Carteiras com histórico comprovado</dt><dd id="mvp-wallets">—</dd></div>
+      <div><dt>Alertas Telegram em dry-run</dt><dd id="mvp-alerts">—</dd></div>
+    </dl>
+    <p class="note">Pesos: carteiras 50% · segurança 30% · momentum 20%. Uma componente desconhecida mantém o score por calcular. Dry-run guarda a mensagem sem a enviar.</p>
+    <p id="mvp-weekly" class="note">O relatório semanal mostrará resultados observados por faixa de score.</p>
+    <details><summary>Histórico de alertas em dry-run</summary><div id="mvp-preview"><p class="empty-list">Sem alertas para apresentar.</p></div></details>
+    <p class="note" style="margin-top:12px">Modo B · tokens com mais de 120 dias: por ativar após revisão do MVP.</p>
+  </section>
+
   <section class="watchlists" aria-labelledby="watchlists-title">
-    <h2 id="watchlists-title" class="section-title">Oportunidades em avaliação</h2>
+    <h2 id="watchlists-title" class="section-title">Acompanhamento existente</h2>
     <p id="screening-summary" class="watch-summary">Enriquecimento a iniciar. As listas vão mostrar apenas observações reais recebidas.</p>
     <div class="grid">
       <section class="card" aria-labelledby="watch-new-title">
