@@ -2,7 +2,7 @@
 
 Dois pipelines configuráveis para triagem de memecoins **Robinhood Chain mainnet (EVM, chain ID 4663)**, com recolha automática no Cloudflare Free e listas de acompanhamento no dashboard. Os parâmetros e a evidência explicam cada decisão. O painel distingue alertas de atividade `MARKET_ALERT`, com segurança pendente, de candidatos `CANDIDATE` que passam a política estrita. Sem ordens, carteira, compras automáticas ou promessas de valorização.
 
-O MVP em curso está limitado às **fases 1–3**, em `dryRun`: arquivo de dados, filtros/alertas do modo A <24h e score de wallets com relatório semanal. A fase 1 já grava dados em produção; fases 2/3 ainda não estão implementadas. A atualização do mercado no collector continua em investigação (`STALE_SOURCE`), apesar de o gateway responder. As tabelas abaixo descrevem os pipelines antigos preservados por compatibilidade, não os novos perfis YAML. Ver [estado do MVP](docs/MVP-PROGRESS.md) e [auditoria](docs/MVP-AUDIT.md).
+O MVP em curso está limitado às **fases 1–3**, em `dryRun`: arquivo de dados, filtros/alertas do modo A <24h e score de wallets com relatório semanal. As fases 1/2 já estão verificadas em produção: arquivo de dados, filtros duros e outbox dry-run. O mercado voltou a atualizar; a fase 3 de wallets está em implementação. Enquanto faltar histórico comprovado de wallets, o score fica nulo e não há alertas gerados por aproximação. As tabelas abaixo descrevem os pipelines antigos preservados por compatibilidade, não os novos perfis YAML. Ver [estado do MVP](docs/MVP-PROGRESS.md) e [auditoria](docs/MVP-AUDIT.md).
 
 | | Novos lançamentos | Tokens estabelecidos |
 |---|---|---|

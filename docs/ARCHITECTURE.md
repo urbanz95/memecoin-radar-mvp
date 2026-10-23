@@ -44,7 +44,7 @@ O collector preserva confirmações estritas ainda válidas durante a rotação 
 
 ## Arquivo MVP e configuração de fases
 
-A fase 1 acrescenta `src/mvp/`, `config/profiles.yaml` validado/compilado e tabelas D1 `mvp_*` independentes da retenção dos relatórios. Primeiro avistamento, primeira decisão por token/versão/perfil e features são imutáveis; eventos e tentativas preservam o histórico, incluindo falhas e rejeições. Jobs de outcomes 15m/1h/24h/7d usam o cron existente. Não há ainda score de wallets, alertas dry-run do novo modo A ou relatório semanal: estes pertencem às fases 2/3. Ver [dados](MVP-DATA.md) e [progresso](MVP-PROGRESS.md).
+A fase 1 acrescenta `src/mvp/`, `config/profiles.yaml` validado/compilado e tabelas D1 `mvp_*` independentes da retenção dos relatórios. Primeiro avistamento, primeira decisão por token/versão/perfil e features são imutáveis; eventos e tentativas preservam o histórico, incluindo falhas e rejeições. Jobs de outcomes 15m/1h/24h/7d usam o cron existente. A fase 2 acrescenta filtros duros <24h e outbox Telegram dry-run, sem envio ou score de wallets substituto. O score de wallets e o relatório semanal estão em implementação na fase 3. Ver [dados](MVP-DATA.md) e [progresso](MVP-PROGRESS.md).
 
 ## Persistência e jobs
 

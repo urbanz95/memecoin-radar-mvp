@@ -19,9 +19,17 @@ Timestamps usam epoch em milissegundos na base e UTC nas interfaces. O endereço
 
 As features incluem versão de schema, identidade, hora efetiva, hash da política, proveniência e os valores observados nesse momento. Dados futuros são rejeitados; registos excedentes falham explicitamente, sem truncar: até 64 KiB de features e 8 KiB de fonte. Repetir um run não substitui evidência já gravada. O arquivo aceita estados rejeitados, bloqueados, mortos ou incompletos sem os transformar em candidatos; só pode conservar tokens que a descoberta efetivamente encontrou.
 
-Nesta fase as decisões integradas pertencem aos perfis `legacy_new` e `legacy_established` e à versão da política antiga. A configuração `profile_new` não implica que o novo score de wallets já tenha corrido.
+A fase 1 regista os perfis `legacy_new` e `legacy_established`. A fase 2 conserva estes registos e acrescenta decisões `profile_new` com versão/hash próprios, resultado dos filtros duros e score global nulo enquanto faltar histórico de wallets. Cada versão/perfil mantém a sua coorte independente; a presença de `profile_new` não comprova PnL ou score de wallets calculado.
 
 Após um relatório com gravação MVP, `/latest` acrescenta `mvp.archive` com contadores de tokens vistos, decisões, eventos, jobs pendentes/retry/completos e outcomes completos. Os contadores não provam cobertura integral nem qualidade financeira das observações.
+
+## Outbox Telegram dry-run
+
+A migration aditiva [`0003_mvp_outbox.sql`](../cloudflare/migrations/0003_mvp_outbox.sql) cria `mvp_alert_outbox` e `mvp_outbox_stats`. Cada pré-visualização é deduplicada por decisão, versão, episódio e alias de destino; SQL e formatter só aceitam estado `DRY_RUN`, modo A `profile_new`, direção `ENTRY` e mainnet 4663. UPDATE/DELETE das mensagens são rejeitados por triggers.
+
+Só entram decisões globais `PASS`, score ≥75, score/segurança/wallets completos e pelo menos cinco trades realizados em cada wallet elegível. Clusters repetidos não contam como wallets independentes. Conteúdo sintético fica identificado como tal. Texto, links e tamanho são validados; credenciais e destinos reais não integram o envelope. O módulo não lê ambiente nem faz pedidos Telegram.
+
+`/latest` acrescenta `mvp.outbox` com diagnósticos, contadores e pré-visualizações recentes. Filtros `REJECTED`/`OUT_OF_SCOPE` são arquivados, mas ficam fora das decisões MVP visíveis. A fase 2 não calcula PnL: dados de wallets ausentes mantêm score nulo e outbox vazia. Não existe estado de entrega nem envio externo implementado.
 
 ## Outcomes
 

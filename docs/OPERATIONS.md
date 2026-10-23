@@ -341,3 +341,45 @@ com cinco ficheiros, e devolveu dados reais com HTTP 200. O collector usa essa
 rota para contornar os 429 do fornecedor observados na saída Cloudflare.
 Na primeira prova de gravação, o collector ainda reportava `STALE_SOURCE`;
 a recuperação do mercado tem de ser comprovada separadamente.
+
+### MVP — fase 2 e recuperação do mercado, 23/10/2026
+
+O commit `b5b255d` implementou filtros duros do modo A, de 0h a menos de 24h,
+e uma outbox Telegram exclusivamente dry-run, mantendo os pipelines antigos.
+O conjunto completo passou **397 testes**; o ensaio final focado de filtros e
+pipeline passou 33. A configuração, os profiles compilados e o build passaram.
+O teste de um contrato com 23h também preservou o comportamento legado.
+Prova local: `runtime/mvp-phase2/verification.json`.
+
+Antes de `0003_mvp_outbox.sql`, foi registado um novo ponto de recuperação
+integral D1 Time Travel às **14:04:18 UTC**, com manifesto em
+`runtime/backups/pre-phase2-manifest.json`. A migration aditiva foi aplicada
+às **14:06:07 UTC**. O Time Travel continua limitado a sete dias no Free;
+não foi criado um export SQL offline. As mensagens são append-only,
+deduplicadas por decisão/versão/episódio/destino e só aceitam `DRY_RUN`.
+Não existe código de envio Telegram nem leitura de token/chat ID pelo formatter.
+
+O `STALE_SOURCE` inicial resultava de validar o timestamp recebido contra
+o relógio anterior ao pedido. O commit `5c877b0` passou a comparar a atualidade
+após a resposta, preservando o timestamp original do gateway e os TTLs.
+A prova remota seguinte verificou a recuperação do mercado, além do HTTP 200
+isolado anteriormente observado na Vercel.
+
+A versão Cloudflare **`181f2942-ec57-4a7b-b1a2-c9aeaa876810`** foi confirmada
+pelo cron natural das **17:59:23 UTC**, run
+`feb162b4-7cb7-4910-abf4-87928c9f05a9`. `/latest` mostrou `mvp.phase: 2`,
+695 tokens, 1.221 avistamentos, 85 decisões canónicas, 702 eventos de decisão,
+27 outcomes completos, 197 jobs pendentes e 116 em retry. O mercado devolveu
+`REFRESHED`, HTTP 200, com três contratos atualizados entre nove pedidos;
+a data da fonte observada foi **17:59:23.882 UTC**.
+Prova: `runtime/mvp-phase2/production.json`.
+
+A outbox manteve **zero mensagens**. A fase 2 ainda não tem histórico de wallets
+com PnL realizado comprovado; score global nulo e flags de completude falsas
+impedem preparar alertas. Uma aprovação dos filtros duros não substitui esses
+dados. O formatter exige decisão global `PASS`, score ≥75 e wallets elegíveis
+com pelo menos cinco trades realizados, sem duplicar clusters coordenados.
+A fase 3 de wallets/relatório semanal estava em implementação; não foi tratada
+como concluída por esta prova. X, novo modo B, backtest/modelo e operações
+financeiras permaneceram desativados. Este ensaio não comprova disponibilidade
+contínua nem permite antecipar outcomes de sete dias.

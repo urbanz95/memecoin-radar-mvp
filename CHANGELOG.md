@@ -1,5 +1,13 @@
 # Alterações
 
+## MVP — fase 2, 23/10/2026
+
+- Filtros duros do modo A <24h, com provas de idade e estados `PASS`/`REJECTED`/`INCOMPLETE`/`OUT_OF_SCOPE`, preservando os pipelines antigos. Inclui histórico tipado do criador, bundles e manipulação de lançamento; desconhecido não passa.
+- Outbox Telegram append-only e deduplicada, exclusivamente dry-run, com score ≥75 e evidência de wallets completa. Não há envio, credenciais ou pontuação inventada: histórico insuficiente mantém score nulo e zero alertas.
+- Migration aditiva `0003_mvp_outbox.sql` aplicada após novo bookmark D1 Time Travel. Verificação: 397 testes passaram, ensaio final de 33 testes de filtros/pipeline e configuração/build válidos. Commit `b5b255d`.
+- Corrigido `STALE_SOURCE` por comparação do relógio após o fetch (`5c877b0`). Cron natural das 17:59:23 UTC confirmou fase 2 em produção, mercado `REFRESHED` HTTP 200, 695 tokens, 85 decisões, 27 outcomes completos e outbox vazia. Detalhes em [operação](docs/OPERATIONS.md).
+- Fase 3 em implementação; X, novo modo B, backtest/modelo e operações continuam desativados.
+
 ## MVP — fase 1, 23/10/2026
 
 - Preservada a base `d8e8c0d`; alterações isoladas em `feat/mvp-wallet-signals` e interfaces antigas mantidas.
@@ -7,6 +15,6 @@
 - Publicado gateway fixo de mercado na Vercel Hobby, sem cron ou storage Vercel, preservando a hora original e limitando pedidos/respostas.
 - Verificação local: 342 testes passaram (298 na base), três ciclos workerd com fixtures e um ciclo local com RPC real. Migration remota aplicada após registar recuperação D1 Time Travel; não foi obtido export SQL offline.
 - Collector publicado e gravação MVP comprovada pelo cron natural das 13:58:25 UTC: 12 tokens, duas decisões e oito jobs pendentes. A atualização do mercado ainda reportou `STALE_SOURCE`, em investigação; o gateway HTTP 200 não prova recuperação integrada. Ver [operação](docs/OPERATIONS.md).
-- Fases 2/3 ainda pendentes; X, novo modo B, backtest/modelo e operações não ativados.
+- No fecho da fase 1, fases 2/3 ainda pendentes; X, novo modo B, backtest/modelo e operações não ativados.
 
 Âmbito e estado: [MVP-PROGRESS.md](docs/MVP-PROGRESS.md). Limites e dados: [MVP-DATA.md](docs/MVP-DATA.md).
