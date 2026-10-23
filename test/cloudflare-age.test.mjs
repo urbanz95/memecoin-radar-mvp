@@ -39,6 +39,85 @@ test('historical code proves the new window without inventing an exact creation 
   assert.equal(f.rpc.requests, 4); assert.ok(f.rpc.calls.every(calls => calls.length <= 8));
 });
 
+test('the default age probes remain 16 minutes, 47 hours and seven days plus one hour', async () => {
+  const implicit = fixture(); const explicit = fixture();
+  const first = await ageEvidence(implicit.rpc, ADDRESS, implicit.pool, HEAD, implicit.created, implicit.options);
+  const second = await ageEvidence(explicit.rpc, ADDRESS, explicit.pool, HEAD, explicit.created,
+    { ...explicit.options, include23HourBoundary: false });
+  assert.deepEqual(first, second); assert.deepEqual(implicit.rpc.calls, explicit.rpc.calls);
+  assert.deepEqual(implicit.rpc.calls[2].map(([, params]) => Number(BigInt(params[1]))),
+    [16 * 60, 47 * 3600, 7 * 86400 + 3600].map(seconds => HEAD.number - seconds));
+  assert.equal(first.upperBoundMinutes, 47 * 60);
+});
+
+test('the optional 23-hour probe tightens the upper bound with canonical absence without inventing a creation date', async () => {
+  const f = fixture();
+  const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, { ...f.options, include23HourBoundary: true });
+  assert.equal(result.classification, 'new'); assert.equal(result.basis, 'code-existence-bounds');
+  assert.equal(result.lowerBoundMinutes, 16); assert.equal(result.upperBoundMinutes, 23 * 60);
+  assert.equal(result.contractCreatedAt, undefined); assert.equal(result.deployer, undefined);
+  const boundary = result.evidence.find(item => item.blockNumber === HEAD.number - 23 * 3600);
+  assert.equal(boundary?.hasBytecode, false);
+  assert.equal(boundary.timestamp, new Date((HEAD.timestamp - 23 * 3600) * 1000).toISOString());
+  assert.equal(f.rpc.requests, 4); assert.ok(f.rpc.calls.every(calls => calls.length <= 8));
+  assert.equal(f.rpc.calls[2].length, 4);
+});
+
+test('positive code at 23 hours preserves the legacy window instead of claiming a younger deployment', async () => {
+  const f = fixture({ tokenAge: 30 * 3600 });
+  const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, { ...f.options, include23HourBoundary: true });
+  assert.equal(result.classification, 'new'); assert.equal(result.lowerBoundMinutes, 23 * 60);
+  assert.equal(result.upperBoundMinutes, 47 * 60); assert.equal(result.contractCreatedAt, undefined);
+  assert.equal(result.evidence.find(item => item.blockNumber === HEAD.number - 23 * 3600)?.hasBytecode, true);
+});
+
+test('the optional probe preserves the absolute RPC budget and old-pool shortcut', async () => {
+  const limited = fixture(); limited.rpc.requests = 27;
+  const unknown = await ageEvidence(limited.rpc, ADDRESS, limited.pool, HEAD, limited.created,
+    { ...limited.options, include23HourBoundary: true, maxRequests: 29 });
+  assert.equal(limited.rpc.requests, 29); assert.equal(limited.rpc.calls.length, 2);
+  assert.equal(unknown.classification, 'unclassified');
+  assert.ok(unknown.reasons.includes('AGE_RPC_BUDGET_EXHAUSTED'));
+  const old = fixture({ poolAge: 8 * 86400, tokenAge: 9 * 86400 });
+  const established = await ageEvidence(old.rpc, ADDRESS, old.pool, HEAD, old.created,
+    { ...old.options, include23HourBoundary: true });
+  assert.equal(established.classification, 'established'); assert.equal(old.rpc.requests, 2);
+});
+
+test('a canonical hash change at only the extra 23-hour block invalidates the age evidence', async () => {
+  const f = fixture(); const batch = f.rpc.batch;
+  f.rpc.batch = async function(calls) {
+    const values = await batch.call(this, calls);
+    return this.requests === 4 ? values.map((item, index) => Number(BigInt(calls[index][1][0])) === HEAD.number - 23 * 3600
+      ? { value: { ...item.value, hash: blockHash(12) } } : item) : values;
+  };
+  const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, { ...f.options, include23HourBoundary: true });
+  assert.equal(result.classification, 'unclassified'); assert.equal(result.contractCreatedAt, undefined);
+  assert.deepEqual(result.evidence, []); assert.ok(result.reasons.includes('AGE_CANONICAL_PROOF_UNAVAILABLE'));
+});
+
+test('the extra boundary fits existing batches even with two distinct creation candidates', async () => {
+  const secondTx = '0x' + 'b'.repeat(64);
+  const source = async () => Response.json({ chainId: '4663', address: ADDRESS,
+    deployment: { transactionHash: secondTx, blockNumber: HEAD.number - 500 } });
+  const f = fixture({ exact: true, source, mutate: (method, params, value) => method === 'eth_getTransactionReceipt' && params[0] === secondTx
+    ? { ...value, transactionHash: secondTx, blockNumber: hex(HEAD.number - 500), blockHash: blockHash(HEAD.number - 500) } : value });
+  const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, { ...f.options, include23HourBoundary: true });
+  assert.equal(f.rpc.requests, 4); assert.ok(f.rpc.calls.every(calls => calls.length <= 8));
+  assert.equal(f.rpc.calls[2].length, 4);
+  assert.equal(result.classification, 'unclassified'); assert.ok(result.reasons.includes('AGE_MULTIPLE_DEPLOYMENTS'));
+});
+
+test('the extra boundary option accepts only an explicit boolean and makes no calls for malformed configuration', async () => {
+  for (const value of [null, 1, 'true', {}, []]) {
+    let sources = 0;
+    const f = fixture({ source: async () => { sources++; return missingSource(); } });
+    const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, { ...f.options, include23HourBoundary: value });
+    assert.equal(result.classification, 'unclassified'); assert.ok(result.reasons.includes('AGE_INPUT_INVALID'));
+    assert.equal(f.rpc.requests, 0); assert.equal(sources, 0);
+  }
+});
+
 test('an old pool plus historical token bytecode proves only an established lower bound', async () => {
   const f = fixture({ poolAge: 8 * 86400, tokenAge: 9 * 86400 });
   const result = await ageEvidence(f.rpc, ADDRESS, f.pool, HEAD, f.created, f.options);

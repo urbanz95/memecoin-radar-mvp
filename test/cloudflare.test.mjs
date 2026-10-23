@@ -11,6 +11,7 @@ import { QUOTE_ASSETS } from '../src/network.mjs';
 
 const schema = await readFile(new URL('../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
 const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
+const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_outbox.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -590,4 +591,26 @@ test('latest expõe observação e hora sem apresentar avaliações antigas como
   assert.equal(body.currentSignalsAvailable, false); assert.equal(body.dataQuality, 'PARTIAL');
   assert.equal(body.observations[0].address, TOKEN); assert.equal(body.recordedResults.length, 2);
   assert.equal(body.evidence, undefined);
+});
+
+test('MVP phase 2 archives its own profile and keeps legacy results without manufacturing a wallet alert', async t => {
+  const f = setup(t); f.DB.sqlite.exec(mvpSchema); f.DB.sqlite.exec(outboxSchema);
+  Object.assign(f.env, { MVP_RECORDING_ENABLED: '1', MVP_PHASE: '2' });
+  const result = await collectFree(f.env, { rpc: f.rpc, now: f.now });
+  assert.equal(result.status, 'COMPLETED');
+  const report = JSON.parse(f.DB.sqlite.prepare('SELECT report_json FROM runs').get().report_json);
+  assert.equal(report.mvp.phase, 2);
+  assert.equal(report.mvp.dryRun, true);
+  assert.equal(report.mvp.outbox.prepared, 0);
+  assert.equal(report.results.length, 2, 'legacy profiles remain compatible');
+  const row = f.DB.sqlite.prepare("SELECT * FROM mvp_decisions WHERE profile='profile_new'").get();
+  assert.ok(row); assert.equal(row.first_status, 'INCOMPLETE');
+  const features = JSON.parse(row.features_json).values;
+  assert.equal(features.decision.score, null);
+  assert.equal(features.decision.wallets.realizedPnlUsd, null);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_alert_outbox').get().n, 0);
+  const response = await worker.fetch(new Request('https://example.test/latest'), f.env);
+  const published = await response.json();
+  assert.equal(published.mvp.outbox.stats.queuedDryRun, 0);
+  assert.deepEqual(published.mvp.outbox.recent, []);
 });

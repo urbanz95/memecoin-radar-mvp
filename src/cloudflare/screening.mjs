@@ -68,7 +68,8 @@ export function priorityScore(market, pipeline) {
 }
 
 export async function screenToken(rpc, pool, head, created, facts,
-  { address, fetchImpl = fetch, now = Date.now, safetyState = null, safetyPhase = 0, evidenceRef, providerState } = {}) {
+  { address, fetchImpl = fetch, now = Date.now, safetyState = null, safetyPhase = 0, evidenceRef, providerState,
+    include23HourBoundary = false } = {}) {
   const token = { decimals: null, totalSupplyRaw: null, symbol: null };
   const decimals = read(facts[1], 'decimals');
   const supply = read(facts[2], 'totalSupply');
@@ -135,7 +136,7 @@ export async function screenToken(rpc, pool, head, created, facts,
       age.classification = age.lowerBoundMinutes >= 10080 ? 'established'
         : age.lowerBoundMinutes >= 15 && age.upperBoundMinutes <= 2880 ? 'new' : 'unclassified';
     } else age = await ageEvidence(rpc, address, pool, head, created,
-      { fetchImpl, now, maxRequests: Math.min(25, (rpc.requests ?? 0) + 4) });
+      { fetchImpl, now, maxRequests: Math.min(25, (rpc.requests ?? 0) + 4), include23HourBoundary });
   }
   catch { unknowns.push('Não foi possível confirmar a idade por recibo ou bytecode histórico.'); }
   let native = { identityVerified: null, activeLiquidity: null };

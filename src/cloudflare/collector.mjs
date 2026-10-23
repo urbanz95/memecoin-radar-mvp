@@ -14,6 +14,9 @@ import { publicReport } from './public-report.mjs';
 import { providerFetch } from '../mvp/provider-fetch.mjs';
 import { prepareDecisionRecords } from '../mvp/records.mjs';
 import { queryDueOutcomes, prepareOutcomeUpdates } from '../mvp/outcomes.mjs';
+import { evaluateNewToken, MVP_SCORE_VERSION, MVP_POLICY_HASH } from '../mvp/pipeline.mjs';
+import { prepareDryRunAlerts } from '../mvp/alerts.mjs';
+import { decisionKey } from '../mvp/records.mjs';
 
 const TOPICS = { v2: '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
   v3: '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118',
@@ -68,6 +71,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const chunk = integer(env.LOG_CHUNK, 2048, 1, 2048); const maxLogs = integer(env.MAX_LOGS, 4, 1, 4);
     const analysisEnabled = env.ANALYSIS_ENABLED === '1';
     const recordingEnabled = env.MVP_RECORDING_ENABLED === '1';
+    const mvpPhase = recordingEnabled ? integer(env.MVP_PHASE, 1, 1, 3) : 0;
     const marketTransport = env.MARKET_GATEWAY_URL || 'direct';
     const fetchMarket = providerFetch(fetchImpl, env.MARKET_GATEWAY_URL);
     let saved = JSON.parse(held.state_json); let reorg = false;
@@ -178,7 +182,8 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             const codeHash = keccak256(bytecode);
             const safetyState = findSafetyState(safetyStates, address, pool.id, codeHash, now());
             analysis = await screenToken(rpc, pool, head, created, facts,
-              { address, now, fetchImpl, safetyState, safetyPhase, providerState, evidenceRef: `d1:runs:${owner}` });
+              { address, now, fetchImpl, safetyState, safetyPhase, providerState,
+                include23HourBoundary: mvpPhase >= 2, evidenceRef: `d1:runs:${owner}` });
             providerState = analysis.providerState ?? providerState;
             Object.assign(snapshot, analysis.snapshot);
             snapshot.security = { ...stamp, hasBytecode: bytecode !== '0x', ...analysis.snapshot.security };
@@ -228,6 +233,11 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : null };
       }), { runId: owner, now });
     }
+    const mvpDecisions = mvpPhase >= 2 ? snapshots.map(snapshot => evaluateNewToken(snapshot,
+      screeningEntries?.find(entry => entry.address === snapshot.address) ?? {}, { now: now() })) : [];
+    const dryRunAlerts = mvpPhase >= 2 ? prepareDryRunAlerts(env.DB, mvpDecisions.map(decision => ({
+      ...decision, decisionId: decisionKey(NETWORK.chainId, decision.address, decision.scoreVersion, decision.profile),
+      wallets: decision.wallets.wallets })), { runId: owner, observedAt: now() }) : null;
     const report = { runId: owner, completedAt: new Date(now()).toISOString(), chainId: NETWORK.chainId,
       operationalStatus: errors.length ? 'DEGRADED' : 'PARTIAL', observedHead: head, snapshots,
       results: scan.results, alerts: scan.alerts, errors,
@@ -236,8 +246,18 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         currentSignalsAvailable: false, marketSignalsAvailable: false,
         scope: 'Alertas de mercado avaliados separadamente da aprovação estrita para trade.' },
         marketData, signals: { policy: marketSignalPolicy } } : {}),
-      ...(recordingEnabled ? { mvp: { phase: 1, dryRun: true, recording: true,
-        scoreVersion: policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
+      ...(recordingEnabled ? { mvp: { phase: mvpPhase, dryRun: true, recording: true,
+        scoreVersion: mvpPhase >= 2 ? MVP_SCORE_VERSION : policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
+        ...(mvpPhase >= 2 ? { profile: 'profile_new',
+          filters: { evaluated: mvpDecisions.length, rejected: mvpDecisions.filter(d => d.status === 'REJECTED').length,
+            incomplete: mvpDecisions.filter(d => d.status === 'INCOMPLETE').length,
+            outOfScope: mvpDecisions.filter(d => d.status === 'OUT_OF_SCOPE').length },
+          outbox: { dryRun: true, prepared: dryRunAlerts.accepted.length,
+            diagnostics: dryRunAlerts.diagnostics },
+          decisions: mvpDecisions.filter(d => !['REJECTED', 'OUT_OF_SCOPE'].includes(d.status)).map(d => ({
+            address: d.address, symbol: d.symbol, status: d.status, score: d.score,
+            scoreComplete: d.scoreComplete, securityComplete: d.securityComplete,
+            walletsComplete: d.walletsComplete, reasons: d.reasons, gaps: d.gaps })) } : {}),
         futurePhasesEnabled: false } } : {}),
       coverage: { recentRange: [recent.from, recent.to],
         recentBacklogBlocks: head.number - recent.to, olderRange: older ? [older.from, older.to] : null,
@@ -293,6 +313,19 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
         }) });
       commands.push(...records.commands, ...outcomeUpdates.commands);
+      if (mvpPhase >= 2) {
+        const mvpRecords = prepareDecisionRecords(env.DB, { runId: owner, observedAt, source,
+          scoreVersion: MVP_SCORE_VERSION, policyHash: MVP_POLICY_HASH,
+          decisions: mvpDecisions.map(decision => {
+            const entry = screeningEntries?.find(item => item.address === decision.address);
+            return { address: decision.address, profile: decision.profile, status: decision.status,
+              isLaunch: decision.security.age?.lowerBoundMinutes >= 0
+                && decision.security.age?.upperBoundMinutes < 1440,
+              features: { snapshot: snapshots.find(item => item.address === decision.address),
+                externalMarket: entry?.externalMarket ?? null, decision } };
+          }) });
+        commands.push(...mvpRecords.commands, ...dryRunAlerts.commands);
+      }
     }
     if (reorg) commands.push(env.DB.prepare('DELETE FROM pools'));
     for (const p of discovered) commands.push(env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p)));

@@ -1,6 +1,7 @@
 import { collectFree } from './collector.mjs';
 import { publicReport } from './public-report.mjs';
 import { getMvpStats } from '../mvp/records.mjs';
+import { getDryRunAlertStats, getRecentDryRunAlerts } from '../mvp/alerts.mjs';
 
 export class Collector {
   constructor(_ctx, env) { this.env = env; }
@@ -37,6 +38,8 @@ export default {
         const report = JSON.parse(row.report_json);
         const published = publicReport(report);
         if (report.mvp?.recording) published.mvp = { ...published.mvp, archive: await getMvpStats(env.DB) };
+        if (report.mvp?.phase >= 2) published.mvp.outbox = { ...published.mvp.outbox,
+          stats: await getDryRunAlertStats(env.DB), recent: await getRecentDryRunAlerts(env.DB) };
         return Response.json(published,
         { headers: { 'cache-control': 'no-store' } });
       }

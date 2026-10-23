@@ -52,7 +52,8 @@ async function sourceRecord(address, fetchImpl) {
 // Code-existence bounds classify an observation window, never invent a deployment date.
 // maxRequests is an absolute ceiling on rpc.requests, not an additional allowance.
 export async function ageEvidence(rpc, address, pool, head, created,
-  { fetchImpl = fetch, now = Date.now, maxRequests = Math.min(30, (rpc.requests ?? 0) + 4) } = {}) {
+  { fetchImpl = fetch, now = Date.now, maxRequests = Math.min(30, (rpc.requests ?? 0) + 4),
+    include23HourBoundary = false } = {}) {
   const result = { classification: 'unclassified', basis: 'insufficient-evidence', evidence: [], reasons: [] };
   maxRequests = Math.min(maxRequests, 30);
   const initialRequests = Number.isSafeInteger(rpc.requests) ? rpc.requests : 0;
@@ -71,7 +72,7 @@ export async function ageEvidence(rpc, address, pool, head, created,
     } catch { reason('AGE_RPC_UNAVAILABLE'); return null; }
   };
   try {
-    if (!isEvmAddress(address) || !integer(head?.number) || !integer(head?.timestamp) || !hash(head?.hash)
+    if (typeof include23HourBoundary !== 'boolean' || !isEvmAddress(address) || !integer(head?.number) || !integer(head?.timestamp) || !hash(head?.hash)
       || !integer(pool?.createdBlock) || !hash(pool?.createdBlockHash)
       || !header(created, pool.createdBlock, head) || !same(created.hash, pool.createdBlockHash)
       || !Number.isFinite(now()) || head.timestamp * 1000 > now() + 30000 || now() - head.timestamp * 1000 > 60000) {
@@ -107,7 +108,10 @@ export async function ageEvidence(rpc, address, pool, head, created,
       const anchor = header(first[anchorIndex], anchorNumber, head);
       const secondsPerBlock = anchor ? (head.timestamp - anchor.timestamp) / 10000 : 0;
       if (secondsPerBlock > 0 && Number.isFinite(secondsPerBlock)) {
-        for (const seconds of [16 * MINUTE, 47 * 3600, 7 * DAY + 3600])
+        // An opt-in tighter upper bound supports the MVP's <24h window without
+        // changing the legacy probes or adding another HTTP batch. The actual
+        // block timestamp and its canonical hash remain the evidence.
+        for (const seconds of [16 * MINUTE, ...(include23HourBoundary ? [23 * 3600] : []), 47 * 3600, 7 * DAY + 3600])
           boundaryNumbers.push(Math.max(0, head.number - Math.ceil(seconds / secondsPerBlock)));
       } else reason('AGE_BLOCK_TIMING_UNAVAILABLE');
     }
