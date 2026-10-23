@@ -6,7 +6,7 @@
 |---|---|---|
 | 1 | Auditoria, testes de compatibilidade e arquivo de dados/outcomes | Concluída: código, migration e gravação remota confirmados; mercado recuperado e verificado na fase 2 |
 | 2 | Filtros duros e alertas Telegram em dry-run, modo A <24h | Concluída e verificada em produção; outbox vazia, sem inventar score de wallets |
-| 3 | Score de wallets e relatório semanal por faixa de score | Implementada no código; validação final e prova de publicação pendentes. Parar após concluir |
+| 3 | Score de wallets e relatório semanal por faixa de score | Código e execução automática verificados; PnL real permanece desconhecido sem provas completas. Execução parada aqui |
 | 4 | Integração X | Fora desta execução; exige confirmação |
 | 5 | Novo modo B ≥2.880h, com ENTRY/EXIT | Fora desta execução; exige confirmação |
 | 6 | Backtest e modelo | Fora desta execução; exige confirmação e pelo menos 300 lançamentos completos elegíveis |
@@ -35,14 +35,16 @@ A versão Cloudflare `181f2942-ec57-4a7b-b1a2-c9aeaa876810` foi comprovada pelo 
 
 | Perfil | Estado | Idade | Pesos | Outros limites |
 |---|---|---|---|---|
-| `profile_new` | Filtros, outbox e score manual implementados; validação final da fase 3 pendente | 0h ≤ idade <24h | wallets 50%, segurança 30%, momentum 20% | ≥5 vendas realizadas por wallet; wallet score ≥70; ≥2 grupos independentes; score global ≥75 |
+| `profile_new` | Filtros, outbox e score manual implementados e publicados | 0h ≤ idade <24h | wallets 50%, segurança 30%, momentum 20% | ≥5 vendas realizadas por wallet; wallet score ≥70; ≥2 grupos independentes; score global ≥75 |
 | `profile_existing` | Desativado | ≥2.880 **horas**, ou 120 dias | wallet flow 40%, trend 30%, liquidez/segurança 20%, X 10% | Reservado às fases futuras |
 
 Editar o YAML exige `npm run profiles:compile`; `npm run profiles:check` deteta JSON compilado desatualizado. A validação rejeita chaves desconhecidas, pesos inválidos, aliases e alterações que ativem fases futuras.
 
 ## Fase 3 — implementação e verificação final
 
-O código acrescenta ledger de eventos/intervalos/recibos, contabilidade FIFO incremental, score manual de wallets, momentum com duas observações e relatório semanal por score band. As migrations `0004_mvp_wallets.sql` e `0005_mvp_weekly.sql` são aditivas. A validação completa, ensaio workerd e publicação desta fase ainda precisam da confirmação final em [OPERATIONS.md](OPERATIONS.md); implementação disponível não equivale a dados reais completos.
+O código acrescenta ledger de eventos/intervalos/recibos, contabilidade FIFO incremental, score manual de wallets, momentum com duas observações e relatório semanal por score band. As migrations `0004_mvp_wallets.sql` e `0005_mvp_weekly.sql` foram aplicadas após backup Time Travel. A suite completa passou 470 testes; após as correções finais passaram os 17 testes de codec/records, cinco verificações do codec no workerd e 40 testes do collector. A publicação foi comprovada com duas recolhas naturais no browser. Evidência em [OPERATIONS.md](OPERATIONS.md); implementação disponível não equivale a dados reais completos.
+
+No segundo run, às **23:33:25 UTC de 23/10/2026**, havia 1.577 tokens arquivados, 174 decisões e 28 outcomes completos. O mercado estava `REFRESHED` HTTP 200; a outbox e as wallets elegíveis ficaram em zero. O relatório semanal foi gerado com zero decisões na coorte histórica já maturada, sem fabricar resultados. Os tokens visíveis passaram de um para zero quando o último foi bloqueado, e a página ocultou os seis bloqueados automaticamente.
 
 A contabilidade usa montantes decimais/racionais exatos, custos FIFO e taxas comprovadas; guarda estado incremental limitado a 16 KiB e indica necessidade de replay quando não pode continuar de forma fiável. Uma venda atribuída por transação/token conta como um trade realizado; compras, transferências e swaps repetidos não substituem cinco vendas realizadas e atribuídas.
 
@@ -56,4 +58,4 @@ O relatório semanal é descritivo: bandas 0–49, 50–64, 65–74, 75–84 e 8
 
 A recolha limitada de pools e transfers não comprova o histórico integral, custos e taxas em USD, atribuição económica ou financiamento/clustering de cada wallet. Por isso, o adaptador de produção conserva PnL desconhecido e perfis inelegíveis até haver prova suficiente; não cria aliases de cluster ou métricas favoráveis para produzir alertas. O cron continua de **60 em 60 segundos**, não em segundos individuais, reutilizando os módulos de pool/holders existentes.
 
-Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. Não ativa X, novo modo B, backtest/modelo ou operações. Após validar a fase 3, esta execução pára nas fases autorizadas.
+Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. Esta execução terminou na fase 3: não construiu X, novo modo B, backtest/modelo ou operações. O push para um novo repositório está bloqueado pela permissão GitHub de criação; o branch local está preservado.

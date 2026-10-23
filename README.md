@@ -2,7 +2,7 @@
 
 Dois pipelines configuráveis para triagem de memecoins **Robinhood Chain mainnet (EVM, chain ID 4663)**, com recolha automática no Cloudflare Free e listas de acompanhamento no dashboard. Os parâmetros e a evidência explicam cada decisão. O painel distingue alertas de atividade `MARKET_ALERT`, com segurança pendente, de candidatos `CANDIDATE` que passam a política estrita. Sem ordens, carteira, compras automáticas ou promessas de valorização.
 
-O MVP em curso está limitado às **fases 1–3**, em `dryRun`: arquivo de dados, filtros/alertas do modo A <24h e score de wallets com relatório semanal. As fases 1/2 já estão verificadas em produção: arquivo de dados, filtros duros e outbox dry-run. O mercado voltou a atualizar; a fase 3 de ledger/FIFO, score manual de wallets e relatório semanal está implementada no código e aguarda validação/publicação finais. Enquanto faltar histórico comprovado de wallets, o score fica nulo e não há alertas gerados por aproximação. As tabelas abaixo descrevem os pipelines antigos preservados por compatibilidade, não os novos perfis YAML. Ver [estado do MVP](docs/MVP-PROGRESS.md) e [auditoria](docs/MVP-AUDIT.md).
+O MVP está limitado às **fases 1–3**, em `dryRun`: arquivo de dados, filtros/alertas do modo A <24h e score de wallets com relatório semanal. As três fases estão implementadas e a execução automática foi verificada em produção. Enquanto faltar histórico comprovado de wallets, custo inicial, taxas ou clustering, o PnL e o score ficam desconhecidos e não há alertas gerados por aproximação. A implementação não prova que já existam sinais aprovados. As tabelas abaixo descrevem os pipelines antigos preservados por compatibilidade, não os novos perfis YAML. Ver [estado do MVP](docs/MVP-PROGRESS.md) e [auditoria](docs/MVP-AUDIT.md).
 
 | | Novos lançamentos | Tokens estabelecidos |
 |---|---|---|
@@ -122,4 +122,4 @@ O campo `finalityStage` distingue confirmação pelo sequenciador, publicação 
 - [Página gratuita na Vercel Hobby](docs/VERCEL.md)
 - [Validação histórica e critérios para revisão dos limiares](docs/VALIDATION.md)
 
-A pasta é independente do projeto que já existia no ambiente. O collector está publicado na Cloudflare e o dashboard na Vercel Hobby. O repositório GitHub e o bot Telegram são etapas posteriores; a publicação atual na Vercel não tem integração Git.
+A pasta é independente do projeto que já existia no ambiente. O collector está publicado na Cloudflare e o dashboard na Vercel Hobby. A criação do novo repositório privado `memecoin-radar-mvp` foi solicitada, mas o GitHub recusou `createRepository` à credencial atual; ainda não houve push. O branch local `feat/mvp-wallet-signals` está pronto. A publicação na Vercel não tem integração Git; o Telegram permanece exclusivamente em dry-run.

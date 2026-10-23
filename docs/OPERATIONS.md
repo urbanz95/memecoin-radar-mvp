@@ -315,6 +315,57 @@ filtrada. Os endpoints continuaram HTTP 200, `no-store` e `MISS`, sem erros
 de página ou API. Os aprovados mantiveram-se em zero. A prova e captura estão
 em `browser.json` e `browser.png` na mesma pasta.
 
+### MVP — fase 3, 23/10/2026, 23h UTC
+
+Código no branch `feat/mvp-wallet-signals`, commit `419dfd0`, seguido de
+`536916f` para permitir trocar a instância do collector sem mudar o D1. A suite
+completa passou 470 testes. As correções finais passaram 17 testes de
+codec/records, 40 testes do collector e cinco verificações de codec no workerd,
+incluindo o payload exato de 64 KiB e a rejeição de descompressão excessiva.
+O workspace de descompressão é limitado a 128 KiB; o payload aceite mantém
+o limite de 64 KiB. Três ciclos locais workerd passaram com 15/14/14 RPC;
+um ciclo local com RPC real usou 22. Estes ensaios não medem o limite CPU remoto.
+
+Antes das migrations aditivas `0004_mvp_wallets.sql` e `0005_mvp_weekly.sql`,
+foi registado às **23:26:07 UTC** o bookmark integral Time Travel
+`0000001c-00000132-0000510d-deea770c03f1f67b8dff4c28bb01778b`.
+O manifesto `runtime/backups/pre-phase3-manifest.json` guarda os hashes e
+a aplicação às **23:26:46 UTC**. Retenção de sete dias; sem export SQL offline.
+
+A versão Cloudflare `7ecc290f-beb4-4dce-8c9c-33bbac20be73` ficou publicada
+a 100%, mas a rotina continuou a gravar relatórios de fase 2. A publicação
+seguinte, `3067cd8d-5b70-4e81-89ba-198e4a36fd5b`, usa a instância DO
+`main-mvp-v3`. Os cursores, o lease e o arquivo continuaram no mesmo D1;
+não foram apagados dados nem renomeadas tabelas. O cron natural
+`0943a3b7-9c1a-49cf-909a-2606c352925c`, às **23:32:24 UTC**, confirmou fase 3.
+
+Vercel Hobby: `dpl_9NjeLxKBV6VDrpq6KoPEgy5WGpjS`, READY e associado ao URL
+público existente. Foram enviados os cinco ficheiros do painel/config/gateway.
+HTML e JavaScript públicos coincidiram com os hashes locais. Gateway válido
+HTTP 200 e inválido HTTP 400; timestamps originais e cabeçalhos de cache
+foram preservados. Não foi ligada uma integração Git.
+
+O browser passou às **23:33:49 UTC** com uma navegação, sem cliques ou reload:
+recebeu naturalmente os runs das **23:32:24** e **23:33:25 UTC**, nos blocos
+96.321.914 e 96.322.490. O arquivo avançou de 1.574 para 1.577 tokens e
+de 173 para 174 decisões, mantendo 28 outcomes completos. Uma observação de
+mercado real coincidiu entre API e DOM; a segunda recolha ocultou os seis
+tokens bloqueados. Endpoints HTTP 200/no-store, zero erros de página/API.
+PnL desconhecido, zero wallets elegíveis e zero alertas dry-run foram
+apresentados sem transformar dados ausentes em métricas favoráveis.
+
+Provas: `runtime/mvp-phase3/production.json`, `browser.json`, `browser.png`,
+`verification.json`, `codec-workerd.json` e `vercel/`. Estas pastas de runtime
+não são incluídas no Git. A fase 3 termina aqui; X, novo modo B e backtest/modelo
+permanecem por construir e dependem de confirmação.
+
+O pedido de criar o repositório privado `urbanz95/memecoin-radar-mvp` foi
+recusado pelo GitHub: GraphQL `Resource not accessible by integration
+(createRepository)`; o fallback REST também não autorizou a criação.
+Não foi criado repositório nem feito push, e o remote local ficou inalterado.
+Prova sanitizada em `runtime/github/create-attempt.json`. É necessário criar
+o repositório e conceder acesso à ligação antes de publicar o branch.
+
 ### MVP — fase 1, 23/10/2026
 
 O branch `feat/mvp-wallet-signals` preserva o baseline local `d8e8c0d`.

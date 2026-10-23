@@ -1,12 +1,14 @@
 # Alterações
 
-## MVP — fase 3, implementação preparada
+## MVP — fase 3, 23/10/2026
 
 - Ledger aditivo de swaps/transfers, intervalos, recibos e perfis por geração, reutilizando evidência dos módulos existentes. Contabilidade FIFO incremental, montantes racionais/decimais exatos, taxas e replay explícito dentro de 16 KiB de estado.
 - Score manual de wallets com ≥5 trades realizados, PnL positivo, mínimo 70, meia-vida de 30 dias e ≥2 grupos independentes comprovados. Composição do token 50% wallets/30% segurança/20% momentum, sem preencher componentes desconhecidos.
 - Momentum com dois pontos canónicos da mesma pool e datas originais de holders/liquidez; relatório semanal por score band, cobertura e retornos observados. Segunda-feira 00:15 UTC, coorte de duas semanas antes; não é backtest/modelo.
 - Compressão gzip apenas das novas features de eventos, com decoder compatível com JSON antigo; primeiras features canónicas e histórico anterior preservados. Free continua limitado, sem promessa de arquivo indefinido.
-- Validação final, migrations remotas e publicação desta fase ainda pendentes de confirmação. Perfis reais permanecem inelegíveis quando falta histórico/custos/clustering; fixtures sintéticas aprovadas não são sinais reais. X, novo modo B e backtest/modelo não ativados.
+- Verificação: 470 testes passaram; após as correções finais passaram 17 testes de codec/records, cinco verificações do codec no workerd e 40 testes do collector. Três ciclos workerd usaram 15/14/14 RPC; o ensaio local com RPC real usou 22.
+- Migrations `0004`/`0005` aplicadas após novo ponto D1 Time Travel. Cloudflare `3067cd8d-5b70-4e81-89ba-198e4a36fd5b` e Vercel `dpl_9NjeLxKBV6VDrpq6KoPEgy5WGpjS` publicados. Duas recolhas naturais verificadas no browser, sem reload, com dados de mercado reais e bloqueados ocultos.
+- Perfis reais permanecem inelegíveis quando falta histórico/custos/clustering; fixtures sintéticas aprovadas não são sinais reais. X, novo modo B e backtest/modelo não ativados. Criação/push do novo repositório bloqueados pela permissão GitHub `createRepository`.
 
 ## MVP — fase 2, 23/10/2026
 
