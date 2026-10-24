@@ -9,15 +9,19 @@ import worker, { Collector } from '../src/cloudflare/worker.mjs';
 import { EVENTS } from '../src/onchain/abi.mjs';
 import { QUOTE_ASSETS } from '../src/network.mjs';
 import { prepareDecisionRecords } from '../src/mvp/records.mjs';
+import { runWeeklyReportJob } from '../src/mvp/weekly-report.mjs';
 
 const schema = await readFile(new URL('../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
-const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
+const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8')
+  + await readFile(new URL('../cloudflare/migrations/0009_mvp_decision_canonicality.sql', import.meta.url), 'utf8');
 const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_outbox.sql', import.meta.url), 'utf8');
 const walletSchema = await readFile(new URL('../cloudflare/migrations/0004_mvp_wallets.sql', import.meta.url), 'utf8');
 const weeklySchema = await readFile(new URL('../cloudflare/migrations/0005_mvp_weekly.sql', import.meta.url), 'utf8');
 const outcomeCaptureSchema = await readFile(new URL('../cloudflare/migrations/0006_mvp_outcome_capture.sql', import.meta.url), 'utf8');
 const walletBandsSchema = await readFile(new URL('../cloudflare/migrations/0007_mvp_wallet_score_bands.sql', import.meta.url), 'utf8');
 const walletTemporalSchema = await readFile(new URL('../cloudflare/migrations/0008_mvp_wallet_realizations.sql', import.meta.url), 'utf8');
+const weeklyJobSchema = await readFile(new URL('../cloudflare/migrations/0010_mvp_weekly_jobs.sql', import.meta.url), 'utf8');
+const walletTtlSchema = await readFile(new URL('../cloudflare/migrations/0012_mvp_wallet_eligibility_ttl.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -254,12 +258,14 @@ test('collector prioritizes live outcome targets, archives original provider tim
   const seedAt = f.now() - 62 * 60000;
   await f.DB.batch(prepareDecisionRecords(f.DB, {
     runId: 'prior-decisions', observedAt: seedAt, scoreVersion: 'prior-test-v1', profile: 'prior-test', policyHash: 'prior-policy',
+    source: { blockNumber: 900, blockHash: blockHash(900) },
     decisions: [TOKEN].map(address => ({ address, status: 'REJECTED', isLaunch: true,
       features: { externalMarket: { priceUsd: 1, liquidityUsd: 100 } } }))
   }).commands);
   const expiredSeedAt = seedAt - 10 * 60000;
   await f.DB.batch(prepareDecisionRecords(f.DB, {
     runId: 'older-decision', observedAt: expiredSeedAt, scoreVersion: 'prior-test-v1', profile: 'prior-test', policyHash: 'prior-policy',
+    source: { blockNumber: 800, blockHash: blockHash(800) },
     decisions: [{ address: expiredToken, status: 'REJECTED', isLaunch: true,
       features: { externalMarket: { priceUsd: 1, liquidityUsd: 100 } } }]
   }).commands);
@@ -585,7 +591,9 @@ test('erros HTTP conservam apenas o status e nunca o URL, corpo ou credenciais',
     assert.deepEqual(rpc.audit, [{ error: `RPC_HTTP_${status}` }]);
     const f = setup(t);
     f.rpc.request = async () => { throw new Error(`RPC_HTTP_${status}`); };
-    assert.deepEqual(await collectFree(f.env, { rpc: f.rpc, now: f.now }), { status: 'ERROR', reason: `RPC_HTTP_${status}` });
+    const result = await collectFree(f.env, { rpc: f.rpc, now: f.now });
+    assert.deepEqual({ status: result.status, reason: result.reason }, { status: 'ERROR', reason: `RPC_HTTP_${status}` });
+    assert.equal(result.cause.code, `RPC_HTTP_${status}`); assert.equal(result.cause.stage, 'rpc-head');
     assert.equal(f.DB.sqlite.prepare('SELECT last_error FROM control').get().last_error, `RPC_HTTP_${status}`);
   }
 });
@@ -684,10 +692,10 @@ test('MVP phase 2 archives its own profile and keeps legacy results without manu
   assert.deepEqual(published.mvp.outbox.recent, []);
 });
 
-test('MVP phase 3 integrates the permanent wallet ledger and one weekly report without claiming an absent wallet history', async t => {
+test('MVP phase 3 ingestion persists independently of the separate weekly job and keeps absent wallet history unknown', async t => {
   const f = setup(t);
   for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema, outcomeCaptureSchema,
-    walletBandsSchema, walletTemporalSchema]) f.DB.sqlite.exec(sql);
+    walletBandsSchema, walletTemporalSchema, weeklyJobSchema, walletTtlSchema]) f.DB.sqlite.exec(sql);
   Object.assign(f.env, { MVP_RECORDING_ENABLED: '1', MVP_PHASE: '3' });
   for (let i = 0; i < 2; i++) {
     assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now })).status, 'COMPLETED');
@@ -700,12 +708,19 @@ test('MVP phase 3 integrates the permanent wallet ledger and one weekly report w
   assert.equal(body.mvp.outbox.stats.queuedDryRun, 0);
   assert.equal(body.recordedResults.length, 2);
   assert.equal(body.mvp.futurePhasesEnabled, false);
-  assert.equal(body.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
-  assert.equal(body.mvp.weeklyReport.walletScoreReport.status, 'READY');
-  assert.equal(body.mvp.weeklyReport.walletScoreBands.length, 5);
+  assert.equal(body.mvp.weeklyReport, null);
   assert.equal(body.mvp.walletCollection.scoreMethod, 'wallet-manual-v2');
   assert.equal(body.mvp.walletCollection.realizedDisposals, 0);
   assert.equal(body.mvp.walletCollection.temporalProfilesUpdated, 0);
-  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 1);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 0);
   assert.equal(f.DB.sqlite.prepare("SELECT count(*) AS n FROM mvp_decisions WHERE profile='profile_new'").get().n, 1);
+  assert.equal((await runWeeklyReportJob(f.DB, { now: f.now })).status, 'COMPLETE');
+  f.env.OPERATIONS_ENABLED = '1';
+  const published = await (await worker.fetch(new Request('https://example.test/latest'), f.env)).json();
+  assert.equal(published.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
+  assert.equal(published.mvp.weeklyReport.schemaVersion, 2);
+  assert.equal(published.mvp.weeklyReport.pagination.totalPages, 0);
+  const page = await worker.fetch(new Request('https://example.test/weekly?page=0'), f.env);
+  assert.equal(page.status, 200); assert.equal(page.headers.get('cache-control'), 'no-store');
+  assert.equal((await worker.fetch(new Request('https://example.test/weekly?page=-1'), f.env)).status, 400);
 });

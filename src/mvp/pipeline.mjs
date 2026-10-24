@@ -27,7 +27,14 @@ export function evaluateNewToken(snapshot, entry = {}, { now = Date.now(),
   const security = evaluateHardFilters(snapshot, entry, { now });
   const scoredWallets = walletProfiles.map(value => scoreWalletProfile(value, { now }));
   const aggregated = aggregateWalletSignal(scoredWallets, { tokenAddress: snapshot.address, entries: walletEntries, now });
-  const wallets = { ...aggregated, realizedPnlUsd: null, wallets: (aggregated.wallets ?? []).slice(0, 8).map(value => ({
+  // Bounded alert previews retain one representative of each independent group
+  // before extra members. A large cluster cannot hide a later independent one.
+  const representatives = new Map();
+  for (const wallet of aggregated.wallets ?? []) if (!representatives.has(wallet.clusterId)) representatives.set(wallet.clusterId, wallet);
+  const representativeAddresses = new Set([...representatives.values()].map(wallet => wallet.address ?? wallet.walletAddress));
+  const previewWallets = [...representatives.values(), ...(aggregated.wallets ?? []).filter(wallet =>
+    !representativeAddresses.has(wallet.address ?? wallet.walletAddress))].slice(0, 8);
+  const wallets = { ...aggregated, realizedPnlUsd: null, wallets: previewWallets.map(value => ({
     address: value.address ?? value.walletAddress, score: value.score, clusterId: value.clusterId,
     realizedTrades: value.realizedTrades ?? value.realizedTradeCount ?? value.features?.realizedTradeCount,
     eligible: value.status === 'ELIGIBLE' || value.eligible === true })) };

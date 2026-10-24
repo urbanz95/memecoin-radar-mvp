@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto';
 import { SWAPS, topic } from '../onchain/abi.mjs';
+import { exactFraction, exactRational, exactTotal, exactComponents, exactCashAdd, exactPositionAdd,
+  EXACT_INTEGER_BITS, EXACT_POSITION_LIMIT } from './wallet-exact.mjs';
+import ACCOUNTING_LIMITS from './wallet-accounting-config.mjs';
 
 const VERSION = 'fifo-receipt-net-usd/v1';
 const ZERO = '0x' + '0'.repeat(40);
 const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const SWAP_TOPICS = new Set(Object.values(SWAPS).map(event => topic(event).toLowerCase()));
-const MAX_STATE_BYTES = 16384;
+const MAX_STATE_BYTES = ACCOUNTING_LIMITS.stateMaxBytes;
 const whole = value => Number.isSafeInteger(value) && value >= 0;
 const address = value => typeof value === 'string' && /^0x[0-9a-f]{40}$/i.test(value) ? value.toLowerCase() : null;
 const hash = value => typeof value === 'string' && /^0x[0-9a-f]{64}$/i.test(value) && !/^0x0{64}$/i.test(value);
@@ -13,17 +16,14 @@ const time = value => typeof value === 'number' ? value : typeof value === 'stri
 const refs = value => Array.isArray(value) && value.length > 0 && value.length <= 64
   && value.every(item => typeof item === 'string' && item.length > 0 && item.length <= 240);
 const bytes = value => new TextEncoder().encode(JSON.stringify(value)).length;
-const gcd = (a, b) => { a = a < 0n ? -a : a; while (b) { const next = a % b; a = b; b = next; } return a || 1n; };
-function frac(n = 0n, d = 1n) { if (d <= 0n) throw Error('INVALID_DENOMINATOR'); const g = gcd(n, d); return { n: n / g, d: d / g }; }
+const frac = exactFraction;
 const add = (a, b) => frac(a.n * b.d + b.n * a.d, a.d * b.d);
 const sub = (a, b) => frac(a.n * b.d - b.n * a.d, a.d * b.d);
 const mul = (a, b) => frac(a.n * b.n, a.d * b.d);
 const compare = (a, b) => a.n * b.d < b.n * a.d ? -1 : a.n * b.d > b.n * a.d ? 1 : 0;
 const packed = value => ({ n: value.n.toString(), d: value.d.toString() });
 function unpack(value) {
-  if (!value || typeof value.n !== 'string' || !/^-?\d{1,180}$/.test(value.n)
-    || typeof value.d !== 'string' || !/^[1-9]\d{0,180}$/.test(value.d)) throw Error('INVALID_FRACTION');
-  return frac(BigInt(value.n), BigInt(value.d));
+  return value?.positions === undefined ? exactRational(value) : exactTotal(value);
 }
 function decimal(value) {
   if (typeof value !== 'string' || !/^-?\d{1,78}(?:\.\d{1,36})?$/.test(value)) return null;
@@ -150,7 +150,9 @@ export function normalizeReceiptSettlement(receipt, swapEvents, context = {}) {
 function newState(wallet, chainId, options) {
   const opening = decimal(options.initialEquityUsd);
   return { schemaVersion: 1, accountingVersion: VERSION, chainId, walletAddress: wallet, lots: [], seen: [], lastApplied: null,
-    counts: { buys: 0, sells: 0, transfers: 0 }, disposals: 0, wins: 0, pnl: packed(frac()), holding: packed(frac()), early: packed(frac()),
+    exactStorageVersion: 'position-components/v1', nextPositionId: 0, seenIdEncoding: 'sha256/v1',
+    counts: { buys: 0, sells: 0, transfers: 0 }, disposals: 0, wins: 0,
+    pnl: packed(frac()), pnlComponents: exactComponents(), holding: packed(frac()), early: packed(frac()),
     costsKnown: true, feesKnown: true, attributionKnown: true, holdingKnown: true, earlyKnown: true,
     historyFromStart: completeHistory(options, { historyFromStart: true }), lastDisposalAt: null, firstApplied: null,
     opening: opening && opening.n > 0n ? packed(opening) : null, peak: opening && opening.n > 0n ? packed(opening) : null,
@@ -158,7 +160,7 @@ function newState(wallet, chainId, options) {
 }
 function restore(value, wallet, chainId) {
   if (!value || bytes(value) > MAX_STATE_BYTES || value.schemaVersion !== 1 || value.accountingVersion !== VERSION
-    || value.walletAddress !== wallet || value.chainId !== chainId || !Array.isArray(value.lots) || value.lots.length > 128
+    || value.walletAddress !== wallet || value.chainId !== chainId || !Array.isArray(value.lots) || value.lots.length > ACCOUNTING_LIMITS.openLots
     || !Array.isArray(value.seen) || value.seen.length > 32 || !value.counts
     || !['buys', 'sells', 'transfers'].every(key => whole(value.counts[key]))
     || !whole(value.disposals) || !whole(value.wins) || value.wins > value.disposals
@@ -177,7 +179,45 @@ function restore(value, wallet, chainId) {
   }
   if (value.seen.some(item => typeof item.id !== 'string' || item.id.length > 300 || !/^[0-9a-f]{64}$/.test(item.fingerprint)))
     throw Error('INVALID_ACCOUNTING_DEDUP');
-  return structuredClone(value);
+  const restored = structuredClone(value);
+  // Full canonical IDs remain in the immutable event ledger. This 32-entry
+  // idempotence cache only needs their digest, leaving room for exact position
+  // components without increasing the existing 16 KiB state bound.
+  if (restored.seenIdEncoding === undefined) {
+    restored.seen = restored.seen.map(item => ({ ...item, id: createHash('sha256').update(item.id).digest('hex') }));
+    restored.seenIdEncoding = 'sha256/v1';
+  } else if (restored.seenIdEncoding !== 'sha256/v1' || restored.seen.some(item => !/^[a-f0-9]{64}$/.test(item.id))) {
+    throw Error('INVALID_ACCOUNTING_DEDUP');
+  }
+  if (restored.exactStorageVersion === undefined) {
+    // Additive in-memory migration: earlier D1 snapshots remain readable and
+    // are not rewritten. The next profile persists components in its JSON.
+    restored.exactStorageVersion = 'position-components/v1';
+    restored.nextPositionId = 0;
+    restored.pnlComponents = exactComponents(restored.pnl);
+    for (const lot of restored.lots) lot.positionId = ++restored.nextPositionId;
+  } else if (restored.exactStorageVersion !== 'position-components/v1' || !whole(restored.nextPositionId)) {
+    throw Error('INVALID_EXACT_POSITION_STATE');
+  }
+  if (!restored.pnlComponents) throw Error('INVALID_EXACT_POSITION_STATE');
+  const componentTotal = exactTotal(restored.pnlComponents); const pnl = unpack(restored.pnl);
+  if (componentTotal.n * pnl.d !== pnl.n * componentTotal.d) throw Error('ACCOUNTING_EXACT_COMPONENT_MISMATCH');
+  for (const id of Object.keys(exactComponents(restored.pnlComponents).positions)) {
+    if (id !== 'legacy' && (!whole(Number(id.slice(2))) || Number(id.slice(2)) > restored.nextPositionId))
+      throw Error('INVALID_EXACT_POSITION_STATE');
+  }
+  const positions = new Set();
+  for (const lot of restored.lots) {
+    if (!whole(lot.positionId) || lot.positionId < 1 || lot.positionId > restored.nextPositionId || positions.has(lot.positionId))
+      throw Error('INVALID_EXACT_POSITION_STATE');
+    positions.add(lot.positionId);
+  }
+  if (bytes(restored) > MAX_STATE_BYTES) {
+    const error = Error('ACCOUNTING_CAPACITY_REQUIRES_REPLAY');
+    error.accountingCheckpoint = structuredClone(value);
+    throw error;
+  }
+  return restored;
 }
 function completeHistory(options, state) {
   const proof = options.historyProof;
@@ -214,6 +254,7 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
     ? Object.fromEntries(['insider', 'bundler', 'washTrading'].map(key => [key, risk[key]])) : null;
   const evidence = [...new Set([...(refs(options.historyProof?.evidence) ? options.historyProof.evidence : []),
     ...(refs(options.evidence) ? options.evidence : []), ...(state.lastApplied ? [`wallet-ledger:${state.lastApplied.blockHash}:${state.lastApplied.logIndex}`] : [])])];
+  const resourceGap = gaps.find(gap => /(?:CAPACITY|PRECISION_BUDGET|POSITION_CAPACITY)/.test(gap));
   const result = { schemaVersion: 1, chainId: state.chainId, walletAddress: state.walletAddress,
     checkedAt: Number.isFinite(checked) ? new Date(checked).toISOString() : null,
     source: VERSION, evidence, historyComplete, costsComplete, feesComplete, attributionComplete,
@@ -229,8 +270,16 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
     accountingMethod: { version: VERSION, costBasis: 'FIFO', realizedTrade: 'one attributed sell transaction and token',
       holding: 'mean of FIFO quantity-weighted holding seconds per disposal', earlyEntrySeconds: options.earlyEntrySeconds ?? 300,
       drawdown: 'verified opening equity plus cumulative net realized PnL; excludes unrealized token prices', moneyDecimals: 18 },
+    accountingCapacity: { stateBytes: MAX_STATE_BYTES, realizationBytes: ACCOUNTING_LIMITS.realizationMaxBytes, exactIntegerBits: EXACT_INTEGER_BITS,
+      exactPositionComponents: EXACT_POSITION_LIMIT, storage: 'position-components/v1' },
     temporalMetricsComplete, realizedEvents: temporalMetricsComplete ? realizedEvents : [],
-    requiresReplay, gaps: [...new Set([...gaps,
+    requiresReplay, recovery: resourceGap
+      ? { kind: resourceGap === 'ACCOUNTING_REALIZATION_CAPACITY_REQUIRES_REPLAY'
+        ? 'SMALLER_REALIZATION_BATCH_REQUIRED' : resourceGap === 'ACCOUNTING_REALIZATION_EVIDENCE_CAPACITY_REQUIRES_REPLAY'
+          ? 'SMALLER_EVIDENCE_ENVELOPE_REQUIRED' : 'SEGMENTED_EXACT_CHECKPOINT_REQUIRED',
+        identicalReplayCanRecover: false, reason: resourceGap }
+      : requiresReplay ? { kind: 'CANONICAL_HISTORY_REPLAY_REQUIRED', identicalReplayCanRecover: null } : null,
+    gaps: [...new Set([...gaps,
       ...(ready && count && observedDrawdown !== null && !drawdownValid ? ['WALLET_EQUITY_PATH_UNRECONCILED'] : []),
       ...(ready && count && !temporalMetricsComplete ? ['WALLET_TEMPORAL_METRICS_INCOMPLETE'] : [])])],
     state: bounded ? state : null, accountingState: bounded ? state : null };
@@ -258,7 +307,8 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
         || !hash(trade.blockHash) || !hash(trade.transactionHash) || !Number.isSafeInteger(at) || at < 0
         || at > time(options.now ?? Date.now())) throw Error('INVALID_ACCOUNTING_TRADE');
       const fingerprint = createHash('sha256').update(JSON.stringify(trade)).digest('hex');
-      const prior = state.seen.find(item => item.id === trade.id);
+      const idDigest = createHash('sha256').update(trade.id).digest('hex');
+      const prior = state.seen.find(item => item.id === idDigest);
       if (prior) { if (prior.fingerprint !== fingerprint) throw Error('CONFLICTING_ACCOUNTING_EVENT'); continue; }
       const cursor = state.lastApplied;
       if (cursor && (trade.blockNumber < cursor.blockNumber || trade.blockNumber === cursor.blockNumber
@@ -281,11 +331,13 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
       if (incoming) {
         const deployment = time(trade.deploymentAt); const earlySeconds = options.earlyEntrySeconds ?? 300;
         const cost = trade.kind === 'TRADE' && gross && fee ? add(gross, fee) : null;
-        state.lots.push({ tokenAddress: token, quantityRaw: quantity.toString(), cost: cost ? packed(cost) : null,
+        if (!whole(state.nextPositionId + 1)) throw Error('ACCOUNTING_EXACT_POSITION_CAPACITY_EXCEEDED');
+        state.lots.push({ tokenAddress: token, positionId: ++state.nextPositionId, quantityRaw: quantity.toString(), cost: cost ? packed(cost) : null,
           acquiredAt: trade.kind === 'TRADE' ? at : null,
           early: trade.kind === 'TRADE' && Number.isFinite(deployment) && deployment <= at ? at - deployment <= earlySeconds * 1000 : null });
       } else {
         let remaining = quantity; let basis = frac(); let holding = frac(); let early = frac();
+        const allocatedPositions = [];
         let known = true; let holdingKnown = true; let earlyKnown = true;
         for (const lot of state.lots) {
           if (!remaining || lot.tokenAddress !== token) continue;
@@ -293,6 +345,7 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
           if (lot.cost) {
             const allocated = mul(unpack(lot.cost), frac(take, available));
             basis = add(basis, allocated); lot.cost = packed(sub(unpack(lot.cost), allocated));
+            allocatedPositions.push({ id: `p:${lot.positionId}`, amount: frac(-allocated.n, allocated.d) });
           } else known = false;
           if (lot.acquiredAt !== null && lot.acquiredAt <= at) holding = add(holding, frac(BigInt(at - lot.acquiredAt) * take, quantity * 1000n));
           else holdingKnown = false;
@@ -307,7 +360,16 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
           if (holdingKnown) state.holding = packed(add(unpack(state.holding), holding));
           if (earlyKnown) state.early = packed(add(unpack(state.early), early));
           if (known && gross && fee) {
-            const net = sub(sub(gross, fee), basis); state.pnl = packed(add(unpack(state.pnl), net));
+            const netCash = sub(gross, fee); const net = sub(netCash, basis);
+            let netComponents = exactCashAdd(exactComponents(), netCash);
+            state.pnlComponents = exactCashAdd(state.pnlComponents, netCash);
+            for (const allocated of allocatedPositions) {
+              state.pnlComponents = exactPositionAdd(state.pnlComponents, allocated.id, allocated.amount);
+              netComponents = exactPositionAdd(netComponents, allocated.id, allocated.amount);
+            }
+            // Preserve the old snapshot field as a compatibility projection;
+            // position components are the persisted allocation representation.
+            state.pnl = packed(exactTotal(state.pnlComponents));
             if (net.n > 0n) state.wins++;
             let currentDrawdown = null;
             if (state.opening && state.equityKnown) {
@@ -322,19 +384,23 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
               ...(refs(options.openingEquityProof?.evidence) ? options.openingEquityProof.evidence : []),
               ...(refs(trade.quoteUsdProof?.evidence) ? trade.quoteUsdProof.evidence : []),
               ...(refs(trade.feeAssetUsdProof?.evidence) ? trade.feeAssetUsdProof.evidence : [])])];
-            realizedEvents.push({ schemaVersion: 1, accountingVersion: VERSION, id: trade.id, disposalIndex: state.disposals,
+            const realization = { schemaVersion: 1, accountingVersion: VERSION, id: trade.id, disposalIndex: state.disposals,
               chainId, walletAddress: wallet, tokenAddress: token, transactionHash: trade.transactionHash,
               blockHash: trade.blockHash, blockNumber: trade.blockNumber, logIndex: trade.logIndex,
               timestamp: new Date(at).toISOString(), netRealizedPnlUsd: money(net),
               netRealizedPnlUsdExact: { numerator: net.n.toString(), denominator: net.d.toString() },
+              netRealizedPnlUsdComponents: netComponents,
               holdingSeconds: holdingKnown ? numeric(holding) : null, earlyEntryPct: earlyKnown ? numeric(mul(early, frac(100n))) : null,
-              drawdownPct: currentDrawdown, source: VERSION, evidence: proofRefs.slice(0, 64) });
+              drawdownPct: currentDrawdown, source: VERSION, evidence: proofRefs.slice(0, 64) };
+            if (bytes(realization) > ACCOUNTING_LIMITS.realizationMaxBytes)
+              throw Error('ACCOUNTING_REALIZATION_EVIDENCE_CAPACITY_REQUIRES_REPLAY');
+            realizedEvents.push(realization);
           } else state.equityKnown = false;
         } else if (!known) state.costsKnown = false;
       }
       state.lastApplied = { blockNumber: trade.blockNumber, blockHash: trade.blockHash, logIndex: trade.logIndex, transactionHash: trade.transactionHash };
-      state.seen.push({ id: trade.id, fingerprint }); if (state.seen.length > 32) state.seen.shift();
-      if (state.lots.length > 128 || bytes(state) > MAX_STATE_BYTES) throw Error('ACCOUNTING_CAPACITY_REQUIRES_REPLAY');
+      state.seen.push({ id: idDigest, fingerprint }); if (state.seen.length > 32) state.seen.shift();
+      if (state.lots.length > ACCOUNTING_LIMITS.openLots || bytes(state) > MAX_STATE_BYTES) throw Error('ACCOUNTING_CAPACITY_REQUIRES_REPLAY');
     }
     const result = profile(state, options, [
       ...(!completeHistory(options, state) ? ['WALLET_HISTORY_INCOMPLETE'] : []),
@@ -345,6 +411,6 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
   } catch (error) {
     // Return an explicit replay state instead of resetting FIFO or allowing an
     // accounting-capacity error to break the collector's unrelated ingestion.
-    return profile(committed, options, [error.message], true);
+    return profile(error.accountingCheckpoint ?? committed, options, [error.message], true);
   }
 }

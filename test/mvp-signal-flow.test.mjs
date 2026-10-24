@@ -62,3 +62,26 @@ test('missing wallet costs or an unproven funding cluster blocks the same comple
     assert.equal(result.alertEligible, false);
   }
 });
+
+test('bounded wallet previews retain independent group representatives when one cluster has eight members', async t => {
+  const DB = setup(t); DB.sqlite.exec(outboxSchema);
+  const { snapshot, entry, options } = inputs();
+  const originalProfile = options.walletProfiles[0];
+  const originalEntry = options.walletEntries[0];
+  const independentProfile = options.walletProfiles[1];
+  const independentEntry = options.walletEntries[1];
+  options.walletProfiles = [originalProfile, ...Array.from({ length: 7 }, (_, index) =>
+    withSyntheticRealizations({ ...originalProfile, walletAddress: TOKEN(20 + index), realizationHistory: undefined }, { now: NOW })), independentProfile];
+  options.walletEntries = options.walletProfiles.slice(0, 8).map(profile => ({ ...originalEntry, walletAddress: profile.walletAddress })).concat(independentEntry);
+  const result = evaluateNewToken(snapshot, entry, options);
+  assert.equal(result.status, 'PASS');
+  assert.equal(result.wallets.independentGroups, 2);
+  assert.equal(result.wallets.wallets.length, 8);
+  assert.ok(result.wallets.wallets.some(wallet => wallet.address === independentProfile.walletAddress));
+  const alert = { ...result, wallets: result.wallets.wallets,
+    decisionId: decisionKey(4663, result.address, result.scoreVersion, result.profile) };
+  const prepared = prepareDryRunAlerts(DB, [alert], { runId: 'many-cluster-members', observedAt: NOW });
+  assert.equal(prepared.accepted.length, 1);
+  await DB.batch(prepared.commands);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_alert_outbox').get().n, 1);
+});

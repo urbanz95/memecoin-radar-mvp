@@ -5,6 +5,7 @@ import { prepareWalletLedger, prepareWalletProjection, readWalletProfiles, readW
 import { setup, TOKEN, time } from './helpers/mvp-sqlite.mjs';
 
 const schema = await readFile(new URL('../cloudflare/migrations/0004_mvp_wallets.sql', import.meta.url), 'utf8');
+const ttlSchema = await readFile(new URL('../cloudflare/migrations/0012_mvp_wallet_eligibility_ttl.sql', import.meta.url), 'utf8');
 const hash = n => '0x' + BigInt(n + 1).toString(16).padStart(64, '0');
 const head = { number: 100, hash: hash(100), timestamp: time / 1000 };
 const event = (changes = {}) => ({ chainId: 4663, kind: 'SWAP', tokenAddress: TOKEN(1), address: TOKEN(5),
@@ -147,13 +148,44 @@ test('eligible counter requires proof completeness and resets on reorg without l
     winRatePct: 60, avgHoldingSeconds: 300, earlyEntryPct: 80, maxDrawdownPct: 10,
     lastRealizedAt: new Date(time).toISOString(), riskFlags: { insider: false, bundler: false, washTrading: false } });
   await DB.batch(prepareWalletProjection(DB, { runId: 'qualified', observedAt: time, profiles: [complete] }).commands);
-  assert.equal((await getWalletLedgerStats(DB)).eligible, 1);
+  assert.equal((await getWalletLedgerStats(DB, { now: time })).eligible, 1);
   await DB.batch(prepareWalletLedger(DB, { runId: 'reorg', observedAt: time + 1, reorgDetected: true }).commands);
   assert.equal((await getWalletLedgerStats(DB)).eligible, 0);
   await DB.batch(prepareWalletProjection(DB, { runId: 'unknown-again', observedAt: time + 2,
     profiles: [profile({ checkedAt: new Date(time + 2).toISOString(), eligible: true })] }).commands);
   const stats = await getWalletLedgerStats(DB);
   assert.equal(stats.tracked, 1); assert.equal(stats.eligible, 0);
+});
+
+test('current eligible count expires at the configured profile TTL without modifying immutable observations', async t => {
+  const DB = database(t);
+  const complete = profile({ eligible: true, historyComplete: true, costsComplete: true, feesComplete: true,
+    attributionComplete: true, clusteringComplete: true, realizedTradeCount: 5, netRealizedPnlUsd: '12.5',
+    winRatePct: 60, avgHoldingSeconds: 300, earlyEntryPct: 80, maxDrawdownPct: 10,
+    lastRealizedAt: new Date(time).toISOString(), riskFlags: { insider: false, bundler: false, washTrading: false } });
+  await DB.batch(prepareWalletProjection(DB, { runId: 'qualified-with-ttl', observedAt: time, profiles: [complete] }).commands);
+  assert.equal((await getWalletLedgerStats(DB, { now: time + 600000 })).eligible, 1);
+  const expired = await getWalletLedgerStats(DB, { now: time + 601000 });
+  assert.equal(expired.eligible, 0);
+  assert.equal(expired.historicalEligible, 1);
+  assert.equal(expired.eligibilityAsOf, new Date(time + 601000).toISOString());
+  assert.equal(expired.maxProfileAgeSeconds, 600);
+  assert.equal((await getWalletLedgerStats(DB, { now: time - 1 })).eligible, 0, 'future profiles cannot be counted');
+  assert.equal((await getWalletLedgerStats(DB, { now: time + 61000, config: { maxProfileAgeSeconds: 60 } })).eligible, 0);
+  assert.equal(count(DB, 'mvp_wallet_profile_events'), 1);
+  assert.equal(JSON.parse(DB.sqlite.prepare('SELECT profile_json FROM mvp_wallet_profile_events').get().profile_json).eligible, true);
+  await assert.rejects(getWalletLedgerStats(DB, { now: NaN }), /MVP_/);
+  await assert.rejects(getWalletLedgerStats(DB, { now: time, config: { maxProfileAgeSeconds: 601 } }), /MVP_WALLET_/);
+});
+
+test('profile TTL count uses an additive covering index instead of scanning historical profiles', t => {
+  const DB = database(t);
+  DB.sqlite.exec(ttlSchema); DB.sqlite.exec(ttlSchema);
+  const plan = DB.sqlite.prepare(`EXPLAIN QUERY PLAN SELECT count(*) FROM mvp_wallet_profiles
+    WHERE chain_id=4663 AND generation=? AND eligible=1 AND checked_at>=? AND checked_at<=?`).all(0, time - 600000, time);
+  assert.ok(plan.some(row => /SEARCH.*COVERING INDEX mvp_wallet_profile_current_eligible/.test(row.detail)));
+  assert.equal(plan.some(row => /SCAN mvp_wallet_profiles/.test(row.detail)), false);
+  assert.equal(count(DB, 'mvp_wallet_profile_events'), 0);
 });
 
 test('a receipt surviving a reorg is revalidated into the new generation without overwriting the old proof', async t => {

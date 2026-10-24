@@ -18,7 +18,7 @@ async function seed(DB, n, { score = 80, status = 'REJECTED', scoreVersion = VER
   if (shape === 'new') features.decision = { score, ...(marker ? { synthetic } : {}), ...(wallets === undefined ? {} : { wallets }) };
   else if (shape === 'legacy-object') features.legacy = { score };
   else features.score = score;
-  if (marker) features.snapshot = { synthetic };
+  features.snapshot = { ...features.snapshot, chainState: { blockNumber: 10, blockHash: '0x' + 'ab'.repeat(32) }, ...(marker ? { synthetic } : {}) };
   await DB.batch(prepareDecisionRecords(DB, { runId: `decision-${n}-${scoreVersion}-${profile}`, observedAt, decisions: [{
     address: TOKEN(n), status, scoreVersion, profile, policyHash, features, isLaunch: true,
   }] }).commands);
@@ -81,7 +81,7 @@ test('default schedule is Monday 00:15 UTC for the cohort two weeks earlier and 
   const friday = await prepareWeeklyReport(DB, { now: REPORT_AT + 4 * 86400000, scoreVersion: VERSION });
   assert.equal(friday.due, false); assert.deepEqual(friday.commands, []);
   assert.deepEqual(friday.report, scheduled.report);
-  assert.equal(calls.length, 2); assert.ok(calls.every(call => call.method === 'first' && /WHERE report_key=\?/.test(call.sql)));
+  assert.equal(calls.length, 3); assert.ok(calls.every(call => call.method === 'first' && (/WHERE report_key=\?/.test(call.sql) || /mvp_decision_epoch WHERE id=1/.test(call.sql))));
   const nextWeek = await prepareWeeklyReport(DB, { now: REPORT_AT + 7 * 86400000, scoreVersion: VERSION });
   assert.equal(nextWeek.due, true); assert.equal(nextWeek.report.weekStart, '2026-10-26T00:00:00.000Z');
 });
@@ -225,7 +225,7 @@ test('weekly aggregate uses a bounded decision-time index and subsequent minute 
   assert.equal(plan.some(row => /SCAN d\b/.test(row.detail)), false);
   await DB.batch(first.commands); calls.length = 0;
   for (let minute = 1; minute <= 3; minute++) await prepareWeeklyReport(DB, { now: REPORT_AT + minute * 60000, scoreVersion: VERSION });
-  assert.equal(calls.length, 6); assert.ok(calls.every(call => call.method === 'first' && /WHERE report_key=\?/.test(call.sql)));
+  assert.equal(calls.length, 9); assert.ok(calls.every(call => call.method === 'first' && (/WHERE report_key=\?/.test(call.sql) || /mvp_decision_epoch WHERE id=1/.test(call.sql))));
 });
 
 test('wallet bands use only READY numeric decision-time aggregate scores and preserve rejected and dead denominators', async t => {
@@ -292,7 +292,7 @@ test('old immutable weekly reports are enriched at their original cutoff without
   const calls = instrument(DB);
   const cached = await prepareWeeklyReport(DB, { now: REPORT_AT + 120000, scoreVersion: VERSION });
   assert.deepEqual(cached.commands, []); assert.deepEqual(cached.report, enriched.report);
-  assert.equal(calls.length, 2); assert.ok(calls.every(call => call.method === 'first'));
+  assert.equal(calls.length, 3); assert.ok(calls.every(call => call.method === 'first'));
 });
 
 test('an old weekly cohort changed by late backfill is flagged instead of using later cohort membership', async t => {
@@ -309,7 +309,7 @@ test('an old weekly cohort changed by late backfill is flagged instead of using 
   const calls = instrument(DB);
   const cached = await prepareWeeklyReport(DB, { now: REPORT_AT + 120000, scoreVersion: VERSION });
   assert.equal(cached.report.walletScoreReport.status, 'COHORT_CHANGED');
-  assert.equal(calls.length, 2, 'a mismatched historical cohort is cached, never scanned every minute');
+  assert.equal(calls.length, 3, 'a mismatched historical cohort is cached with an epoch PK check, never scanned every minute');
 });
 
 test('a concurrent older base report cannot receive wallet groups from the later preparation cutoff', async t => {
@@ -355,4 +355,18 @@ test('weekStart overrides require UTC Mondays, wait for maturity and do not repl
   await DB.batch((await prepareWeeklyReport(DB, { now: REPORT_AT })).commands);
   await DB.batch((await prepareWeeklyReport(DB, { now: REPORT_AT + 1000, weekStart: '2026-10-12T00:00:00Z' })).commands);
   assert.equal((await getLatestWeeklyReport(DB)).weekStart, new Date(WEEK_START).toISOString());
+});
+
+test('legacy report compatibility also quarantines cached aggregates after a reorg', async t => {
+  const DB = db(t); await seed(DB, 1);
+  const first = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  await DB.batch(first.commands);
+  const original = DB.sqlite.prepare('SELECT report_json FROM mvp_weekly_reports').get().report_json;
+  DB.sqlite.prepare('INSERT INTO mvp_decision_reorgs(run_id,observed_at) VALUES(?,?)').run('legacy-weekly-reorg', REPORT_AT + 1);
+  const report = await getLatestWeeklyReport(DB);
+  assert.equal(report.quarantined, true); assert.deepEqual(report.cohorts, []);
+  assert.equal(report.bands, null); assert.equal(report.totals, null);
+  const prepared = await prepareWeeklyReport(DB, { now: REPORT_AT + 60000, scoreVersion: VERSION });
+  assert.equal(prepared.report.quarantined, true); assert.deepEqual(prepared.commands, []);
+  assert.equal(DB.sqlite.prepare('SELECT report_json FROM mvp_weekly_reports').get().report_json, original);
 });

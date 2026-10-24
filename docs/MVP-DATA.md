@@ -8,7 +8,7 @@ A migration [`0002_mvp_records.sql`](../cloudflare/migrations/0002_mvp_records.s
 |---|---|---|
 | `mvp_tokens` | Primeiro avistamento, fonte, pool e run | Um por chain ID + endereço normalizado; imutável |
 | `mvp_token_seen_events` | Avistamentos posteriores | Append-only, deduplicado por token/run/pool |
-| `mvp_decisions` | Primeira decisão, features, baseline, fonte, versão e perfil | Um registo canónico por token/score version/perfil; imutável |
+| `mvp_decisions` | Primeira decisão, features, baseline, fonte, versão e perfil | Um baseline imutável por token/score version/perfil; elegibilidade canónica verificada no ledger 0009 |
 | `mvp_decision_events` | Decisões posteriores com as suas features | Append-only; não substituem a primeira decisão |
 | `mvp_outcome_jobs` | Horizonte, vencimento, estado e próximo retry | Identidade/vencimento imutáveis; progresso atualizável |
 | `mvp_outcome_attempts` | Tentativa, data, motivo e fonte | Append-only, incluindo `MISSING` e `INVALID` |
@@ -57,6 +57,8 @@ O benchmark local observou cerca de 46–54% de poupança nos dados ensaiados; a
 
 ## Relatório semanal
 
+**Atualização 3B-1:** a geração saiu da transação de ingestão. O job próprio, agendado a cada cinco minutos, verifica o vencimento semanal das 00:15 UTC e produz uma coorte por invocação. As páginas imutáveis de até 64 KiB separam versão, perfil e tier, sem relatório global misturado. Tiers antigos sem prova são `UNKNOWN`. O painel consulta `/weekly?reportKey=...&page=N`; `/latest` inclui uma página. As tabelas antigas permanecem como arquivo compatível. Ver [estado 3B](PHASE3B-STATUS.md).
+
 A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescenta índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. O cron existente gera o relatório na segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se o cron regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
 
 A fonte é a primeira decisão/score congelados, com outcomes armazenados até ao cutoff. As bandas são 0–49, 50–64, 65–74, 75–84 e 85–100, mais `UNKNOWN`. Cada versão/perfil mantém a sua coorte. Sintéticos e proveniência desconhecida ficam excluídos e contabilizados separadamente; decisões reais rejeitadas, mortas e incompletas permanecem no denominador. Somar coortes pode repetir um token, pelo que membros de coorte não são apresentados como tokens únicos globais.
@@ -80,3 +82,11 @@ Falha HTTP, token ausente, falta de preço/liquidez ou ponto fora da janela gera
 Os registos MVP não são apagados pela retenção de três horas dos relatórios antigos. O Free continua a ter armazenamento e escritas limitados; a política de arquivo/retenção de longo prazo ainda falta. Triggers append-only impedem uma limpeza automática informal. Acompanhar tamanho, filas pendentes e quotas antes de acumular histórico prolongado.
 
 Ver [MVP-AUDIT.md](MVP-AUDIT.md) para o ponto Time Travel e a inexistência de export SQL offline; [MVP-PROGRESS.md](MVP-PROGRESS.md) para as fases ainda pendentes.
+
+## Canonicalidade e componentes exatos — 3B-1
+
+A migration aditiva `0009` liga cada baseline ao bloco da primeira decisão, conserva reorgs e invalidações e coloca as gerações anteriores em quarentena até revalidar os hashes. Filas, commits de outcomes, relatórios e gate de 300 lançamentos excluem baselines órfãos ou sem referência comprovável; os registos originais não são apagados nem substituídos por preços posteriores. Um relatório já congelado fica em quarentena se a geração/validação mudar. Headers indisponíveis deixam a prova pendente e não interrompem a ingestão.
+
+`accountingState.pnlComponents` e os resumos temporais passam a persistir componentes exatos por posição, conservando os campos cumulativos anteriores. O ficheiro validado `config/wallet-accounting.json` separa 16 KiB de estado, 128 lotes/componentes e 4.096 bits de orçamento aritmético. O limite de precisão antigo de 180 dígitos foi removido; não há arredondamento monetário para aprovar wallets. Excesso de recursos preserva checkpoints e mantém métricas incompletas, com recuperação explícita; o serviço de checkpoints segmentados ainda falta.
+
+O TTL do contador atual de carteiras usa a configuração (600 s) e a geração corrente; `historicalEligible` identifica a projeção antiga. Nada desta alteração acrescenta as provas em falta de histórico, preços, taxas ou ETH nativo. A janela de 30 dias pertence ao bloco 3B-2 e ainda não foi implementada.

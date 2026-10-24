@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFile } from 'node:fs/promises';
 export const legacySchema = await readFile(new URL('../../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
 export const mvpSchema = await readFile(new URL('../../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
+export const canonicalitySchema = await readFile(new URL('../../cloudflare/migrations/0009_mvp_decision_canonicality.sql', import.meta.url), 'utf8');
 export const TOKEN = n => '0x' + n.toString(16).padStart(40, '0');
 export const time = Date.parse('2026-10-23T12:00:00.000Z');
 export const version = 'mvp-score-v1';
@@ -12,7 +13,7 @@ export class MvpSqliteD1 {
     this.sqlite = new DatabaseSync(':memory:');
     this.sqlite.exec('PRAGMA foreign_keys=ON');
     this.sqlite.exec(legacySchema);
-    if (migrate) this.sqlite.exec(mvpSchema);
+    if (migrate) { this.sqlite.exec(mvpSchema); this.sqlite.exec(canonicalitySchema); }
   }
   prepare(sql) {
     const sqlite = this.sqlite; let values = [];
@@ -32,6 +33,6 @@ export class MvpSqliteD1 {
 export function setup(t, options) { const DB = new MvpSqliteD1(options); t.after(() => DB.sqlite.close()); return DB; }
 export function decision(address = TOKEN(1), changes = {}) {
   return { address, status: 'REJECTED', scoreVersion: version, profile, policyHash, isLaunch: true,
-    features: { observedAt: new Date(time).toISOString(), externalMarket: { priceUsd: 2, liquidityUsd: 100,
+    features: { observedAt: new Date(time).toISOString(), chainState: { blockNumber: 100, blockHash: '0x' + 'a'.repeat(64) }, externalMarket: { priceUsd: 2, liquidityUsd: 100,
       fetchedAt: new Date(time).toISOString(), source: 'dexscreener', trust: 'provider-reported' } }, ...changes };
 }

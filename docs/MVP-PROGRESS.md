@@ -1,5 +1,11 @@
 # Progresso do MVP
 
+## Atualização 25/10/2026 — Fase 3B em curso
+
+O estado operacional correto é **MVP parcial**, conforme a [auditoria](AUDIT-2026-10-24.md). A consolidação atual trata A01/A02/A05–A09; o [relatório 3B](PHASE3B-STATUS.md) distingue código, publicação e provas reais. A01 foi diagnosticado por logs e analytics: quota diária de escritas D1 esgotada, com o cron ainda ativo. O monitor externo já foi publicado isoladamente em `main` pelo [PR #1](https://github.com/urbanz95/memecoin-radar-mvp/pull/1) e abriu a [issue #2](https://github.com/urbanz95/memecoin-radar-mvp/issues/2).
+
+Provas reais (3B-2) e novos pares/cotações (3B-3) só começam depois de testes aprovados e seis horas de estabilidade observada. A janela de 30 dias, ETH nativo reconciliado, censo/registry e shadow de novos tiers ainda faltam. O [pedido completo](PHASE3B-SPEC.md) fica registado para continuidade. Fases 4–6 apenas com `AVANÇA FASE N`.
+
 Âmbito autorizado: concluir as fases **1, 2 e 3** e parar para apresentar o estado. O projeto mantém `dryRun: true`, sem carteira, ordens ou operações financeiras. Fases posteriores exigem nova confirmação.
 
 | Fase | Entrega | Estado |

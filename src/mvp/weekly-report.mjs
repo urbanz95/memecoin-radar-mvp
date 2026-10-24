@@ -1,4 +1,4 @@
-import { recordLabel, recordTime } from './records.mjs';
+import { recordLabel, recordTime, canonicalDecisionSql, readDecisionCanonicality } from './records.mjs';
 import { OUTCOME_HORIZONS } from './outcomes.mjs';
 
 const DAY = 86400000;
@@ -6,6 +6,13 @@ const WEEK = 7 * DAY;
 const START_DELAY = 15 * 60000;
 const MAX_GROUP_ROWS = 1000;
 const MAX_REPORT_BYTES = 262144;
+// Missing historical quote metadata is unknown, never assumed to be T0.
+export function weeklyQuoteTierSql(alias = 'd') {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(alias)) throw new Error('MVP_INVALID_SQL_ALIAS');
+  return `CASE coalesce(json_extract(${alias}.features_json,'$.values.pair.quote.tier'),
+    json_extract(${alias}.features_json,'$.values.snapshot.pair.quote.tier'))
+    WHEN 'T0' THEN 'T0' WHEN 'T1S' THEN 'T1S' WHEN 'T1' THEN 'T1' WHEN 'T2' THEN 'T2' ELSE 'UNKNOWN' END`;
+}
 export const WEEKLY_SCORE_BANDS = Object.freeze([
   Object.freeze({ id: '0-49', min: 0, maxExclusive: 50 }),
   Object.freeze({ id: '50-64', min: 50, maxExclusive: 65 }),
@@ -71,7 +78,7 @@ function mergeHorizon(target, incoming) {
     returnCoveragePct: percentage(target.returnSamples, target.denominator), numericOverflow: target.numericOverflow || incoming.numericOverflow });
 }
 
-function aggregateSql(version, dimension = 'token') {
+function aggregateSql(version, dimension = 'token', scope = {}) {
   const sourceIndex = version === undefined ? 'mvp_decisions_week_time' : 'mvp_decisions_week_version';
   const scoreExpression = dimension === 'wallet'
     ? `CASE WHEN json_extract(d.features_json,'$.values.decision.wallets.status')='READY'
@@ -83,7 +90,7 @@ function aggregateSql(version, dimension = 'token') {
         THEN CASE WHEN json_type(d.features_json,'$.values.legacy.score') IN ('integer','real') THEN json_extract(d.features_json,'$.values.legacy.score') END
         ELSE CASE WHEN json_type(d.features_json,'$.values.score') IN ('integer','real') THEN json_extract(d.features_json,'$.values.score') END END`;
   return `WITH raw AS (
-    SELECT d.decision_key,d.chain_id,d.address,d.score_version,d.profile,d.first_decision_at,d.first_status,d.baseline_price_usd,
+    SELECT d.decision_key,d.chain_id,d.address,d.score_version,d.profile,${weeklyQuoteTierSql()} AS quote_tier,d.first_decision_at,d.first_status,d.baseline_price_usd,
       ${scoreExpression} AS raw_score,
       CASE WHEN json_type(d.features_json,'$.values.decision.synthetic')='true'
           OR json_type(d.features_json,'$.values.snapshot.synthetic')='true' OR json_type(d.features_json,'$.values.synthetic')='true' THEN 1
@@ -95,6 +102,10 @@ function aggregateSql(version, dimension = 'token') {
         ELSE NULL END AS synthetic
     FROM mvp_decisions d INDEXED BY ${sourceIndex}
     WHERE d.first_decision_at>=? AND d.first_decision_at<? ${version === undefined ? '' : 'AND d.score_version=?'}
+      ${scope.profile === undefined ? '' : 'AND d.profile=?'}
+      ${scope.quoteTier === undefined ? '' : `AND ${weeklyQuoteTierSql()}=?`}
+      ${scope.rowidLimit === undefined ? '' : 'AND d.rowid<=?'}
+      ${scope.canonicalPredicate === undefined ? '' : `AND (${scope.canonicalPredicate})`}
   ), base AS (
     SELECT raw.*,CASE WHEN raw_score>=0 AND raw_score<50 THEN '0-49'
       WHEN raw_score>=50 AND raw_score<65 THEN '50-64' WHEN raw_score>=65 AND raw_score<75 THEN '65-74'
@@ -112,7 +123,7 @@ function aggregateSql(version, dimension = 'token') {
       AND o.source_timestamp<=o.collected_at
     WHERE b.synthetic=0
   )
-  SELECT 'TOTALS' AS kind,NULL AS score_version,NULL AS profile,NULL AS band,NULL AS horizon,
+  SELECT 'TOTALS' AS kind,NULL AS score_version,NULL AS profile,NULL AS quote_tier,NULL AS band,NULL AS horizon,
     count(*) AS decisions,count(DISTINCT printf('%d:%s',chain_id,address)) AS unique_tokens,
     count(DISTINCT CASE WHEN synthetic=0 THEN printf('%d:%s',chain_id,address) END) AS real_unique_tokens,
     coalesce(sum(synthetic=0),0) AS real_decisions,coalesce(sum(synthetic=1),0) AS synthetic_excluded,
@@ -124,7 +135,7 @@ function aggregateSql(version, dimension = 'token') {
     NULL AS due,NULL AS observed,NULL AS return_samples,NULL AS avg_return,NULL AS avg_price,NULL AS avg_liquidity,NULL AS avg_source_lag,NULL AS avg_capture_lag
   FROM base
   UNION ALL
-  SELECT 'BAND' AS kind,score_version,profile,band,horizon,count(*) AS decisions,
+  SELECT 'BAND' AS kind,score_version,profile,quote_tier,band,horizon,count(*) AS decisions,
     count(DISTINCT printf('%d:%s',chain_id,address)) AS unique_tokens,NULL AS real_unique_tokens,
     NULL AS real_decisions,NULL AS synthetic_excluded,NULL AS provenance_unknown,NULL AS unknown_scores,
     coalesce(sum(first_status IN ('REJECTED','BLOCKED')),0) AS rejected,coalesce(sum(first_status='DEAD'),0) AS dead,
@@ -133,13 +144,16 @@ function aggregateSql(version, dimension = 'token') {
     count(price_usd) AS observed,count(verified_return) AS return_samples,
     avg(verified_return) AS avg_return,avg(price_usd) AS avg_price,avg(liquidity_usd) AS avg_liquidity,
     avg(source_lag_ms) AS avg_source_lag,avg(capture_lag_ms) AS avg_capture_lag
-  FROM real GROUP BY score_version,profile,band,horizon
+  FROM real GROUP BY score_version,profile,quote_tier,band,horizon
   LIMIT ${MAX_GROUP_ROWS + 2}`;
 }
 
-async function aggregate(DB, window, scoreVersion, at, dimension = 'token') {
-  const values = [window.start, window.end, ...(scoreVersion === undefined ? [] : [scoreVersion]), at, at, at];
-  const result = await DB.prepare(aggregateSql(scoreVersion, dimension)).bind(...values).all();
+async function aggregate(DB, window, scoreVersion, at, dimension = 'token', scope = {}) {
+  scope = { ...scope, canonicalPredicate: scope.canonicalPredicate ?? canonicalDecisionSql('d', { checkedBefore: at }) };
+  const values = [window.start, window.end, ...(scoreVersion === undefined ? [] : [scoreVersion]),
+    ...(scope.profile === undefined ? [] : [scope.profile]), ...(scope.quoteTier === undefined ? [] : [scope.quoteTier]),
+    ...(scope.rowidLimit === undefined ? [] : [scope.rowidLimit]), at, at, at];
+  const result = await DB.prepare(aggregateSql(scoreVersion, dimension, scope)).bind(...values).all();
   const rows = Array.isArray(result) ? result : result?.results;
   if (!Array.isArray(rows) || rows[0]?.kind !== 'TOTALS') throw new Error('MVP_WEEKLY_INVALID_AGGREGATE');
   if (rows.length > MAX_GROUP_ROWS + 1) throw new Error('MVP_WEEKLY_GROUP_LIMIT_EXCEEDED');
@@ -150,8 +164,8 @@ async function aggregate(DB, window, scoreVersion, at, dimension = 'token') {
     if (!Object.hasOwn(OUTCOME_HORIZONS, row.horizon)) throw new Error('MVP_WEEKLY_INVALID_HORIZON');
     const definition = row.band === 'UNKNOWN' ? unknownScore : bands.find(band => band.id === row.band);
     if (!definition) throw new Error('MVP_WEEKLY_INVALID_BAND');
-    const cohortKey = JSON.stringify([row.score_version, row.profile]);
-    if (!cohorts.has(cohortKey)) cohorts.set(cohortKey, { scoreVersion: row.score_version, profile: row.profile,
+    const cohortKey = JSON.stringify([row.score_version, row.profile, row.quote_tier]);
+    if (!cohorts.has(cohortKey)) cohorts.set(cohortKey, { scoreVersion: row.score_version, profile: row.profile, quoteTier: row.quote_tier,
       decisions: 0, rejected: 0, dead: 0, passed: 0, otherStatuses: 0,
       bands: WEEKLY_SCORE_BANDS.map(emptyBand), unknownScore: emptyBand({ id: 'UNKNOWN', min: null, maxExclusive: null }) });
     const cohort = cohorts.get(cohortKey);
@@ -188,13 +202,13 @@ async function storedWalletExtension(DB, key) {
 
 function withWalletExtension(report, extension) {
   if (!extension) return report;
-  const cohorts = new Map(extension.cohorts.map(cohort => [JSON.stringify([cohort.scoreVersion, cohort.profile]), cohort]));
+  const cohorts = new Map(extension.cohorts.map(cohort => [JSON.stringify([cohort.scoreVersion, cohort.profile, cohort.quoteTier ?? 'UNKNOWN']), cohort]));
   const combined = { ...report,
     totals: { ...report.totals, unknownWalletScoreDecisions: extension.unknownWalletScoreDecisions },
     walletScoreReport: extension.metadata, walletScoreBands: extension.walletScoreBands, walletUnknownScore: extension.walletUnknownScore,
     cohorts: report.cohorts.map(cohort => ({ ...cohort,
-      walletScoreBands: cohorts.get(JSON.stringify([cohort.scoreVersion, cohort.profile]))?.walletScoreBands ?? null,
-      walletUnknownScore: cohorts.get(JSON.stringify([cohort.scoreVersion, cohort.profile]))?.walletUnknownScore ?? null })) };
+      walletScoreBands: cohorts.get(JSON.stringify([cohort.scoreVersion, cohort.profile, cohort.quoteTier ?? 'UNKNOWN']))?.walletScoreBands ?? null,
+      walletUnknownScore: cohorts.get(JSON.stringify([cohort.scoreVersion, cohort.profile, cohort.quoteTier ?? 'UNKNOWN']))?.walletUnknownScore ?? null })) };
   assertReportSize(combined);
   return combined;
 }
@@ -208,7 +222,7 @@ async function prepareWalletExtension(DB, report, at) {
     ['real_decisions', 'realDecisions'], ['synthetic_excluded', 'syntheticExcluded'], ['provenance_unknown', 'provenanceUnknownExcluded'],
     ['rejected', 'rejected'], ['dead', 'dead'], ['passed', 'passed']].every(([source, target]) => count(result.totals[source]) === expected[target])
     && result.cohorts.length === report.cohorts.length && result.cohorts.every(cohort => report.cohorts.some(prior =>
-      prior.scoreVersion === cohort.scoreVersion && prior.profile === cohort.profile && prior.decisions === cohort.decisions));
+      prior.scoreVersion === cohort.scoreVersion && prior.profile === cohort.profile && (prior.quoteTier ?? 'UNKNOWN') === cohort.quoteTier && prior.decisions === cohort.decisions));
   const extension = { metadata: { schemaVersion: 1, status: matches ? 'READY' : 'COHORT_CHANGED', generatedAt: iso(at), dataCutoff: report.dataCutoff,
     source: 'Immutable first-decision values.decision.wallets.score, only when wallets.status is READY and score is numeric 0–100.',
     returns: 'Token price returns grouped by decision-time aggregate wallet quality; not realized wallet PnL.',
@@ -216,7 +230,7 @@ async function prepareWalletExtension(DB, report, at) {
     ...(matches ? {} : { reason: 'The immutable historical report cohort differs from the current ledger; wallet groups cannot be reconstructed safely.' }) },
     unknownWalletScoreDecisions: matches ? count(result.totals.unknown_scores) : null,
     walletScoreBands: matches ? result.bands : null, walletUnknownScore: matches ? result.unknownScore : null,
-    cohorts: matches ? result.cohorts.map(cohort => ({ scoreVersion: cohort.scoreVersion, profile: cohort.profile,
+    cohorts: matches ? result.cohorts.map(cohort => ({ scoreVersion: cohort.scoreVersion, profile: cohort.profile, quoteTier: cohort.quoteTier,
       walletScoreBands: cohort.bands, walletUnknownScore: cohort.unknownScore })) : [] };
   const serialized = assertReportSize(extension);
   // A racing insert of an older base report must not attach an extension built
@@ -240,15 +254,18 @@ export async function prepareWeeklyReport(DB, { now = Date.now, scoreVersion, we
   const key = JSON.stringify([window.start, scoreVersion ?? null]);
   if (at < window.scheduledFor) return { commands: [], report: null, due: false };
   const prior = await DB.prepare('SELECT report_json FROM mvp_weekly_reports WHERE report_key=?').bind(key).first();
+  const canonicality = await readDecisionCanonicality(DB);
   if (prior) {
-    const report = JSON.parse(prior.report_json); const stored = await storedWalletExtension(DB, key);
+    const report = JSON.parse(prior.report_json);
+    if (!matchesCanonicality(report, canonicality)) return { commands: [], report: quarantineLegacy(report), due: false };
+    const stored = await storedWalletExtension(DB, key);
     if (stored) return { commands: [], report: withWalletExtension(report, stored), due: false };
     const prepared = await prepareWalletExtension(DB, report, at);
     return { commands: [prepared.command], report: withWalletExtension(report, prepared.extension), due: false };
   }
   const { totals, bands, unknownScore, cohorts } = await aggregate(DB, window, scoreVersion, at);
   const report = { schemaVersion: 1, kind: 'mvp-weekly-observation-report', reportKey: key,
-    scoreVersion: scoreVersion ?? null, weekStart: iso(window.start), weekEndExclusive: iso(window.end),
+    scoreVersion: scoreVersion ?? null, canonicality, weekStart: iso(window.start), weekEndExclusive: iso(window.end),
     scheduledFor: iso(window.scheduledFor), generatedAt: iso(at), dataCutoff: iso(at),
     source: { decisions: 'mvp_decisions.first_decision_at + immutable features_json', outcomes: 'mvp_outcomes', networkCalls: 0 },
     totals: { sourceDecisions: count(totals.decisions), uniqueSourceTokens: count(totals.unique_tokens),
@@ -273,12 +290,31 @@ export async function prepareWeeklyReport(DB, { now = Date.now, scoreVersion, we
   return { commands: [command, prepared.command], report: withWalletExtension(report, prepared.extension), due: true };
 }
 
-export async function getLatestWeeklyReport(DB, { scoreVersion } = {}) {
+export async function getLatestWeeklyReport(DB, { scoreVersion, paged = false, ...options } = {}) {
+  if (paged) { const { getWeeklyReportPage } = await import('./weekly-job.mjs'); return getWeeklyReportPage(DB, { ...options, scoreVersion }); }
   if (scoreVersion !== undefined) recordLabel(scoreVersion, 'WEEKLY_SCORE_VERSION', 100);
   const query = scoreVersion === undefined ? DB.prepare('SELECT report_json FROM mvp_weekly_reports ORDER BY week_start DESC,generated_at DESC LIMIT 1')
     : DB.prepare('SELECT report_json FROM mvp_weekly_reports WHERE score_version=? ORDER BY week_start DESC,generated_at DESC LIMIT 1').bind(scoreVersion);
   const row = await query.first();
   if (!row) return null;
   const report = JSON.parse(row.report_json);
+  if (!matchesCanonicality(report, await readDecisionCanonicality(DB))) return quarantineLegacy(report);
   return withWalletExtension(report, await storedWalletExtension(DB, report.reportKey));
+}
+
+export async function aggregateWeeklyCohort(DB, { window, scoreVersion, cutoff, dimension = 'token', profile, quoteTier, rowidLimit, canonicalPredicate }) {
+  return aggregate(DB, window, scoreVersion, cutoff, dimension, { profile, quoteTier, rowidLimit, canonicalPredicate });
+}
+
+export { runWeeklyReportJob, getWeeklyReportPage } from './weekly-job.mjs';
+
+export function weeklyReportWindow(at, weekStart) { return period(asOf(at), weekStart); }
+
+function matchesCanonicality(report, canonicality) {
+  return canonicality.revalidationComplete !== false && report.canonicality?.generation === canonicality.generation
+    && report.canonicality?.invalidatedDecisions === canonicality.invalidatedDecisions;
+}
+function quarantineLegacy(report) {
+  return { ...report, quarantined: true, quarantineReason: 'CANONICALITY_CHANGED_OR_UNPROVEN',
+    cohorts: [], totals: null, bands: null, unknownScore: null, walletScoreBands: null, walletUnknownScore: null };
 }

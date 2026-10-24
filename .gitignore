@@ -7,4 +7,5 @@ coverage/
 *.log
 .vercel/
 .wrangler/
+.heartbeat/
 .DS_Store

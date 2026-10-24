@@ -12,14 +12,14 @@ import { evaluateMarketSignals, mergeIncrementalEvaluationState } from './market
 import marketSignalPolicy from '../../config/market-signals.json' with { type: 'json' };
 import { publicReport } from './public-report.mjs';
 import { providerFetch } from '../mvp/provider-fetch.mjs';
-import { prepareDecisionRecords } from '../mvp/records.mjs';
+import { prepareDecisionRecords, prepareDecisionCanonicality, queryDecisionCanonicalBlocks, readDecisionCanonicality } from '../mvp/records.mjs';
 import { queryDueOutcomes, prepareOutcomeUpdates, prepareMarketObservations, queryArchivedOutcomePoints } from '../mvp/outcomes.mjs';
 import { evaluateNewToken, MVP_SCORE_VERSION, MVP_POLICY_HASH } from '../mvp/pipeline.mjs';
 import { prepareDryRunAlerts } from '../mvp/alerts.mjs';
 import { decisionKey } from '../mvp/records.mjs';
 import { prepareWalletLedger, enrichWalletTransactions, readWalletProfiles } from '../mvp/wallet-ledger.mjs';
 import { projectObservedWallets } from '../mvp/wallet-runtime.mjs';
-import { prepareWeeklyReport } from '../mvp/weekly-report.mjs';
+import { operationError } from './operations.mjs';
 import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
 import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
 import PROFILES_CONFIG from '../mvp/config.mjs';
@@ -96,6 +96,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
   const held = await env.DB.prepare("UPDATE control SET state_json=CASE WHEN status='COMPLETED' THEN state_json ELSE json_set(state_json,'$.evaluationState',json('{}')) END,lease_owner=?,lease_until=?,status='RUNNING' WHERE id=1 AND lease_until<=? RETURNING state_json,last_success")
     .bind(owner, leaseUntil, start).first();
   if (!held) return { status: 'SKIPPED' };
+  let stage = 'rpc-head';
   try {
     const rpc = supplied ?? new FreeRpc({ url: env.ROBINHOOD_RPC_URL || NETWORK.rpcUrl, fetchImpl, signal: AbortSignal.timeout(60000) });
     const chunk = integer(env.LOG_CHUNK, 2048, 1, 2048); const maxLogs = integer(env.MAX_LOGS, 4, 1, 4);
@@ -108,10 +109,36 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     if (quantity(await rpc.request('eth_chainId')) !== NETWORK.chainId) throw new Error('WRONG_CHAIN');
     const head = await rpc.block();
     if (head.timestamp * 1000 > now() + 30000 || now() - head.timestamp * 1000 > 60000) throw new Error('STALE_HEAD');
+    const priorHead = saved.head ?? null;
+    let canonicalPriorHead = null;
     if (saved.head) {
-      const prior = saved.head.number <= head.number ? await rpc.block(saved.head.number) : null;
-      if (!prior || prior.hash !== saved.head.hash) { saved = {}; reorg = true; }
+      canonicalPriorHead = saved.head.number <= head.number ? await rpc.block(saved.head.number) : null;
+      if (!canonicalPriorHead || canonicalPriorHead.hash !== saved.head.hash) { saved = {}; reorg = true; }
     }
+    const canonicalEpoch = recordingEnabled ? await readDecisionCanonicality(env.DB) : null;
+    const pendingCanonicalBlocks = recordingEnabled && !reorg && !canonicalEpoch.revalidationComplete
+      ? await queryDecisionCanonicalBlocks(env.DB, { limit: 2 }) : [];
+    const canonicalBlocks = [];
+    const canonicalDiagnostics = [];
+    for (const item of pendingCanonicalBlocks) {
+      try {
+        if (item.blockNumber > head.number) throw Error('INVALID_CANONICAL_BLOCK_ABOVE_HEAD');
+        const checked = await rpc.block(item.blockNumber);
+        if (!checked || checked.number !== item.blockNumber || !hash(checked.hash)
+          || !Number.isSafeInteger(checked.timestamp) || checked.timestamp < 0 || checked.timestamp * 1000 > now())
+          throw Error('INVALID_CANONICAL_BLOCK');
+        canonicalBlocks.push(checked);
+      } catch (error) {
+        canonicalDiagnostics.push({ reason: 'CANONICAL_BASELINE_BLOCK_UNAVAILABLE', blockNumber: item.blockNumber,
+          cause: operationError(error, { stage: 'canonical-revalidation', at: now() }) });
+      }
+    }
+    const canonicality = recordingEnabled ? prepareDecisionCanonicality(env.DB, { runId: owner,
+      observedAt: now(), reorgDetected: reorg, priorHead, canonicalPriorHead,
+      canonicalBlocks, revalidationComplete: !reorg && !canonicalEpoch.revalidationComplete && pendingCanonicalBlocks.length === 0,
+      expectedGeneration: canonicalEpoch.generation }) : { commands: [], diagnostics: [] };
+    canonicality.diagnostics.push(...canonicalDiagnostics);
+    stage = 'discovery';
     const sequence = (saved.sequence ?? 0) + 1;
     const initialFrom = Math.max(0, head.number - chunk + 1);
     const from = Math.min(head.number, saved.recentNext ?? initialFrom);
@@ -234,7 +261,8 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             safetyStates = saveSafetyState(safetyStates, { address, poolId: pool.id, pool, codeHash,
               updatedAt: new Date(now()).toISOString(), ...analysis.safetyState }, now());
             tokenFacts.push({ address, analysis: analysis.evidence });
-          } catch { errors.push('TOKEN_ANALYSIS_FAILED'); }
+          } catch (error) { errors.push('TOKEN_ANALYSIS_FAILED');
+            console.warn(JSON.stringify({ event: 'TOKEN_ANALYSIS_FAILED', ...operationError(error, { stage: 'token-analysis', at: now() }) })); }
         }
         snapshots.push(snapshot);
         // The calls are already retained in the bounded RPC audit. Duplicating
@@ -242,8 +270,10 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         // when a malformed token returns a very large decimals/supply value.
         tokenFacts.push({ address, metadataEvidence: 'rpc.audit:eth_call:0x313ce567,0x18160ddd',
           blockNumber: head.number, bytecodeBytes: (bytecode.length - 2) / 2 });
-      } catch { errors.push('TOKEN_ENRICHMENT_FAILED'); }
+      } catch (error) { errors.push('TOKEN_ENRICHMENT_FAILED');
+        console.warn(JSON.stringify({ event: 'TOKEN_ENRICHMENT_FAILED', ...operationError(error, { stage: 'token-enrichment', at: now() }) })); }
     }
+    stage = 'wallet-enrichment';
     if (walletCaptureError) throw new Error('WALLET_CAPTURE_LIMIT');
     const walletEnrichment = mvpPhase >= 3 ? await enrichWalletTransactions(env.DB, rpc,
       { events: walletCapture.events, head, now, maxTransactions: 2, maxRequests: 30 })
@@ -255,6 +285,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const scan = runScan(snapshots, policy, { now: now(), state: reorg ? {} : saved.evaluationState ?? {} });
     let screeningEntries = analysisEnabled ? screeningHistory(reorg ? [] : saved.screeningEntries, analysis?.entry, scan.results, now()) : undefined;
     let marketData; let marketSignals;
+    stage = 'outcomes';
     const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4, maxJobs: 24 }) : [];
     let outcomeUpdates = { commands: [], diagnostics: [] };
     let marketObservations = { commands: [], counts: {}, diagnostics: [] };
@@ -290,13 +321,14 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         }), { runId: owner, now });
       }
     }
+    stage = 'wallet-accounting';
     const projectedWallets = mvpPhase >= 3 ? await projectObservedWallets(env.DB, walletEnrichment.receipts,
       { now: now(), reorgDetected: reorg, receiptEvidence: walletProofs.receiptEvidence,
         walletEvidence: walletProofs.walletEvidence, replayEvidence: walletProofs.replayEvidence })
       : { profiles: [], diagnostics: [], realizedEvents: [] };
     const temporal = mvpPhase >= 3 ? await prepareWalletTemporalUpdates(env.DB, { runId: owner,
       observedAt: now(), profiles: projectedWallets.profiles, realizedEvents: projectedWallets.realizedEvents,
-      config: PROFILES_CONFIG, reorgDetected: reorg }) : { profiles: [], realizationUpdates: [], diagnostics: [] };
+      config: PROFILES_CONFIG, reorgDetected: reorg }) : { profiles: [], realizationUpdates: [], realizedEvents: [], diagnostics: [] };
     projectedWallets.profiles = temporal.profiles.map(profile => ({ ...profile,
       eligible: scoreWalletProfile(profile, { now: now(), config: PROFILES_CONFIG }).eligible }));
     let mvpMomentum = reorg ? [] : saved.mvpMomentum ?? [];
@@ -322,7 +354,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const dryRunAlerts = mvpPhase >= 2 ? prepareDryRunAlerts(env.DB, mvpDecisions.map(decision => ({
       ...decision, decisionId: decisionKey(NETWORK.chainId, decision.address, decision.scoreVersion, decision.profile),
       wallets: decision.wallets.wallets })), { runId: owner, observedAt: now() }) : null;
-    const weekly = mvpPhase >= 3 ? await prepareWeeklyReport(env.DB, { now }) : null;
+    stage = 'records';
     const report = { runId: owner, completedAt: new Date(now()).toISOString(), chainId: NETWORK.chainId,
       operationalStatus: errors.length ? 'DEGRADED' : 'PARTIAL', observedHead: head, snapshots,
       results: scan.results, alerts: scan.alerts, errors,
@@ -332,6 +364,8 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         scope: 'Alertas de mercado avaliados separadamente da aprovação estrita para trade.' },
         marketData, signals: { policy: marketSignalPolicy } } : {}),
       ...(recordingEnabled ? { mvp: { phase: mvpPhase, dryRun: true, recording: true,
+        canonicality: { ...canonicalEpoch, reorgDetected: reorg, diagnostics: canonicality.diagnostics,
+          asOf: 'PRE_COMMIT', plannedGeneration: canonicalEpoch.generation + (reorg ? 1 : 0) },
         scoreVersion: mvpPhase >= 2 ? MVP_SCORE_VERSION : policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
         outcomeCollection: { jobs: outcomeJobs.length,
           liveJobs: outcomeJobs.filter(job => job.captureState === 'LIVE').length,
@@ -345,12 +379,12 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             diagnostics: dryRunAlerts.diagnostics },
           ...(mvpPhase >= 3 ? { walletCollection: { events: walletCapture.events.length, ranges: walletCapture.ranges.length,
             receipts: walletEnrichment.receipts.length, profilesUpdated: projectedWallets.profiles.length,
-            realizedDisposals: projectedWallets.realizedEvents.length,
+            realizedDisposals: temporal.realizedEvents.length,
+            rejectedRealizations: temporal.rejectedRealizations ?? 0,
             temporalProfilesUpdated: temporal.realizationUpdates.length,
             scoreMethod: PROFILES_CONFIG.profiles.profile_new.walletScoring.version,
             diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics, ...temporal.diagnostics] },
-            weekly: { due: weekly.due, reportKey: weekly.report?.reportKey ?? null,
-              generatedAt: weekly.report?.generatedAt ?? null } } : {}),
+            weekly: { status: 'INDEPENDENT_JOB', due: null, reportKey: null, generatedAt: null } } : {}),
           decisions: mvpDecisions.filter(d => !['REJECTED', 'OUT_OF_SCOPE'].includes(d.status)).map(d => ({
             address: d.address, symbol: d.symbol, status: d.status, score: d.score,
             scoreComplete: d.scoreComplete, securityComplete: d.securityComplete,
@@ -391,11 +425,11 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         safetyFocus: analysis?.entry ? nextSafetyFocus(pool, safetyPhase, resumedFocus?.startedAt, now()) : null } : {}) };
     // D1 batch é uma transação. CHECK aborta toda a transação se o lease foi perdido.
     const commands = [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)];
+    commands.push(...canonicality.commands);
     if (mvpPhase >= 3) commands.push(...prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
       ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles,
-      realizedEvents: projectedWallets.realizedEvents, realizationUpdates: temporal.realizationUpdates,
-      reorgDetected: reorg }).commands,
-      ...weekly.commands);
+      realizedEvents: temporal.realizedEvents, realizationUpdates: temporal.realizationUpdates,
+      reorgDetected: reorg }).commands);
     if (recordingEnabled) {
       const observedAt = now();
       const source = { collector: 'cloudflare-readonly-rpc', runId: owner,
@@ -441,6 +475,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     commands.push(env.DB.prepare('INSERT INTO runs(id,completed_at,head_number,report_json,evidence_json) VALUES(?,?,?,?,?)').bind(owner, now(), head.number, JSON.stringify(report), evidence));
     commands.push(env.DB.prepare('DELETE FROM runs WHERE completed_at<?').bind(now() - 3 * 3600000));
     commands.push(env.DB.prepare("UPDATE control SET state_json=?,last_success=?,status='COMPLETED',last_error=NULL,lease_owner=NULL,lease_until=0 WHERE id=1").bind(JSON.stringify(state), now()));
+    stage = 'commit';
     const committed = await env.DB.batch(commands);
     return { status: 'COMPLETED', runId: owner, head: head.number, snapshots: snapshots.length, ...report.coverage,
       ...(mvpPhase >= 3 ? { event: 'COLLECTION_COMPLETED', phase: mvpPhase,
@@ -451,13 +486,17 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     if (error.message === 'INVALID_RPC_ENVELOPE' && error.rpcDiagnostic)
       console.warn(JSON.stringify({ event: 'RPC_ENVELOPE_REJECTED', ...error.rpcDiagnostic }));
     // Nenhum cursor avança. Reiniciar confirmação, preservando o catálogo.
-    const safeCodes = new Set(['INVALID_CONFIG', 'WRONG_CHAIN', 'STALE_HEAD', 'INVALID_BLOCK_TIMING', 'INVALID_BLOCK',
-      'INVALID_LOG', 'INVALID_LOGS', 'RANGE_TOO_DENSE', 'RPC_RESPONSE_LIMIT', 'RPC_HTTP_ERROR', 'INVALID_RPC_ENVELOPE',
-      'RPC_TRANSPORT_FAILED', 'RPC_REMOTE_ERROR', 'RPC_BUDGET_EXCEEDED', 'REORG_DURING_COLLECTION', 'EVIDENCE_BUDGET_EXCEEDED']);
-    const code = safeCodes.has(error.message) || /^RPC_HTTP_[1-5]\d{2}$/.test(error.message) ? error.message : 'COLLECTION_FAILED';
+    const diagnostic = operationError(error, { stage, at: now() });
+    const code = diagnostic.code;
+    console.error(JSON.stringify({ event: 'COLLECTION_FAILED', ...diagnostic }));
     const previous = JSON.parse(held.state_json); previous.evaluationState = {};
-    await env.DB.prepare("UPDATE control SET status='ERROR',last_error=?,state_json=?,lease_owner=NULL,lease_until=0 WHERE id=1 AND lease_owner=?")
+    try { await env.DB.prepare("UPDATE control SET status='ERROR',last_error=?,state_json=?,lease_owner=NULL,lease_until=0 WHERE id=1 AND lease_owner=?")
       .bind(code, JSON.stringify(previous), owner).run();
-    return { status: 'ERROR', reason: code, ...(code === 'EVIDENCE_BUDGET_EXCEEDED' && error.diagnostics ? { diagnostics: error.diagnostics } : {}) };
+    } catch (persistError) {
+      const persistence = operationError(persistError, { stage: 'error-persistence', at: now() });
+      console.error(JSON.stringify({ event: 'ERROR_PERSISTENCE_FAILED', ...persistence, original: diagnostic }));
+      return { status: 'ERROR', reason: persistence.code, cause: diagnostic };
+    }
+    return { status: 'ERROR', reason: code, cause: diagnostic, ...(code === 'EVIDENCE_BUDGET_EXCEEDED' && error.diagnostics ? { diagnostics: error.diagnostics } : {}) };
   }
 }

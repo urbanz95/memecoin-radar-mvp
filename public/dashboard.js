@@ -7,7 +7,8 @@
     'strict-new', 'strict-established', 'screening-summary', 'watch-new', 'watch-established', 'watch-unclassified', 'unclassified-section',
     'market-alerts-count', 'trade-count', 'signal-summary', 'signals-list', 'signals-available', 'data-health',
     'mvp-status', 'mvp-data', 'mvp-wallets', 'mvp-outcomes', 'mvp-alerts', 'mvp-weekly', 'mvp-preview',
-    'mvp-weekly-details', 'mvp-weekly-horizon', 'mvp-weekly-tables', 'mvp-weekly-wallet-status'];
+    'mvp-weekly-details', 'mvp-weekly-horizon', 'mvp-weekly-tables', 'mvp-weekly-wallet-status',
+    'mvp-weekly-cohort', 'mvp-weekly-cohort-status', 'mvp-weekly-pages', 'mvp-weekly-previous', 'mvp-weekly-next', 'mvp-weekly-page-status'];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
   const dateFormat = new Intl.DateTimeFormat('pt-PT', { timeZone: 'Europe/Lisbon', day: '2-digit', month: '2-digit',
     year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -24,6 +25,11 @@
   let marketTimes = [];
   let signalTimes = [];
   let signalListKey = '';
+  let weeklyBase = null;
+  let weeklyPage = null;
+  let weeklyPaging = false;
+  let weeklyPageError = false;
+  let weeklyRequest = 0;
 
   const text = (id, value) => { if (ui[id].textContent !== value) ui[id].textContent = value; };
   const validObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -587,26 +593,83 @@
     text('data-health', marketLimited && !hasRecentMarket ? 'O fornecedor de mercado limitou temporariamente as consultas. A recolha voltará a tentar automaticamente; os dados em falta não geram sinais.' : '');
   }
 
-  function renderWeeklyReport(weekly) {
+  const weeklyKey = weekly => validObject(weekly) ? JSON.stringify([weekly.reportKey, weekly.weekStart, weekly.dataCutoff]) : null;
+  const weeklyTier = value => ['T0', 'T1S', 'T1', 'T2'].includes(value) ? value : 'UNKNOWN';
+  const weeklyCohortKey = cohort => JSON.stringify([cohort.scoreVersion, cohort.profile, weeklyTier(cohort.quoteTier)]);
+  const weeklyCohortLabel = cohort => `${shortText(cohort.scoreVersion, 100)} · ${shortText(cohort.profile, 100)} · ${weeklyTier(cohort.quoteTier) === 'UNKNOWN' ? 'cotação por comprovar' : cohort.quoteTier}`;
+
+  function renderWeeklyReport(incoming) {
+    if (arguments.length) {
+      if (weeklyKey(incoming) !== weeklyKey(weeklyBase) || incoming?.quarantined === true) {
+        weeklyPage = null;
+        weeklyPageError = false;
+        weeklyPaging = false;
+        weeklyRequest++;
+        ui['mvp-weekly-cohort'].value = '';
+      }
+      weeklyBase = validObject(incoming) ? incoming : null;
+    }
+    const weekly = weeklyPage || weeklyBase;
     const tables = ui['mvp-weekly-tables'];
     tables.replaceChildren();
     text('mvp-weekly-wallet-status', '');
+    text('mvp-weekly-cohort-status', '');
+    ui['mvp-weekly-pages'].hidden = true;
     ui['mvp-weekly-details'].hidden = !validObject(weekly);
     if (!validObject(weekly)) {
+      ui['mvp-weekly-cohort'].replaceChildren();
       text('mvp-weekly', 'O relatório semanal aguarda uma semana de lançamentos com a janela de sete dias concluída.');
       return;
     }
+    if (weekly.quarantined === true) {
+      ui['mvp-weekly-cohort'].replaceChildren();
+      text('mvp-weekly', 'Relatório suspenso: a canonicalidade das decisões precisa de ser verificada.');
+      tables.append(node('p', 'empty-list', 'Os resultados anteriores ficam excluídos até serem verificados.'));
+      return;
+    }
+    const cohorts = (Array.isArray(weekly.cohorts) ? weekly.cohorts : []).filter(cohort => validObject(cohort)
+      && typeof cohort.scoreVersion === 'string' && cohort.scoreVersion.length > 0
+      && typeof cohort.profile === 'string' && cohort.profile.length > 0);
+    const selector = ui['mvp-weekly-cohort'];
+    const priorSelection = selector.value;
+    selector.replaceChildren();
+    const seen = new Set();
+    for (const cohort of cohorts) {
+      const key = weeklyCohortKey(cohort);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const option = node('option', '', weeklyCohortLabel(cohort));
+      option.value = key;
+      selector.append(option);
+    }
+    const selected = cohorts.find(cohort => weeklyCohortKey(cohort) === priorSelection) || cohorts[0];
+    selector.value = selected ? weeklyCohortKey(selected) : '';
+    selector.disabled = weeklyPaging || seen.size < 2;
     const at = timestamp(weekly.weekStart);
     const week = Number.isFinite(at) ? weeklyDateFormat.format(at) : 'data não disponível';
-    const decisions = weekly.totals?.realDecisions;
+    const decisions = selected?.decisions;
     text('mvp-weekly', `Relatório semanal · semana de ${week} · ${integer(decisions) ? numberFormat.format(decisions) : '—'} decisões reais.`);
+    if (!selected) {
+      tables.append(node('p', 'empty-list', 'Ainda não há uma coorte por versão, perfil e tier disponível.'));
+      return;
+    }
+    text('mvp-weekly-cohort-status', weeklyCohortLabel(selected));
+    const pagination = weekly.pagination;
+    if (validObject(pagination) && integer(pagination.page) && integer(pagination.totalPages)) {
+      ui['mvp-weekly-pages'].hidden = false;
+      ui['mvp-weekly-previous'].disabled = weeklyPaging || pagination.hasPrevious !== true;
+      ui['mvp-weekly-next'].disabled = weeklyPaging || pagination.hasNext !== true;
+      text('mvp-weekly-page-status', weeklyPaging ? 'A consultar a coorte…'
+        : weeklyPageError ? 'A consulta falhou. A coorte anterior mantém-se visível.'
+          : `Coorte ${numberFormat.format(pagination.page + 1)} de ${numberFormat.format(pagination.totalPages)}${pagination.complete === false ? ' publicadas · relatório em preparação' : ''}`);
+    }
     if (decisions === 0) {
       tables.append(node('p', 'empty-list', 'Esta semana ainda não tem avaliações reais. Os resultados aparecerão quando a respetiva coorte estiver disponível.'));
       return;
     }
     const horizons = ['15m', '1h', '24h', '7d'];
-    const selected = ui['mvp-weekly-horizon'].value;
-    const horizon = horizons.includes(selected) ? selected : '1h';
+    const selectedHorizon = ui['mvp-weekly-horizon'].value;
+    const horizon = horizons.includes(selectedHorizon) ? selectedHorizon : '1h';
     const definitions = [['0-49', '0–49'], ['50-64', '50–64'], ['65-74', '65–74'], ['75-84', '75–84'], ['85-100', '85–100'], ['UNKNOWN', 'Score desconhecido']];
     const addTable = (dimension, caption, bands, unknown) => {
       if (!Array.isArray(bands)) return false;
@@ -641,13 +704,51 @@
       table.append(body); wrap.append(table); tables.append(wrap);
       return true;
     };
-    if (!addTable('token', 'Resultado por score do token', weekly.bands, weekly.unknownScore))
+    if (!addTable('token', 'Resultado por score do token', selected.bands, selected.unknownScore))
       tables.append(node('p', 'note', 'As faixas de score do token ainda não estão disponíveis neste relatório.'));
     if (weekly.walletScoreReport?.status === 'COHORT_CHANGED') {
       text('mvp-weekly-wallet-status', 'Não foi possível reconstruir as faixas de wallet score com os dados da mesma semana.');
     } else if (weekly.walletScoreReport?.status !== 'READY'
-      || !addTable('wallet', 'Resultado por wallet score à data da decisão', weekly.walletScoreBands, weekly.walletUnknownScore)) {
+      || !addTable('wallet', 'Resultado por wallet score à data da decisão', selected.walletScoreBands, selected.walletUnknownScore)) {
       text('mvp-weekly-wallet-status', 'As faixas de wallet score ainda não estão disponíveis neste relatório.');
+    }
+  }
+
+  async function navigateWeeklyPage(direction) {
+    if (weeklyPaging || ![-1, 1].includes(direction)) return;
+    const current = weeklyPage || weeklyBase;
+    const pagination = current?.pagination;
+    if (!validObject(pagination) || !integer(pagination.page) || typeof current?.reportKey !== 'string'
+      || (direction === -1 ? pagination.hasPrevious !== true : pagination.hasNext !== true)) return;
+    const page = pagination.page + direction;
+    if (!integer(page)) return;
+    const request = ++weeklyRequest;
+    const key = weeklyKey(weeklyBase);
+    weeklyPaging = true;
+    weeklyPageError = false;
+    renderWeeklyReport();
+    try {
+      const params = new URLSearchParams({ reportKey: current.reportKey, page: String(page) });
+      const result = await getJSON(`/weekly?${params}`);
+      if (request !== weeklyRequest || key !== weeklyKey(weeklyBase)) return;
+      const payload = result.payload;
+      if (result.ok && weeklyKey(payload) === key && payload.quarantined === true) {
+        weeklyPage = payload;
+        return;
+      }
+      if (!result.ok || weeklyKey(payload) !== key || payload.schemaVersion !== 2
+        || payload.pagination?.page !== page || !Array.isArray(payload.cohorts) || payload.cohorts.length !== 1) {
+        throw new Error('INVALID_WEEKLY_PAGE');
+      }
+      weeklyPage = payload;
+      ui['mvp-weekly-cohort'].value = '';
+    } catch {
+      if (request === weeklyRequest) weeklyPageError = true;
+    } finally {
+      if (request === weeklyRequest) {
+        weeklyPaging = false;
+        renderWeeklyReport();
+      }
     }
   }
 
@@ -807,7 +908,10 @@
   }
 
   ui.refresh.addEventListener('click', () => { clearTimeout(timer); update(); });
-  ui['mvp-weekly-horizon'].addEventListener('change', () => renderWeeklyReport(lastReport?.mvp?.weeklyReport));
+  ui['mvp-weekly-horizon'].addEventListener('change', () => renderWeeklyReport());
+  ui['mvp-weekly-cohort'].addEventListener('change', () => renderWeeklyReport());
+  ui['mvp-weekly-previous'].addEventListener('click', () => navigateWeeklyPage(-1));
+  ui['mvp-weekly-next'].addEventListener('click', () => navigateWeeklyPage(1));
   document.addEventListener('visibilitychange', () => {
     clearTimeout(timer);
     clearInterval(freshnessTimer);

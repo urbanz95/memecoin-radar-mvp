@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import PROFILES_CONFIG from './config.mjs';
 import { isEvmAddress } from '../network.mjs';
 import { recordTime, recordLabel } from './records.mjs';
+import { exactRational, exactComponents, exactComponentsAdd, exactTotal } from './wallet-exact.mjs';
+import ACCOUNTING_LIMITS from './wallet-accounting-config.mjs';
 
 export const WALLET_TEMPORAL_METHOD = 'exponential-realized-disposals/v1';
 const ACCOUNTING = 'fifo-receipt-net-usd/v1';
@@ -19,18 +21,11 @@ const cfgOf = config => config?.profiles?.profile_new?.walletScoring ?? config?.
 const atOf = value => recordTime(typeof value === 'function' ? value() : value);
 const all = async statement => (await statement.all())?.results ?? [];
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-const gcd = (a, b) => { a = a < 0n ? -a : a; while (b) [a, b] = [b, a % b]; return a || 1n; };
 function rational(value) {
-  if (!object(value) || typeof value.numerator !== 'string' || !/^-?\d{1,180}$/.test(value.numerator)
-    || typeof value.denominator !== 'string' || !/^[1-9]\d{0,179}$/.test(value.denominator)) fail('INVALID_EXACT_PNL');
-  const n = BigInt(value.numerator); const d = BigInt(value.denominator); const divisor = gcd(n, d);
-  return { n: n / divisor, d: d / divisor };
+  try { return exactRational({ n: value?.numerator, d: value?.denominator }); }
+  catch (error) { fail(/PRECISION_BUDGET/.test(error.message) ? 'PRECISION_BUDGET_EXCEEDED' : 'INVALID_EXACT_PNL'); }
 }
 const packed = value => ({ numerator: value.n.toString(), denominator: value.d.toString() });
-function plus(a, b) {
-  const n = a.n * b.d + b.n * a.d; const d = a.d * b.d; const divisor = gcd(n, d);
-  const result = { n: n / divisor, d: d / divisor }; rational(packed(result)); return result;
-}
 function money(value) {
   const scale = 10n ** 18n; let n = value.n * scale / value.d;
   if (value.n < 0n && value.n * scale % value.d) n--;
@@ -38,7 +33,7 @@ function money(value) {
   const tail = digits.slice(-18).replace(/0+$/, '');
   return sign + digits.slice(0, -18) + (tail ? '.' + tail : '');
 }
-function encoded(value, limit = 16384) {
+function encoded(value, limit = ACCOUNTING_LIMITS.stateMaxBytes) {
   const result = JSON.stringify(value);
   if (new TextEncoder().encode(result).length > limit) fail('EVIDENCE_LIMIT');
   return result;
@@ -57,10 +52,20 @@ function eventOf(value, observedAt) {
   if (event.id !== `4663:${event.blockHash}:${event.transactionHash}:${event.logIndex}:${event.walletAddress}`) fail('INVALID_EVENT_ID');
   const exact = rational(value.netRealizedPnlUsdExact);
   if (money(exact) !== value.netRealizedPnlUsd || !Number.isFinite(Number(value.netRealizedPnlUsd))) fail('PNL_MISMATCH');
-  event.netRealizedPnlUsdExact = packed(exact); encoded(event);
+  if (value.netRealizedPnlUsdComponents !== undefined) {
+    try {
+      const components = exactComponents(value.netRealizedPnlUsdComponents); const total = exactTotal(components);
+      if (total.n * exact.d !== exact.n * total.d) fail('PNL_COMPONENT_MISMATCH');
+      event.netRealizedPnlUsdComponents = components;
+    } catch { fail('INVALID_PNL_COMPONENTS'); }
+  }
+  event.netRealizedPnlUsdExact = packed(exact); encoded(event, ACCOUNTING_LIMITS.realizationMaxBytes);
   return event;
 }
-// Context refs can be enriched later; reconciled cash facts cannot change.
+// Context refs and an equivalent component representation may be enriched
+// later; reconciled cash facts cannot change. Component totals are independently
+// checked above. Excluding that additive representation keeps legacy facts
+// idempotent without rewriting their immutable stored JSON/fingerprints.
 const eventFingerprint = event => digest([event.schemaVersion, event.accountingVersion, event.id, event.disposalIndex,
   event.chainId, event.walletAddress, event.tokenAddress, event.blockNumber, event.blockHash, event.transactionHash,
   event.logIndex, event.timestamp, event.netRealizedPnlUsdExact, event.holdingSeconds, event.earlyEntryPct, event.drawdownPct]);
@@ -76,6 +81,12 @@ function validateSummary(value, cfg, generation) {
     || !whole(value.lastCursor.blockNumber) || !hash(value.lastCursor.blockHash) || !hash(value.lastCursor.transactionHash)
     || !whole(value.lastCursor.logIndex) || value.anchorAt !== value.lastCursor.timestamp) fail('INVALID_SUMMARY');
   atOf(value.anchorAt); rational(value.cumulativePnlExact);
+  if (value.cumulativePnlComponents !== undefined) {
+    try {
+      const total = exactTotal(value.cumulativePnlComponents); const expected = rational(value.cumulativePnlExact);
+      if (total.n * expected.d !== expected.n * total.d) fail('SUMMARY_COMPONENT_MISMATCH');
+    } catch { fail('INVALID_SUMMARY_COMPONENTS'); }
+  }
   const w = value.weighted;
   if (!['count', 'wins', 'netPnlUsd', 'pnlErrorUsd', 'holdingSeconds', 'earlyEntryPct', 'drawdownPct'].every(key => finite(w[key]))
     || w.count <= 0 || w.count > value.disposalCount * (1 + 1e-12) || w.wins < 0 || w.wins > w.count * (1 + 1e-12)
@@ -97,6 +108,7 @@ export function advanceWalletTemporalSummary(previous, events, { observedAt = Da
       scoreVersion: cfg.version, halfLifeDays: cfg.timeDecayHalfLifeDays, chainId: 4663, walletAddress: event.walletAddress,
       generation, disposalCount: 0, anchorAt: event.timestamp, firstCursor: cursor(event), lastCursor: null,
       cumulativePnlExact: { numerator: '0', denominator: '1' },
+      cumulativePnlComponents: exactComponents(),
       weighted: { count: 0, wins: 0, netPnlUsd: 0, pnlErrorUsd: 0, holdingSeconds: 0, earlyEntryPct: 0, drawdownPct: 0 },
       source: 'mvp-wallet-realizations/v1', evidence: [] };
     if (event.walletAddress !== state.walletAddress || event.disposalIndex !== state.disposalCount + 1) fail('CURSOR_GAP');
@@ -110,7 +122,12 @@ export function advanceWalletTemporalSummary(previous, events, { observedAt = Da
     w.holdingSeconds += event.holdingSeconds; w.earlyEntryPct += event.earlyEntryPct; w.drawdownPct += event.drawdownPct;
     w.netPnlUsd = priorPnl + newPnl;
     w.pnlErrorUsd = w.pnlErrorUsd * decay + Number.EPSILON * 8 * (Math.abs(priorPnl) + Math.abs(newPnl) + Math.abs(w.netPnlUsd));
-    state.cumulativePnlExact = packed(plus(rational(state.cumulativePnlExact), rational(event.netRealizedPnlUsdExact)));
+    const prior = state.cumulativePnlComponents ?? exactComponents({ n: state.cumulativePnlExact.numerator, d: state.cumulativePnlExact.denominator });
+    const delta = event.netRealizedPnlUsdComponents ?? exactComponents({ n: event.netRealizedPnlUsdExact.numerator, d: event.netRealizedPnlUsdExact.denominator });
+    try {
+      state.cumulativePnlComponents = exactComponentsAdd(prior, delta);
+      state.cumulativePnlExact = packed(exactTotal(state.cumulativePnlComponents));
+    } catch (error) { fail(/PRECISION_BUDGET/.test(error.message) ? 'PRECISION_BUDGET_EXCEEDED' : 'EXACT_COMPONENT_CAPACITY'); }
     state.disposalCount++; state.anchorAt = event.timestamp; state.lastCursor = cursor(event);
     state.evidence = [...new Set([...state.evidence, ...event.evidence])].slice(0, 64);
   }
@@ -120,7 +137,8 @@ export function advanceWalletTemporalSummary(previous, events, { observedAt = Da
 /** Attach no guessed history: old lifetime profiles require verified replay. */
 export function walletTemporalEvidence(profile, summary, { now = Date.now(), config } = {}) {
   const at = atOf(now); const cfg = cfgOf(config); const gaps = [];
-  if (!summary) gaps.push('WALLET_TEMPORAL_HISTORY_MISSING');
+  if (profile?.temporalRecovery?.blocksScoring === true) gaps.push('WALLET_TEMPORAL_INPUT_QUARANTINED');
+  else if (!summary) gaps.push('WALLET_TEMPORAL_HISTORY_MISSING');
   else if (summary.scoreVersion !== cfg.version || summary.halfLifeDays !== cfg.timeDecayHalfLifeDays)
     gaps.push('WALLET_TEMPORAL_METHOD_MISMATCH');
   else {
@@ -174,18 +192,37 @@ export async function prepareWalletTemporalUpdates(DB, { runId, observedAt = Dat
   config, reorgDetected = false } = {}) {
   recordLabel(runId, 'RUN_ID'); const at = atOf(observedAt); const cfg = cfgOf(config);
   if (!Array.isArray(profiles) || profiles.length > 128 || !Array.isArray(realizedEvents) || realizedEvents.length > 128) fail('INPUT_LIMIT');
-  if (!profiles.length && !realizedEvents.length) return { profiles: [], realizationUpdates: [], diagnostics: [] };
+  if (!profiles.length && !realizedEvents.length)
+    return { profiles: [], realizedEvents: [], rejectedRealizations: 0, duplicateRealizations: 0, realizationUpdates: [], diagnostics: [] };
   const epoch = await DB.prepare('SELECT generation FROM mvp_wallet_epoch WHERE id=1').first();
   const generation = (epoch?.generation ?? 0) + (reorgDetected ? 1 : 0);
-  const normalized = realizedEvents.map(value => eventOf(value, at));
+  const normalized = []; const diagnostics = []; const normalizationFailures = new Map();
+  let batchRecovery = null;
+  for (let index = 0; index < realizedEvents.length; index++) {
+    const value = realizedEvents[index];
+    try { normalized.push(eventOf(value, at)); }
+    catch (error) {
+      const wallet = addr(value?.walletAddress);
+      const cause = /^MVP_WALLET_TEMPORAL_[A-Z0-9_]+$/.test(error.message)
+        ? error.message : 'MVP_WALLET_TEMPORAL_INVALID_REALIZATION';
+      const recovery = { kind: 'INVALID_REALIZATION_INPUT', blocksScoring: true,
+        identicalReplayCanRecover: false, reason: cause };
+      diagnostics.push({ walletAddress: wallet, scope: wallet ? 'WALLET' : 'BATCH',
+        reason: 'WALLET_TEMPORAL_REALIZATION_REJECTED', cause, inputIndex: index });
+      if (wallet) normalizationFailures.set(wallet, recovery);
+      else batchRecovery = recovery;
+    }
+  }
   const identities = new Map();
   for (const event of normalized) {
     const key = `${event.walletAddress}:${event.id}`; const fingerprint = eventFingerprint(event);
     if (identities.has(key) && identities.get(key) !== fingerprint) fail('EVENT_CONFLICT');
     identities.set(key, fingerprint);
   }
+  const accepted = [...new Map(normalized.map(event => [`${event.walletAddress}:${event.id}`, event])).values()];
   const rows = reorgDetected ? [] : await summaryRows(DB, [...profiles, ...normalized], cfg, generation);
-  const byWallet = new Map(rows.map(row => [row.wallet_address, row])); const updates = []; const diagnostics = [];
+  const byWallet = new Map(rows.map(row => [row.wallet_address, row])); const updates = [];
+  const capacityFailures = new Map(); const validatedWallets = new Set();
   const summaries = new Map();
   for (const row of rows) {
     if (row.observed_at > at) fail('FUTURE_SUMMARY');
@@ -193,6 +230,7 @@ export async function prepareWalletTemporalUpdates(DB, { runId, observedAt = Dat
     summaries.set(row.wallet_address, validateSummary(parsed, cfg, generation));
   }
   for (const wallet of new Set(normalized.map(event => event.walletAddress))) {
+    if (normalizationFailures.has(wallet) || batchRecovery) continue;
     const previous = summaries.get(wallet) ?? null;
     const unique = [...new Map(normalized.filter(event => event.walletAddress === wallet).map(event => [event.id, event])).values()];
     const fresh = [];
@@ -203,21 +241,38 @@ export async function prepareWalletTemporalUpdates(DB, { runId, observedAt = Dat
         if (stored?.fingerprint !== eventFingerprint(event)) fail('EVENT_CONFLICT');
       } else fresh.push(event);
     }
-    if (!fresh.length) continue;
+    if (!fresh.length) { validatedWallets.add(wallet); continue; }
     try {
       const next = advanceWalletTemporalSummary(previous, fresh, { observedAt: at, config, generation });
       summaries.set(wallet, next);
+      validatedWallets.add(wallet);
       updates.push({ walletAddress: wallet, generation, scoreVersion: cfg.version, halfLifeDays: cfg.timeDecayHalfLifeDays,
         expectedFingerprint: byWallet.get(wallet)?.fingerprint ?? null, expectedDisposalCount: previous?.disposalCount ?? 0,
         summary: next, fingerprint: digest(next) });
     } catch (error) {
       // Preserve every realization, but never invent missing earlier disposals.
+      // A representation/resource limit is local to this wallet. Retain the
+      // immutable disposal evidence, publish no replacement summary, and say
+      // explicitly that replaying the identical inputs cannot recover it.
+      if (/(?:PRECISION_BUDGET|EXACT_COMPONENT_CAPACITY|EVIDENCE_LIMIT)/.test(error.message)) {
+        const recovery = { kind: 'SEGMENTED_EXACT_CHECKPOINT_REQUIRED', blocksScoring: true, identicalReplayCanRecover: false,
+          reason: error.message };
+        capacityFailures.set(wallet, recovery); summaries.delete(wallet);
+        diagnostics.push({ walletAddress: wallet, reason: 'WALLET_TEMPORAL_EXACT_CHECKPOINT_REQUIRED', recovery });
+        continue;
+      }
       if (!/CURSOR_GAP/.test(error.message)) throw error;
       diagnostics.push({ walletAddress: wallet, reason: 'WALLET_TEMPORAL_REPLAY_REQUIRED' });
     }
   }
-  return { profiles: profiles.map(profile => ({ ...profile,
-    realizationHistory: walletTemporalEvidence(profile, summaries.get(addr(profile.walletAddress)) ?? null, { now: at, config }) })),
+  return { profiles: profiles.map(profile => {
+    const wallet = addr(profile.walletAddress); const { temporalRecovery: previousRecovery, ...current } = profile;
+    const recovery = normalizationFailures.get(wallet) ?? batchRecovery ?? capacityFailures.get(wallet)
+      ?? (previousRecovery?.blocksScoring === true && !validatedWallets.has(wallet) ? previousRecovery : null);
+    const value = { ...current, ...(recovery ? { temporalRecovery: recovery } : {}) };
+    return { ...value, realizationHistory: walletTemporalEvidence(value, summaries.get(wallet) ?? null, { now: at, config }) };
+  }), realizedEvents: accepted, rejectedRealizations: realizedEvents.length - normalized.length,
+    duplicateRealizations: normalized.length - accepted.length,
     realizationUpdates: updates, diagnostics };
 }
 
@@ -232,7 +287,7 @@ export function prepareWalletRealizationCommands(DB, { runId, observedAt, realiz
       (chain_id,wallet_address,generation,event_id,disposal_index,block_number,block_hash,transaction_hash,event_timestamp,observed_at,run_id,fingerprint,event_json)
       VALUES(4663,?,(SELECT generation FROM mvp_wallet_epoch WHERE id=1),?,?,?,?,?,?,?,?,?,?)`)
       .bind(event.walletAddress, event.id, event.disposalIndex, event.blockNumber, event.blockHash, event.transactionHash,
-        Date.parse(event.timestamp), at, runId, fingerprint, encoded(event)));
+        Date.parse(event.timestamp), at, runId, fingerprint, encoded(event, ACCOUNTING_LIMITS.realizationMaxBytes)));
   }
   for (const update of realizationUpdates) {
     const s = update.summary;

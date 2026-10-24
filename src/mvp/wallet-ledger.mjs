@@ -3,6 +3,7 @@ import { hash, hex, quantity } from '../cloudflare/rpc.mjs';
 import { recordTime, recordLabel } from './records.mjs';
 import { createHash } from 'node:crypto';
 import { prepareWalletRealizationCommands } from './wallet-temporal.mjs';
+import PROFILES_CONFIG from './config.mjs';
 
 const whole = value => Number.isSafeInteger(value) && value >= 0;
 const zero = '0x' + '0'.repeat(40);
@@ -156,10 +157,23 @@ export async function readWalletProfile(DB, walletAddress) {
   const row = await DB.prepare('SELECT profile_json FROM mvp_wallet_profiles WHERE chain_id=4663 AND wallet_address=? AND generation=(SELECT generation FROM mvp_wallet_epoch WHERE id=1)').bind(addr(walletAddress)).first();
   return row ? JSON.parse(row.profile_json) : null;
 }
-export async function getWalletLedgerStats(DB) {
-  const value = await DB.prepare('SELECT s.*,e.generation,e.last_reorg_at FROM mvp_wallet_stats s JOIN mvp_wallet_epoch e ON e.id=s.id WHERE s.id=1').first();
+export async function getWalletLedgerStats(DB, { now = Date.now(), config } = {}) {
+  const evaluatedAt = recordTime(typeof now === 'function' ? now() : now);
+  const cfg = config?.profiles?.profile_new?.walletScoring ?? config?.walletScoring ?? config ?? PROFILES_CONFIG.profiles.profile_new.walletScoring;
+  const maxProfileAgeSeconds = cfg.maxProfileAgeSeconds;
+  if (!Number.isSafeInteger(maxProfileAgeSeconds) || maxProfileAgeSeconds < 1 || maxProfileAgeSeconds > 600)
+    fail('INVALID_PROFILE_TTL');
+  // The immutable profile/counter records describe the last evaluation. Current
+  // eligibility additionally needs a fresh profile in the active generation.
+  // The covering index limits this count to eligible profiles in the TTL window.
+  const value = await DB.prepare(`SELECT s.*,e.generation,e.last_reorg_at,
+    (SELECT count(*) FROM mvp_wallet_profiles p WHERE p.chain_id=4663 AND p.generation=e.generation
+      AND p.eligible=1 AND p.checked_at>=? AND p.checked_at<=?) AS eligible_current
+    FROM mvp_wallet_stats s JOIN mvp_wallet_epoch e ON e.id=s.id WHERE s.id=1`)
+    .bind(evaluatedAt - maxProfileAgeSeconds * 1000, evaluatedAt).first();
   return { schemaVersion: 1, events: value?.events ?? 0, ranges: value?.ranges ?? 0, receipts: value?.receipts ?? 0,
-    tracked: value?.tracked ?? 0, eligible: value?.eligible ?? 0,
+    tracked: value?.tracked ?? 0, eligible: value?.eligible_current ?? 0, historicalEligible: value?.eligible ?? 0,
+    eligibilityAsOf: new Date(evaluatedAt).toISOString(), maxProfileAgeSeconds,
     profileObservations: value?.profile_observations ?? 0, generation: value?.generation ?? 0,
     lastReorgAt: value?.last_reorg_at ? new Date(value.last_reorg_at).toISOString() : null,
     updatedAt: value?.updated_at ? new Date(value.updated_at).toISOString() : null };

@@ -1,4 +1,4 @@
-import { decisionKey, recordLabel, recordTime, sourceRecord } from './records.mjs';
+import { decisionKey, recordLabel, recordTime, sourceRecord, canonicalDecisionSql } from './records.mjs';
 import { createHash } from 'node:crypto';
 import { NETWORK, QUOTE_ASSETS, isEvmAddress } from '../network.mjs';
 
@@ -23,6 +23,7 @@ export async function queryDueOutcomes(DB, { now = Date.now, limit = 4, maxJobs 
       CASE WHEN j.due_at+j.allowed_lag_ms>=? THEN 0 ELSE 1 END AS capture_priority
     FROM mvp_outcome_jobs j JOIN mvp_decisions d ON d.decision_key=j.decision_key
     WHERE j.state IN ('PENDING','RETRY') AND j.due_at<=? AND j.next_attempt_at<=?
+      AND ${canonicalDecisionSql('d')}
   ), tokens AS (
     SELECT chain_id,address,min(capture_priority) AS priority,
       min(CASE WHEN capture_priority=0 THEN due_at+allowed_lag_ms END) AS closing_at,
@@ -140,7 +141,7 @@ export async function queryArchivedOutcomePoints(DB, jobs, { now = Date.now } = 
     FROM wanted w JOIN mvp_decisions d ON d.chain_id=w.chain_id AND d.address=w.address
       JOIN mvp_outcomes o ON o.decision_key=d.decision_key
         AND o.source_timestamp>=w.due_at AND o.source_timestamp<=w.closes_at
-    WHERE o.source_timestamp<=? AND o.collected_at<=?
+    WHERE o.source_timestamp<=? AND o.collected_at<=? AND ${canonicalDecisionSql('d')}
   ), ranked AS (
     SELECT *,row_number() OVER (PARTITION BY job_index ORDER BY source_timestamp,collected_at,archive_table,archive_key) AS rank
     FROM points WHERE price_usd>=0 AND liquidity_usd>=0 AND source_timestamp<=collected_at
@@ -226,7 +227,8 @@ export function prepareOutcomeUpdates(DB, updates, { runId, now = Date.now } = {
         JOIN mvp_decisions d ON d.decision_key=a.decision_key
       WHERE a.decision_key=? AND a.horizon=? AND a.run_id=? AND a.result_kind='COMPLETE'
         AND a.source_timestamp>=j.due_at AND a.source_timestamp<=j.due_at+j.allowed_lag_ms
-        AND a.source_timestamp<=a.attempted_at AND a.price_usd IS NOT NULL AND a.liquidity_usd IS NOT NULL`)
+        AND a.source_timestamp<=a.attempted_at AND a.price_usd IS NOT NULL AND a.liquidity_usd IS NOT NULL
+        AND ${canonicalDecisionSql('d')}`)
       .bind(job.decisionKey, job.horizon, runId));
     commands.push(DB.prepare(`UPDATE mvp_outcome_jobs SET
       state=CASE WHEN EXISTS(SELECT 1 FROM mvp_outcomes o WHERE o.decision_key=mvp_outcome_jobs.decision_key AND o.horizon=mvp_outcome_jobs.horizon)
@@ -254,6 +256,7 @@ export async function outcomeEligibility(DB, { scoreVersion, profile, now = Date
     SELECT d.chain_id,d.address FROM mvp_decisions d JOIN mvp_outcomes o ON o.decision_key=d.decision_key
     WHERE d.score_version=? AND d.profile=? AND d.is_launch=1 AND d.first_decision_at<=? AND d.baseline_price_usd>0
       AND o.collected_at<=? AND o.source_timestamp<=? AND o.return_pct IS NOT NULL
+      AND ${canonicalDecisionSql('d')}
     GROUP BY d.chain_id,d.address HAVING count(DISTINCT o.horizon)=4
   )`).bind(scoreVersion, profile, at, at, at).first();
   const count = Number(row?.total ?? 0);
