@@ -1,5 +1,14 @@
 # Alterações
 
+## Fase 3 concluída — 24/10/2026
+
+- Reaproveitado o tracking existente, com provas tipadas de recibos/histórico/custos/risco/clusters, primeira compra preservada, replay explícito e eventos de realização com PnL racional exato. Compras antigas não ganham frescura ao serem relidas.
+- Score manual por realização com decaimento exponencial incremental, proteção contra rejuvenescimento de lucros antigos, clusters coordenados a contar uma vez e perfil A 50/30/20 em YAML. Método `wallet-manual-v2`, score `mvp-new-v3:45d248bff4b9a3ee`; configurações antigas continuam legíveis.
+- Relatório semanal por token score e wallet score no momento da decisão; tabelas no painel com +15m/+1h/+24h/+7d, cobertura, zero real distinto de desconhecido e relatórios antigos preservados.
+- 511 testes passaram, cinco cenários DOM, três ciclos workerd com 15/14/14 RPC e ensaio com RPC real usando 28. Migrations aditivas `0007`/`0008` aplicadas após novo backup integral D1 Time Travel.
+- Cloudflare `a38fe3b8-143b-4838-bf81-13295a4242a3` e Vercel Hobby `dpl_93GrwTCGXChKNNJoFnAaYXwXBY5Z` publicados a partir de `3f6a199`. Duas recolhas naturais verificadas no painel: 3.432 → 3.434 tokens, 194 outcomes e bloqueados ocultos.
+- O PnL real permanece desconhecido: 111 carteiras acompanhadas, zero elegíveis; 107 com liquidação nativa por reconciliar e quatro sem fluxos opostos comprovados. Fontes de histórico, preços/taxas e clustering continuam necessárias. Sem X, modo B, backtest/modelo ou execução de trades. Detalhes em [wallet scoring](docs/WALLET-SCORING.md).
+
 ## Verificação dos outcomes antes da continuação da fase 3 — 24/10/2026
 
 - Corrigida a prioridade da fila: janelas abertas, quatro tokens distintos e fanout limitado a 24 jobs; os expirados procuram apenas dados históricos reais. Retries até um minuto durante a janela e backoff posterior limitado a 24h.
