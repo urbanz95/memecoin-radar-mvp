@@ -152,7 +152,7 @@ function newState(wallet, chainId, options) {
   return { schemaVersion: 1, accountingVersion: VERSION, chainId, walletAddress: wallet, lots: [], seen: [], lastApplied: null,
     counts: { buys: 0, sells: 0, transfers: 0 }, disposals: 0, wins: 0, pnl: packed(frac()), holding: packed(frac()), early: packed(frac()),
     costsKnown: true, feesKnown: true, attributionKnown: true, holdingKnown: true, earlyKnown: true,
-    historyFromStart: completeHistory(options, { historyFromStart: true }), lastDisposalAt: null,
+    historyFromStart: completeHistory(options, { historyFromStart: true }), lastDisposalAt: null, firstApplied: null,
     opening: opening && opening.n > 0n ? packed(opening) : null, peak: opening && opening.n > 0n ? packed(opening) : null,
     drawdown: packed(frac()), equityKnown: true };
 }
@@ -168,6 +168,8 @@ function restore(value, wallet, chainId) {
   if (value.opening) unpack(value.opening); if (value.peak) unpack(value.peak);
   if (value.lastApplied && (!whole(value.lastApplied.blockNumber) || !whole(value.lastApplied.logIndex)
     || !hash(value.lastApplied.blockHash) || !hash(value.lastApplied.transactionHash))) throw Error('INVALID_ACCOUNTING_CURSOR');
+  if (value.firstApplied && (!whole(value.firstApplied.blockNumber) || !hash(value.firstApplied.blockHash)
+    || !whole(value.firstApplied.timestamp))) throw Error('INVALID_ACCOUNTING_START');
   for (const lot of value.lots) {
     if (!address(lot.tokenAddress) || raw(lot.quantityRaw) === null || raw(lot.quantityRaw) === 0n
       || lot.acquiredAt !== null && !whole(lot.acquiredAt) || ![true, false, null].includes(lot.early)) throw Error('INVALID_ACCOUNTING_LOT');
@@ -182,7 +184,17 @@ function completeHistory(options, state) {
   return state.historyFromStart && options.historyComplete === true && proof?.complete === true && proof.contiguous === true
     && proof.canonical === true && proof.openingBalanceKnown === true && refs(proof.evidence);
 }
-function profile(state, options, gaps = [], requiresReplay = false) {
+function openingProofValid(state, options) {
+  const proof = options.openingEquityProof; const start = state.firstApplied;
+  const value = decimal(proof?.value); const at = time(proof?.timestamp);
+  return Boolean(state.opening && start && value && compare(value, unpack(state.opening)) === 0
+    && proof.chainId === state.chainId && address(proof.walletAddress) === state.walletAddress
+    && proof.canonical === true && whole(proof.blockNumber) && proof.blockNumber <= start.blockNumber
+    && hash(proof.blockHash) && (proof.blockNumber !== start.blockNumber || proof.blockHash.toLowerCase() === start.blockHash)
+    && Number.isSafeInteger(at) && at >= 0 && at <= start.timestamp
+    && typeof proof.source === 'string' && proof.source.length > 0 && refs(proof.evidence));
+}
+function profile(state, options, gaps = [], requiresReplay = false, realizedEvents = []) {
   const checked = time(options.now ?? Date.now());
   const historyComplete = !requiresReplay && completeHistory(options, state);
   const attributionComplete = !requiresReplay && options.attributionComplete === true && state.attributionKnown;
@@ -190,6 +202,11 @@ function profile(state, options, gaps = [], requiresReplay = false) {
   const costsComplete = !requiresReplay && historyComplete && state.costsKnown;
   const ready = historyComplete && attributionComplete && feesComplete && costsComplete;
   const pnl = unpack(state.pnl); const count = state.disposals;
+  const observedDrawdown = state.opening && state.equityKnown ? numeric(mul(unpack(state.drawdown), frac(100n))) : null;
+  const drawdownValid = typeof observedDrawdown === 'number' && Number.isFinite(observedDrawdown)
+    && observedDrawdown >= 0 && observedDrawdown <= 100;
+  const temporalMetricsComplete = ready && state.holdingKnown && state.earlyKnown && state.equityKnown
+    && drawdownValid && openingProofValid(state, options);
   const bounded = bytes(state) <= MAX_STATE_BYTES;
   const risk = options.riskFlags;
   const riskFlags = refs(options.riskEvidence) && risk && !Array.isArray(risk) && typeof risk === 'object'
@@ -206,13 +223,17 @@ function profile(state, options, gaps = [], requiresReplay = false) {
     winRatePct: ready && count ? state.wins / count * 100 : null,
     avgHoldingSeconds: ready && count && state.holdingKnown ? numeric(mul(unpack(state.holding), frac(1n, BigInt(count)))) : null,
     earlyEntryPct: ready && count && state.earlyKnown ? numeric(mul(unpack(state.early), frac(100n, BigInt(count)))) : null,
-    maxDrawdownPct: ready && count && state.opening && state.equityKnown ? numeric(mul(unpack(state.drawdown), frac(100n))) : null,
+    maxDrawdownPct: ready && count && drawdownValid ? observedDrawdown : null,
     lastRealizedAt: ready && count ? state.lastDisposalAt : null,
     observedCounts: { ...state.counts, disposals: count }, observedLastDisposalAt: state.lastDisposalAt,
     accountingMethod: { version: VERSION, costBasis: 'FIFO', realizedTrade: 'one attributed sell transaction and token',
       holding: 'mean of FIFO quantity-weighted holding seconds per disposal', earlyEntrySeconds: options.earlyEntrySeconds ?? 300,
       drawdown: 'verified opening equity plus cumulative net realized PnL; excludes unrealized token prices', moneyDecimals: 18 },
-    requiresReplay, gaps: [...new Set(gaps)], state: bounded ? state : null, accountingState: bounded ? state : null };
+    temporalMetricsComplete, realizedEvents: temporalMetricsComplete ? realizedEvents : [],
+    requiresReplay, gaps: [...new Set([...gaps,
+      ...(ready && count && observedDrawdown !== null && !drawdownValid ? ['WALLET_EQUITY_PATH_UNRECONCILED'] : []),
+      ...(ready && count && !temporalMetricsComplete ? ['WALLET_TEMPORAL_METRICS_INCOMPLETE'] : [])])],
+    state: bounded ? state : null, accountingState: bounded ? state : null };
   return result;
 }
 
@@ -221,11 +242,14 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
   const wallet = address(options.walletAddress ?? trades?.[0]?.walletAddress); const chainId = options.chainId ?? 4663;
   let state = newState(wallet, chainId, options);
   let committed = structuredClone(state);
+  const realizedEvents = [];
   try {
     if (!wallet || wallet === ZERO || chainId !== 4663) throw Error('INVALID_ACCOUNTING_IDENTITY');
     if (options.previousState) state = restore(options.previousState, wallet, chainId);
     committed = structuredClone(state);
-    if (!Array.isArray(trades) || trades.length > 512 || options.reorgDetected) throw Error('ACCOUNTING_REPLAY_REQUIRED');
+    const eventLimit = options.maxRealizedEvents ?? 128;
+    if (!whole(eventLimit) || eventLimit > 128 || !Array.isArray(trades) || trades.length > 512 || options.reorgDetected)
+      throw Error('ACCOUNTING_REPLAY_REQUIRED');
     const input = trades.filter(trade => address(trade?.walletAddress) === wallet).sort((a, b) => a.blockNumber - b.blockNumber || a.logIndex - b.logIndex);
     for (const trade of input) {
       const at = time(trade.timestamp); const quantity = raw(trade.quantityRaw); const token = address(trade.tokenAddress);
@@ -239,6 +263,7 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
       const cursor = state.lastApplied;
       if (cursor && (trade.blockNumber < cursor.blockNumber || trade.blockNumber === cursor.blockNumber
         && (trade.blockHash !== cursor.blockHash || trade.logIndex <= cursor.logIndex))) throw Error('ACCOUNTING_OUT_OF_ORDER');
+      if (!cursor && !state.firstApplied) state.firstApplied = { blockNumber: trade.blockNumber, blockHash: trade.blockHash, timestamp: at };
       if (trade.kind !== 'TRANSFER' && trade.kind !== 'TRADE') throw Error('UNKNOWN_ACCOUNTING_EVENT');
       if (trade.kind === 'TRADE' && (!address(trade.quoteAddress) || address(trade.quoteAddress) === ZERO))
         throw Error('AMBIGUOUS_ACCOUNTING_QUOTE');
@@ -284,12 +309,26 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
           if (known && gross && fee) {
             const net = sub(sub(gross, fee), basis); state.pnl = packed(add(unpack(state.pnl), net));
             if (net.n > 0n) state.wins++;
+            let currentDrawdown = null;
             if (state.opening && state.equityKnown) {
               const equity = add(unpack(state.opening), unpack(state.pnl));
               if (compare(equity, unpack(state.peak)) > 0) state.peak = packed(equity);
               const peak = unpack(state.peak); const drawdown = mul(sub(peak, equity), frac(peak.d, peak.n));
+              currentDrawdown = numeric(mul(drawdown, frac(100n)));
               if (compare(drawdown, unpack(state.drawdown)) > 0) state.drawdown = packed(drawdown);
             }
+            const proofRefs = [...new Set([...(refs(trade.evidence) ? trade.evidence : []),
+              ...(refs(options.historyProof?.evidence) ? options.historyProof.evidence : []),
+              ...(refs(options.openingEquityProof?.evidence) ? options.openingEquityProof.evidence : []),
+              ...(refs(trade.quoteUsdProof?.evidence) ? trade.quoteUsdProof.evidence : []),
+              ...(refs(trade.feeAssetUsdProof?.evidence) ? trade.feeAssetUsdProof.evidence : [])])];
+            realizedEvents.push({ schemaVersion: 1, accountingVersion: VERSION, id: trade.id, disposalIndex: state.disposals,
+              chainId, walletAddress: wallet, tokenAddress: token, transactionHash: trade.transactionHash,
+              blockHash: trade.blockHash, blockNumber: trade.blockNumber, logIndex: trade.logIndex,
+              timestamp: new Date(at).toISOString(), netRealizedPnlUsd: money(net),
+              netRealizedPnlUsdExact: { numerator: net.n.toString(), denominator: net.d.toString() },
+              holdingSeconds: holdingKnown ? numeric(holding) : null, earlyEntryPct: earlyKnown ? numeric(mul(early, frac(100n))) : null,
+              drawdownPct: currentDrawdown, source: VERSION, evidence: proofRefs.slice(0, 64) });
           } else state.equityKnown = false;
         } else if (!known) state.costsKnown = false;
       }
@@ -297,10 +336,12 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
       state.seen.push({ id: trade.id, fingerprint }); if (state.seen.length > 32) state.seen.shift();
       if (state.lots.length > 128 || bytes(state) > MAX_STATE_BYTES) throw Error('ACCOUNTING_CAPACITY_REQUIRES_REPLAY');
     }
-    return profile(state, options, [
+    const result = profile(state, options, [
       ...(!completeHistory(options, state) ? ['WALLET_HISTORY_INCOMPLETE'] : []),
       ...(!state.costsKnown ? ['WALLET_COST_BASIS_UNKNOWN'] : []), ...(!state.feesKnown ? ['WALLET_FEES_UNKNOWN'] : []),
-    ]);
+    ], false, realizedEvents);
+    if (result.realizedEvents.length > eventLimit) throw Error('ACCOUNTING_REALIZATION_CAPACITY_REQUIRES_REPLAY');
+    return result;
   } catch (error) {
     // Return an explicit replay state instead of resetting FIFO or allowing an
     // accounting-capacity error to break the collector's unrelated ingestion.

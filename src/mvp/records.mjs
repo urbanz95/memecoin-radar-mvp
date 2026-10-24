@@ -48,7 +48,7 @@ export function sourceRecord(value, fallback) {
   if (object(source) && !Object.keys(source).length) throw new Error('MVP_SOURCE_REQUIRED');
   return json({ schemaVersion: MVP_SCHEMA_VERSION, provenance: source }, MAX_SOURCE_BYTES, 'MVP_SOURCE_LIMIT_EXCEEDED');
 }
-const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp', 'lastRealizedAt', 'firstEntryAt', 'holdersCheckedAt', 'liquidityFetchedAt', 'observedLastDisposalAt']);
+const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp', 'lastRealizedAt', 'firstEntryAt', 'lastEntryAt', 'holdersCheckedAt', 'liquidityFetchedAt', 'observedLastDisposalAt']);
 function assertNoFuture(value, capturedAt, depth = 0) {
   if (depth > 32) throw new Error('MVP_FEATURE_DEPTH_EXCEEDED');
   if (Array.isArray(value)) { for (const item of value) assertNoFuture(item, capturedAt, depth + 1); return; }

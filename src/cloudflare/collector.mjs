@@ -20,6 +20,9 @@ import { decisionKey } from '../mvp/records.mjs';
 import { prepareWalletLedger, enrichWalletTransactions, readWalletProfiles } from '../mvp/wallet-ledger.mjs';
 import { projectObservedWallets } from '../mvp/wallet-runtime.mjs';
 import { prepareWeeklyReport } from '../mvp/weekly-report.mjs';
+import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
+import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
+import PROFILES_CONFIG from '../mvp/config.mjs';
 
 const TOPICS = { v2: '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
   v3: '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118',
@@ -88,7 +91,7 @@ function appendMomentumHistory(previous, snapshot, entry, observedAt, runId) {
   }
   return history.slice(0, 40);
 }
-export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc: supplied } = {}) {
+export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc: supplied, walletProofs = {} } = {}) {
   const owner = crypto.randomUUID(); const start = now(); const leaseUntil = start + 300000;
   const held = await env.DB.prepare("UPDATE control SET state_json=CASE WHEN status='COMPLETED' THEN state_json ELSE json_set(state_json,'$.evaluationState',json('{}')) END,lease_owner=?,lease_until=?,status='RUNNING' WHERE id=1 AND lease_until<=? RETURNING state_json,last_success")
     .bind(owner, leaseUntil, start).first();
@@ -288,20 +291,32 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
       }
     }
     const projectedWallets = mvpPhase >= 3 ? await projectObservedWallets(env.DB, walletEnrichment.receipts,
-      { now: now(), reorgDetected: reorg }) : { profiles: [], diagnostics: [] };
+      { now: now(), reorgDetected: reorg, receiptEvidence: walletProofs.receiptEvidence,
+        walletEvidence: walletProofs.walletEvidence, replayEvidence: walletProofs.replayEvidence })
+      : { profiles: [], diagnostics: [], realizedEvents: [] };
+    const temporal = mvpPhase >= 3 ? await prepareWalletTemporalUpdates(env.DB, { runId: owner,
+      observedAt: now(), profiles: projectedWallets.profiles, realizedEvents: projectedWallets.realizedEvents,
+      config: PROFILES_CONFIG, reorgDetected: reorg }) : { profiles: [], realizationUpdates: [], diagnostics: [] };
+    projectedWallets.profiles = temporal.profiles.map(profile => ({ ...profile,
+      eligible: scoreWalletProfile(profile, { now: now(), config: PROFILES_CONFIG }).eligible }));
     let mvpMomentum = reorg ? [] : saved.mvpMomentum ?? [];
     const mvpDecisions = [];
     if (mvpPhase >= 2) for (const snapshot of snapshots) {
       const existingProfiles = mvpPhase >= 3 && !reorg ? await readWalletProfiles(env.DB, { tokenAddress: snapshot.address }) : [];
       const mergedProfiles = new Map(existingProfiles.map(profile => [profile.walletAddress, profile]));
       for (const profile of projectedWallets.profiles) if (walletEnrichment.receipts.some(value =>
-        value.tokenAddress === snapshot.address && value.receipt.from?.toLowerCase() === profile.walletAddress))
+        value.tokenAddress === snapshot.address && value.receipt.from?.toLowerCase() === profile.walletAddress)
+        || profile.tokenEntries?.some(value => value.tokenAddress === snapshot.address))
         mergedProfiles.set(profile.walletAddress, profile);
+      const scoringProfiles = mvpPhase >= 3
+        ? await attachWalletTemporalEvidence(env.DB, [...mergedProfiles.values()],
+          { now: now(), config: PROFILES_CONFIG, reorgDetected: reorg })
+        : [...mergedProfiles.values()];
       const entry = screeningEntries?.find(value => value.address === snapshot.address) ?? {};
       if (mvpPhase >= 3) mvpMomentum = appendMomentumHistory(mvpMomentum, snapshot, entry, now(), owner);
       mvpDecisions.push(evaluateNewToken(snapshot, entry,
-        { now: now(), walletProfiles: [...mergedProfiles.values()],
-          walletEntries: [...mergedProfiles.values()].flatMap(profile => profile.tokenEntries ?? []),
+        { now: now(), walletProfiles: scoringProfiles,
+          walletEntries: scoringProfiles.flatMap(profile => profile.tokenEntries ?? []),
           momentumObservations: mvpMomentum.filter(point => point.address === snapshot.address) }));
     }
     const dryRunAlerts = mvpPhase >= 2 ? prepareDryRunAlerts(env.DB, mvpDecisions.map(decision => ({
@@ -330,7 +345,10 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             diagnostics: dryRunAlerts.diagnostics },
           ...(mvpPhase >= 3 ? { walletCollection: { events: walletCapture.events.length, ranges: walletCapture.ranges.length,
             receipts: walletEnrichment.receipts.length, profilesUpdated: projectedWallets.profiles.length,
-            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics] },
+            realizedDisposals: projectedWallets.realizedEvents.length,
+            temporalProfilesUpdated: temporal.realizationUpdates.length,
+            scoreMethod: PROFILES_CONFIG.profiles.profile_new.walletScoring.version,
+            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics, ...temporal.diagnostics] },
             weekly: { due: weekly.due, reportKey: weekly.report?.reportKey ?? null,
               generatedAt: weekly.report?.generatedAt ?? null } } : {}),
           decisions: mvpDecisions.filter(d => !['REJECTED', 'OUT_OF_SCOPE'].includes(d.status)).map(d => ({
@@ -374,7 +392,9 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     // D1 batch é uma transação. CHECK aborta toda a transação se o lease foi perdido.
     const commands = [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)];
     if (mvpPhase >= 3) commands.push(...prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
-      ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles, reorgDetected: reorg }).commands,
+      ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles,
+      realizedEvents: projectedWallets.realizedEvents, realizationUpdates: temporal.realizationUpdates,
+      reorgDetected: reorg }).commands,
       ...weekly.commands);
     if (recordingEnabled) {
       const observedAt = now();

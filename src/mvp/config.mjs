@@ -62,7 +62,7 @@ export function validateProfiles(config) {
   const walletPath = 'profiles.profile_new.walletScoring';
   shape(wallet, ['version', 'minRealizedTrades', 'minScore', 'minIndependentGroups', 'timeDecayHalfLifeDays',
     'maxProfileAgeSeconds', 'maxEntryAgeSeconds', 'maxFutureSkewSeconds', 'maxWallets', 'maxEntries', 'weights', 'targets'], walletPath);
-  exact(wallet.version, 'wallet-manual-v1', `${walletPath}.version`);
+  if (!['wallet-manual-v1', 'wallet-manual-v2'].includes(wallet.version)) invalid(`${walletPath}.version`);
   integer(wallet.minRealizedTrades, fresh.minWalletTrades, 1000000, `${walletPath}.minRealizedTrades`);
   integer(wallet.minScore, 70, 100, `${walletPath}.minScore`);
   integer(wallet.minIndependentGroups, 2, 128, `${walletPath}.minIndependentGroups`);

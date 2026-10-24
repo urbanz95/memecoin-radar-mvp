@@ -7,8 +7,8 @@ import { scoreWalletProfile, aggregateWalletSignal, scoreLaunchMomentum, scoreNe
 
 export const MVP_POLICY_HASH = createHash('sha256').update(JSON.stringify({
   profiles: configProfileFingerprint(PROFILES_CONFIG), hardFilters: policyHash(legacyPolicy),
-  method: 'mvp-new-v2-wallet-fifo-momentum' })).digest('hex');
-export const MVP_SCORE_VERSION = `mvp-new-v2:${MVP_POLICY_HASH.slice(0, 16)}`;
+  method: 'mvp-new-v3-wallet-realization-decay-momentum' })).digest('hex');
+export const MVP_SCORE_VERSION = `mvp-new-v3:${MVP_POLICY_HASH.slice(0, 16)}`;
 
 function chartUrl(entry) {
   const external = entry.externalMarket?.pairAddress;

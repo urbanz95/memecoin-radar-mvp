@@ -6,11 +6,13 @@
     'poll-state', 'new-pipeline', 'established-pipeline', 'quality', 'approved', 'token', 'coverage',
     'strict-new', 'strict-established', 'screening-summary', 'watch-new', 'watch-established', 'watch-unclassified', 'unclassified-section',
     'market-alerts-count', 'trade-count', 'signal-summary', 'signals-list', 'signals-available', 'data-health',
-    'mvp-status', 'mvp-data', 'mvp-wallets', 'mvp-outcomes', 'mvp-alerts', 'mvp-weekly', 'mvp-preview'];
+    'mvp-status', 'mvp-data', 'mvp-wallets', 'mvp-outcomes', 'mvp-alerts', 'mvp-weekly', 'mvp-preview',
+    'mvp-weekly-details', 'mvp-weekly-horizon', 'mvp-weekly-tables', 'mvp-weekly-wallet-status'];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
   const dateFormat = new Intl.DateTimeFormat('pt-PT', { timeZone: 'Europe/Lisbon', day: '2-digit', month: '2-digit',
     year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const numberFormat = new Intl.NumberFormat('pt-PT');
+  const weeklyDateFormat = new Intl.DateTimeFormat('pt-PT', { timeZone: 'Europe/Lisbon', day: '2-digit', month: '2-digit', year: 'numeric' });
   let timer;
   let freshnessTimer;
   let pending = false;
@@ -585,10 +587,75 @@
     text('data-health', marketLimited && !hasRecentMarket ? 'O fornecedor de mercado limitou temporariamente as consultas. A recolha voltará a tentar automaticamente; os dados em falta não geram sinais.' : '');
   }
 
+  function renderWeeklyReport(weekly) {
+    const tables = ui['mvp-weekly-tables'];
+    tables.replaceChildren();
+    text('mvp-weekly-wallet-status', '');
+    ui['mvp-weekly-details'].hidden = !validObject(weekly);
+    if (!validObject(weekly)) {
+      text('mvp-weekly', 'O relatório semanal aguarda uma semana de lançamentos com a janela de sete dias concluída.');
+      return;
+    }
+    const at = timestamp(weekly.weekStart);
+    const week = Number.isFinite(at) ? weeklyDateFormat.format(at) : 'data não disponível';
+    const decisions = weekly.totals?.realDecisions;
+    text('mvp-weekly', `Relatório semanal · semana de ${week} · ${integer(decisions) ? numberFormat.format(decisions) : '—'} decisões reais.`);
+    if (decisions === 0) {
+      tables.append(node('p', 'empty-list', 'Esta semana ainda não tem avaliações reais. Os resultados aparecerão quando a respetiva coorte estiver disponível.'));
+      return;
+    }
+    const horizons = ['15m', '1h', '24h', '7d'];
+    const selected = ui['mvp-weekly-horizon'].value;
+    const horizon = horizons.includes(selected) ? selected : '1h';
+    const definitions = [['0-49', '0–49'], ['50-64', '50–64'], ['65-74', '65–74'], ['75-84', '75–84'], ['85-100', '85–100'], ['UNKNOWN', 'Score desconhecido']];
+    const addTable = (dimension, caption, bands, unknown) => {
+      if (!Array.isArray(bands)) return false;
+      const indexed = new Map();
+      for (const band of bands.slice(0, 20)) {
+        if (validObject(band) && definitions.some(([id]) => id === band.id && id !== 'UNKNOWN') && !indexed.has(band.id)) indexed.set(band.id, band);
+      }
+      if (validObject(unknown)) indexed.set('UNKNOWN', unknown);
+      const wrap = node('div', 'weekly-table-wrap');
+      wrap.tabIndex = 0; wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', caption);
+      const table = node('table', 'weekly-table'); table.dataset.scoreDimension = dimension;
+      table.append(node('caption', '', caption));
+      const head = node('thead'); const labels = node('tr');
+      for (const label of ['Faixa', 'Decisões', 'Retorno médio', 'Retornos com dados']) {
+        const cell = node('th', '', label); cell.scope = 'col'; labels.append(cell);
+      }
+      head.append(labels); table.append(head);
+      const body = node('tbody');
+      for (const [id, label] of definitions) {
+        const band = indexed.get(id); const result = validObject(band?.horizons) ? band.horizons[horizon] : null;
+        const samples = result?.returnSamples; const denominator = result?.denominator;
+        const covered = integer(samples) && integer(denominator) && samples <= denominator
+          && integer(band?.decisions) && denominator === band.decisions;
+        const mean = covered && samples > 0 && typeof result?.averageReturnPct === 'number' && Number.isFinite(result.averageReturnPct)
+          ? `${signedAmount(result.averageReturnPct)}%` : 'Sem dados';
+        const row = node('tr'); row.dataset.band = id;
+        const title = node('th', '', label); title.scope = 'row';
+        row.append(title, node('td', '', integer(band?.decisions) ? numberFormat.format(band.decisions) : '—'),
+          node('td', '', mean), node('td', '', covered ? `${numberFormat.format(samples)}/${numberFormat.format(denominator)}` : '—'));
+        body.append(row);
+      }
+      table.append(body); wrap.append(table); tables.append(wrap);
+      return true;
+    };
+    if (!addTable('token', 'Resultado por score do token', weekly.bands, weekly.unknownScore))
+      tables.append(node('p', 'note', 'As faixas de score do token ainda não estão disponíveis neste relatório.'));
+    if (weekly.walletScoreReport?.status === 'COHORT_CHANGED') {
+      text('mvp-weekly-wallet-status', 'Não foi possível reconstruir as faixas de wallet score com os dados da mesma semana.');
+    } else if (weekly.walletScoreReport?.status !== 'READY'
+      || !addTable('wallet', 'Resultado por wallet score à data da decisão', weekly.walletScoreBands, weekly.walletUnknownScore)) {
+      text('mvp-weekly-wallet-status', 'As faixas de wallet score ainda não estão disponíveis neste relatório.');
+    }
+  }
+
   function renderMvp(report) {
     const mvp = report.mvp;
     if (!validObject(mvp) || mvp.recording !== true) {
       text('mvp-status', 'O serviço ainda não confirmou a gravação deste modo.');
+      renderWeeklyReport(null);
       return;
     }
     text('mvp-status', `Gravação ativa · avaliação em ${date(report.capturedAt)} (Lisboa) · dry-run.`);
@@ -601,10 +668,7 @@
       ? `${count(wallets.eligible)} elegíveis · ${count(wallets.tracked)} acompanhadas. ${wallets.eligible ? 'Exige pelo menos cinco trades realizados e custos comprovados.' : 'PnL por comprovar: faltam histórico completo, custo inicial e taxas.'}`
       : 'Ainda sem PnL realizado comprovado.');
     text('mvp-alerts', `${count(mvp.outbox?.stats?.queuedDryRun)} guardados · envio desativado`);
-    const weekly = mvp.weeklyReport;
-    text('mvp-weekly', validObject(weekly)
-      ? `Relatório semanal: ${shortText(weekly.cohortStart ?? weekly.weekStart, 40)} · ${count(weekly.totals?.realDecisions)} decisões reais. Resultados por faixa de score e cobertura disponíveis na última recolha em JSON.`
-      : 'O relatório semanal aguarda uma semana de lançamentos com a janela de sete dias concluída.');
+    renderWeeklyReport(mvp.weeklyReport);
     const blocked = new Set((report.screening?.entries ?? []).filter(entry => entry.status === 'BLOCKED').map(entry => entry.address?.toLowerCase()));
     const alerts = Array.isArray(mvp.outbox?.recent) ? mvp.outbox.recent.filter(alert => alert?.dryRun === true
       && alert.synthetic !== true && typeof alert.address === 'string' && /^0x[0-9a-f]{40}$/i.test(alert.address)
@@ -743,6 +807,7 @@
   }
 
   ui.refresh.addEventListener('click', () => { clearTimeout(timer); update(); });
+  ui['mvp-weekly-horizon'].addEventListener('change', () => renderWeeklyReport(lastReport?.mvp?.weeklyReport));
   document.addEventListener('visibilitychange', () => {
     clearTimeout(timer);
     clearInterval(freshnessTimer);

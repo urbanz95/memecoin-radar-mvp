@@ -2,6 +2,7 @@ import { isEvmAddress } from '../network.mjs';
 import { hash, hex, quantity } from '../cloudflare/rpc.mjs';
 import { recordTime, recordLabel } from './records.mjs';
 import { createHash } from 'node:crypto';
+import { prepareWalletRealizationCommands } from './wallet-temporal.mjs';
 
 const whole = value => Number.isSafeInteger(value) && value >= 0;
 const zero = '0x' + '0'.repeat(40);
@@ -39,9 +40,12 @@ const keyOf = value => `${value.chainId ?? 4663}:${value.transactionHash}:${valu
 const all = async statement => (await statement.all())?.results ?? [];
 
 /** Prepare only: caller appends every statement to its existing lease-fenced batch. */
-export function prepareWalletLedger(DB, { runId, observedAt, ranges = [], events = [], receipts = [], attempts = [], profiles = [], reorgDetected = false } = {}) {
+export function prepareWalletLedger(DB, { runId, observedAt, ranges = [], events = [], receipts = [], attempts = [], profiles = [],
+  realizedEvents = [], realizationUpdates = [], reorgDetected = false } = {}) {
   recordLabel(runId, 'RUN_ID'); observedAt = recordTime(observedAt);
-  if (![ranges, events, receipts, attempts, profiles].every(Array.isArray) || events.length > 128 || ranges.length > 16 || receipts.length > 8) fail('INPUT_LIMIT');
+  if (![ranges, events, receipts, attempts, profiles, realizedEvents, realizationUpdates].every(Array.isArray)
+    || events.length > 128 || ranges.length > 16 || receipts.length > 8 || realizedEvents.length > 128
+    || realizationUpdates.length > 128) fail('INPUT_LIMIT');
   const commands = []; const unique = new Map();
   if (reorgDetected) {
     commands.push(DB.prepare('INSERT OR IGNORE INTO mvp_wallet_reorgs(run_id,observed_at) VALUES(?,?)').bind(runId, observedAt));
@@ -82,8 +86,11 @@ export function prepareWalletLedger(DB, { runId, observedAt, ranges = [], events
     commands.push(DB.prepare("UPDATE mvp_wallet_receipt_jobs SET state='RETRY',attempts=attempts+1,next_attempt_at=?+min(86400000,60000*(1<<min(attempts,10))),last_reason=? WHERE chain_id=4663 AND transaction_hash=? AND block_hash=? AND state!='COMPLETE'")
       .bind(observedAt, attempt.reason, attempt.transactionHash.toLowerCase(), attempt.blockHash.toLowerCase()));
   }
+  if (realizedEvents.length || realizationUpdates.length) commands.push(...prepareWalletRealizationCommands(DB,
+    { runId, observedAt, realizedEvents, realizationUpdates }));
   if (profiles.length) commands.push(...prepareWalletProjection(DB, { runId, observedAt, profiles }).commands);
-  return { commands, counts: { events: unique.size, ranges: ranges.length, receipts: receipts.length, profiles: profiles.length } };
+  return { commands, counts: { events: unique.size, ranges: ranges.length, receipts: receipts.length, profiles: profiles.length,
+    realizations: realizedEvents.length, temporalSummaries: realizationUpdates.length } };
 }
 
 function profileOf(profile, observedAt) {
@@ -97,6 +104,9 @@ function profileOf(profile, observedAt) {
     if (typeof profile[field] !== 'boolean') fail('INVALID_PROFILE_COMPLETENESS');
   if (profile.realizedTradeCount !== null && !whole(profile.realizedTradeCount)) fail('INVALID_PROFILE_TRADES');
   const value = { ...profile, walletAddress: addr(profile.walletAddress) };
+  // Temporal evidence has its own bounded projection. Keep profile events
+  // compatible without copying the same summary into every immutable row.
+  delete value.realizationHistory;
   for (const field of ['netRealizedPnlUsd', 'winRatePct', 'avgHoldingSeconds', 'earlyEntryPct', 'maxDrawdownPct', 'lastRealizedAt', 'riskFlags'])
     if (value[field] === undefined) value[field] = null;
   if (value.netRealizedPnlUsd !== null && !(typeof value.netRealizedPnlUsd === 'number' && Number.isFinite(value.netRealizedPnlUsd))

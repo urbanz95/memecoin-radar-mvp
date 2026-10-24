@@ -196,3 +196,76 @@ test('drawdown is measured against opening equity plus cumulative net realized P
   assert.equal(result.netRealizedPnlUsd, '-10.084'); assert.equal(result.winRatePct, 0);
   assert.equal(result.maxDrawdownPct, 10.084);
 });
+
+const openingProof = (value = '1000') => ({ chainId: 4663, walletAddress: W, value,
+  timestamp: iso(t0 - 60000), blockNumber: 99, blockHash: hash(99), canonical: true,
+  source: 'fixture:verified-opening-equity', evidence: ['fixture:opening-balances-and-prices'] });
+
+test('verified disposals emit exact canonical realization deltas once, independently of the bounded FIFO state', () => {
+  const buy = normalize(fixture()).trades[0]; const sell = normalize(fixture('SELL', 110)).trades[0];
+  const options = complete({ openingEquityProof: openingProof() });
+  const first = computeRealizedWalletMetrics([buy], options);
+  const second = computeRealizedWalletMetrics([buy, sell], { ...options, previousState: first.state });
+  assert.equal(second.temporalMetricsComplete, true);
+  assert.equal(second.realizedEvents.length, 1);
+  const event = second.realizedEvents[0];
+  assert.equal(event.id, sell.id); assert.equal(event.disposalIndex, 1);
+  assert.equal(event.netRealizedPnlUsd, '19.916');
+  assert.deepEqual(event.netRealizedPnlUsdExact, { numerator: '4979', denominator: '250' });
+  assert.equal(event.timestamp, sell.timestamp); assert.equal(event.transactionHash, sell.transactionHash);
+  assert.equal(event.holdingSeconds, 600); assert.equal(event.earlyEntryPct, 100); assert.equal(event.drawdownPct, 0);
+  assert.ok(event.evidence.includes('fixture:opening-balances-and-prices'));
+  assert.equal('realizedEvents' in second.state, false);
+  const retry = computeRealizedWalletMetrics([sell], { ...options, previousState: second.state });
+  assert.deepEqual(retry.realizedEvents, []); assert.deepEqual(retry.state, second.state);
+});
+
+test('legacy lifetime PnL stays compatible, but missing or mismatched temporal proofs cannot publish immutable events', () => {
+  const trades = [normalize(fixture()).trades[0], normalize(fixture('SELL', 110)).trades[0]];
+  for (const openingEquityProof of [undefined, openingProof('999'), { ...openingProof(), walletAddress: TOKEN },
+    { ...openingProof(), timestamp: iso(t0 + 1000) }, { ...openingProof(), canonical: false }]) {
+    const result = computeRealizedWalletMetrics(trades, complete({ openingEquityProof }));
+    assert.equal(result.netRealizedPnlUsd, '19.916');
+    assert.equal(result.temporalMetricsComplete, false); assert.deepEqual(result.realizedEvents, []);
+    assert.ok(result.gaps.includes('WALLET_TEMPORAL_METRICS_INCOMPLETE'));
+  }
+  const noCreation = structuredClone(trades); noCreation[0].deploymentAt = null;
+  const result = computeRealizedWalletMetrics(noCreation, complete({ openingEquityProof: openingProof() }));
+  assert.equal(result.netRealizedPnlUsd, '19.916'); assert.deepEqual(result.realizedEvents, []);
+});
+
+test('realization batches preserve committed state on overflow or a later invalid event', () => {
+  const options = complete({ openingEquityProof: openingProof(), now: t0 + 86400000 });
+  const buy = normalize(fixture()).trades[0];
+  const first = computeRealizedWalletMetrics([buy], options);
+  const sell = normalize(fixture('SELL', 110)).trades[0];
+  for (const [trades, extra] of [
+    [[sell], { maxRealizedEvents: 0 }],
+    [[sell, { ...normalize(fixture('BUY', 111)).trades[0], quantityRaw: '0' }], {}],
+  ]) {
+    const result = computeRealizedWalletMetrics(trades, { ...options, previousState: first.state, ...extra });
+    assert.equal(result.requiresReplay, true); assert.deepEqual(result.realizedEvents, []);
+    assert.deepEqual(result.state, first.state);
+  }
+});
+
+test('per-disposal drawdown records recovery instead of repeating lifetime maximum drawdown', () => {
+  const trades = [normalize(fixture()).trades[0], normalize(fixture('SELL', 110, '90000000')).trades[0],
+    normalize(fixture('BUY', 111)).trades[0], normalize(fixture('SELL', 120, '120000000')).trades[0]];
+  const result = computeRealizedWalletMetrics(trades, complete({ initialEquityUsd: '100', openingEquityProof: openingProof('100') }));
+  assert.equal(result.realizedEvents.length, 2);
+  assert.equal(result.realizedEvents[0].drawdownPct, 10.084);
+  assert.equal(result.realizedEvents[1].drawdownPct, 0);
+  assert.equal(result.maxDrawdownPct, 10.084);
+  assert.deepEqual(result.realizedEvents.map(event => event.disposalIndex), [1, 2]);
+});
+
+test('an unreconciled equity path cannot publish an out-of-range drawdown as complete temporal proof', () => {
+  const trades = [normalize(fixture()).trades[0], normalize(fixture('SELL', 110, '1000000')).trades[0]];
+  const result = computeRealizedWalletMetrics(trades, complete({ initialEquityUsd: '1', openingEquityProof: openingProof('1') }));
+  assert.equal(result.netRealizedPnlUsd, '-99.084');
+  assert.equal(result.maxDrawdownPct, null);
+  assert.equal(result.temporalMetricsComplete, false);
+  assert.deepEqual(result.realizedEvents, []);
+  assert.ok(result.gaps.includes('WALLET_EQUITY_PATH_UNRECONCILED'));
+});

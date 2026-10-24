@@ -6,6 +6,7 @@ import { prepareDryRunAlerts } from '../src/mvp/alerts.mjs';
 import { decisionKey } from '../src/mvp/records.mjs';
 import { fixture, DEMO_TIME as NOW } from '../examples/fixtures.mjs';
 import { setup, TOKEN } from './helpers/mvp-sqlite.mjs';
+import { withSyntheticRealizations } from './helpers/wallet-temporal.mjs';
 const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_outbox.sql', import.meta.url), 'utf8');
 const iso = value => new Date(value).toISOString();
 const hash = value => '0x' + value.toString(16).padStart(64, '0');
@@ -17,12 +18,12 @@ function inputs() {
     blockNumber: snapshot.chainState.blockNumber, status: 'REVIEW', risks: [], hardFilterEvidence: {
       deployerHistory: { ...stamp, deployerAddress: TOKEN(80), knownMaliciousDeployments: 0 },
       launchActivity: { ...stamp, bundledSupplyPct: 3, sniperManipulationConfirmed: false } } };
-  const walletProfiles = [10, 11].map(n => ({ chainId: 4663, walletAddress: TOKEN(n), checkedAt: iso(NOW),
+  const walletProfiles = [10, 11].map(n => withSyntheticRealizations({ chainId: 4663, walletAddress: TOKEN(n), checkedAt: iso(NOW),
     source: 'synthetic-full-fifo-proof', evidence: ['fixture:full-ledger'], historyComplete: true,
     costsComplete: true, feesComplete: true, attributionComplete: true, clusteringComplete: true,
-    realizedTradeCount: 5, netRealizedPnlUsd: '1000', winRatePct: 70, avgHoldingSeconds: 300,
+    realizedTradeCount: 5, netRealizedPnlUsd: '1000', winRatePct: 100, avgHoldingSeconds: 300,
     earlyEntryPct: 70, maxDrawdownPct: 0, lastRealizedAt: iso(NOW),
-    riskFlags: { insider: false, bundler: false, washTrading: false } }));
+    riskFlags: { insider: false, bundler: false, washTrading: false } }, { now: NOW }));
   const walletEntries = walletProfiles.map((p, n) => ({ chainId: 4663, tokenAddress: snapshot.address,
     walletAddress: p.walletAddress, observedAt: iso(NOW), source: 'synthetic-receipt-flow', evidence: ['fixture:receipt'],
     attributionVerified: true, entryType: 'buy', firstEntryAt: iso(NOW - 60000), earlyEntry: true,

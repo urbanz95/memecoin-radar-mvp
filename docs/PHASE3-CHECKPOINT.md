@@ -22,3 +22,9 @@ Autorizado: terminar apenas a fase 3, manter dry-run, preservar o scanner e inte
 5. Atualizar este checkpoint e o changelog com o estado final e dados ainda em falta. Não avançar para X, modo B, backtest ou modelo.
 
 Sem provas fiáveis de histórico, custo inicial, preços históricos, taxas e atribuição, o PnL continua `null`. Provas de lançamento, património inicial e financiamento/clusters são necessárias para entrada precoce, drawdown e independência das carteiras. Nenhum valor favorável pode ser assumido para gerar sinais.
+
+## Segundo checkpoint — implementação concluída
+
+Runtime/accounting, ledger temporal e score por realização concluídos, incluindo frescura da compra canónica e proteção contra replay. A integração real de recibos → D1 → reinício → score foi testada. Suite completa: **511 testes passaram**; UI semanal: **5 cenários DOM passaram**. Configuração e build Cloudflare válidos. As provas locais estão em `runtime/phase3-wallet-completion/`.
+
+As migrations continuam por aplicar até fechar os ensaios workerd e registar novo backup. Hash de `0008`: `f3a79d08482c417c05da3e8e349658d6fce0d6dbcbc9661e65c392d60ce3ad10`; hash de `0007` preservado. Parâmetros, interfaces e limitações: [WALLET-SCORING.md](WALLET-SCORING.md).

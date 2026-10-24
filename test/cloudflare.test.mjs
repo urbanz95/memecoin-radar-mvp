@@ -16,6 +16,8 @@ const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_o
 const walletSchema = await readFile(new URL('../cloudflare/migrations/0004_mvp_wallets.sql', import.meta.url), 'utf8');
 const weeklySchema = await readFile(new URL('../cloudflare/migrations/0005_mvp_weekly.sql', import.meta.url), 'utf8');
 const outcomeCaptureSchema = await readFile(new URL('../cloudflare/migrations/0006_mvp_outcome_capture.sql', import.meta.url), 'utf8');
+const walletBandsSchema = await readFile(new URL('../cloudflare/migrations/0007_mvp_wallet_score_bands.sql', import.meta.url), 'utf8');
+const walletTemporalSchema = await readFile(new URL('../cloudflare/migrations/0008_mvp_wallet_realizations.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -684,7 +686,8 @@ test('MVP phase 2 archives its own profile and keeps legacy results without manu
 
 test('MVP phase 3 integrates the permanent wallet ledger and one weekly report without claiming an absent wallet history', async t => {
   const f = setup(t);
-  for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema, outcomeCaptureSchema]) f.DB.sqlite.exec(sql);
+  for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema, outcomeCaptureSchema,
+    walletBandsSchema, walletTemporalSchema]) f.DB.sqlite.exec(sql);
   Object.assign(f.env, { MVP_RECORDING_ENABLED: '1', MVP_PHASE: '3' });
   for (let i = 0; i < 2; i++) {
     assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now })).status, 'COMPLETED');
@@ -698,6 +701,11 @@ test('MVP phase 3 integrates the permanent wallet ledger and one weekly report w
   assert.equal(body.recordedResults.length, 2);
   assert.equal(body.mvp.futurePhasesEnabled, false);
   assert.equal(body.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
+  assert.equal(body.mvp.weeklyReport.walletScoreReport.status, 'READY');
+  assert.equal(body.mvp.weeklyReport.walletScoreBands.length, 5);
+  assert.equal(body.mvp.walletCollection.scoreMethod, 'wallet-manual-v2');
+  assert.equal(body.mvp.walletCollection.realizedDisposals, 0);
+  assert.equal(body.mvp.walletCollection.temporalProfilesUpdated, 0);
   assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 1);
   assert.equal(f.DB.sqlite.prepare("SELECT count(*) AS n FROM mvp_decisions WHERE profile='profile_new'").get().n, 1);
 });

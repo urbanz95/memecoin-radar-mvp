@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSha256": "fcec64398246f5e1722abf76181eadb39a3765d2151e77c218eaee35cc7e74b1",
+  "sourceSha256": "15268f9db0c162a63491864bbb2a61c32a81eeeb0b0fd3f39ada3ea2dbc1e9d3",
   "config": {
     "schemaVersion": 1,
     "network": {
@@ -35,7 +35,7 @@
         "minWalletTrades": 5,
         "minScore": 75,
         "walletScoring": {
-          "version": "wallet-manual-v1",
+          "version": "wallet-manual-v2",
           "minRealizedTrades": 5,
           "minScore": 70,
           "minIndependentGroups": 2,
