@@ -20,7 +20,7 @@
     "ANALYSIS_ENABLED": "1",
     "MVP_RECORDING_ENABLED": "1",
     "MVP_PHASE": "3",
-    "COLLECTOR_INSTANCE": "main-mvp-v3",
+    "COLLECTOR_INSTANCE": "main-phase3-outcomes-v2",
     "MARKET_GATEWAY_URL": "https://memecoin-radar-six.vercel.app/api/market",
     "LOG_CHUNK": "2048",
     "MAX_LOGS": "4",

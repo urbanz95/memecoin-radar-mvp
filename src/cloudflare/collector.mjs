@@ -13,7 +13,7 @@ import marketSignalPolicy from '../../config/market-signals.json' with { type: '
 import { publicReport } from './public-report.mjs';
 import { providerFetch } from '../mvp/provider-fetch.mjs';
 import { prepareDecisionRecords } from '../mvp/records.mjs';
-import { queryDueOutcomes, prepareOutcomeUpdates } from '../mvp/outcomes.mjs';
+import { queryDueOutcomes, prepareOutcomeUpdates, prepareMarketObservations, queryArchivedOutcomePoints } from '../mvp/outcomes.mjs';
 import { evaluateNewToken, MVP_SCORE_VERSION, MVP_POLICY_HASH } from '../mvp/pipeline.mjs';
 import { prepareDryRunAlerts } from '../mvp/alerts.mjs';
 import { decisionKey } from '../mvp/records.mjs';
@@ -252,13 +252,18 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const scan = runScan(snapshots, policy, { now: now(), state: reorg ? {} : saved.evaluationState ?? {} });
     let screeningEntries = analysisEnabled ? screeningHistory(reorg ? [] : saved.screeningEntries, analysis?.entry, scan.results, now()) : undefined;
     let marketData; let marketSignals;
-    const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4 }) : [];
+    const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4, maxJobs: 24 }) : [];
     let outcomeUpdates = { commands: [], diagnostics: [] };
+    let marketObservations = { commands: [], counts: {}, diagnostics: [] };
     if (analysisEnabled) {
       const visibleAddresses = new Set(screeningEntries.map(entry => entry.address));
-      const outcomeAddresses = new Set(outcomeJobs.map(job => job.address));
+      // Expired jobs need a historical point; fetching their current price
+      // consumes the free-provider quota without recovering the missed label.
+      const outcomeAddresses = new Set(outcomeJobs.filter(job => job.captureState === 'LIVE').map(job => job.address));
       const outcomeTargets = [...outcomeAddresses].map(address => screeningEntries.find(entry => entry.address === address) ?? { address });
-      const refreshed = await refreshMarketData([...outcomeTargets, ...screeningEntries.filter(entry => !outcomeAddresses.has(entry.address))],
+      const marketTargets = [...outcomeTargets, ...screeningEntries.filter(entry => !outcomeAddresses.has(entry.address))];
+      const requestedAddresses = new Set([...new Set(marketTargets.map(entry => entry.address))].slice(0, 20));
+      const refreshed = await refreshMarketData(marketTargets,
         providerState, { fetchImpl: fetchMarket, now });
       providerState = refreshed.providerState;
       marketData = refreshed.diagnostics;
@@ -266,12 +271,21 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
       // archives its full evaluated signal while confirmation state stays small.
       screeningEntries = screeningHistory(refreshed.entries.filter(entry => visibleAddresses.has(entry.address)), null, [], now());
       marketSignals = evaluateMarketSignals(screeningEntries, reorg ? {} : saved.marketSignalState, { now: now() });
-      if (recordingEnabled) outcomeUpdates = prepareOutcomeUpdates(env.DB, outcomeJobs.map(job => {
-        const market = refreshed.entries.find(entry => entry.address === job.address)?.externalMarket;
-        return { job, observation: market ? { priceUsd: market.priceUsd, liquidityUsd: market.liquidityUsd,
-          sourceTimestamp: market.fetchedAt, source: { provider: market.source, pairAddress: market.pairAddress,
-            chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : null };
-      }), { runId: owner, now });
+      if (recordingEnabled) {
+        marketObservations = prepareMarketObservations(env.DB,
+          refreshed.entries.filter(entry => requestedAddresses.has(entry.address)),
+          { runId: owner, observedAt: now(), refreshed: refreshed.diagnostics.status === 'REFRESHED' });
+        const archived = await queryArchivedOutcomePoints(env.DB, outcomeJobs, { now });
+        outcomeUpdates = prepareOutcomeUpdates(env.DB, outcomeJobs.map((job, index) => {
+          const market = job.captureState === 'LIVE'
+            ? refreshed.entries.find(entry => entry.address === job.address)?.externalMarket : null;
+          const sourceAt = Date.parse(market?.fetchedAt);
+          const inWindow = Number.isFinite(sourceAt) && sourceAt >= job.dueAt && sourceAt <= job.dueAt + job.allowedLagMs;
+          return { job, observation: market && inWindow ? { priceUsd: market.priceUsd, liquidityUsd: market.liquidityUsd,
+            sourceTimestamp: market.fetchedAt, source: { provider: market.source, pairAddress: market.pairAddress,
+              chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : archived[index]?.observation ?? null };
+        }), { runId: owner, now });
+      }
     }
     const projectedWallets = mvpPhase >= 3 ? await projectObservedWallets(env.DB, walletEnrichment.receipts,
       { now: now(), reorgDetected: reorg }) : { profiles: [], diagnostics: [] };
@@ -304,6 +318,10 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         marketData, signals: { policy: marketSignalPolicy } } : {}),
       ...(recordingEnabled ? { mvp: { phase: mvpPhase, dryRun: true, recording: true,
         scoreVersion: mvpPhase >= 2 ? MVP_SCORE_VERSION : policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
+        outcomeCollection: { jobs: outcomeJobs.length,
+          liveJobs: outcomeJobs.filter(job => job.captureState === 'LIVE').length,
+          expiredJobs: outcomeJobs.filter(job => job.captureState === 'EXPIRED').length,
+          marketObservations: marketObservations.counts, diagnostics: outcomeUpdates.diagnostics },
         ...(mvpPhase >= 2 ? { profile: 'profile_new',
           filters: { evaluated: mvpDecisions.length, rejected: mvpDecisions.filter(d => d.status === 'REJECTED').length,
             incomplete: mvpDecisions.filter(d => d.status === 'INCOMPLETE').length,
@@ -378,7 +396,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               score: result.score, reasons: result.reasons, age: entry?.age ?? null,
               riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
         }) });
-      commands.push(...records.commands, ...outcomeUpdates.commands);
+      commands.push(...records.commands, ...marketObservations.commands, ...outcomeUpdates.commands);
       if (mvpPhase >= 2) {
         const mvpRecords = prepareDecisionRecords(env.DB, { runId: owner, observedAt, source,
           eventFeaturesEncoding: 'gzip-base64/v1',

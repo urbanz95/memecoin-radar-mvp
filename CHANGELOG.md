@@ -1,5 +1,12 @@
 # Alterações
 
+## Verificação dos outcomes antes da continuação da fase 3 — 24/10/2026
+
+- Corrigida a prioridade da fila: janelas abertas, quatro tokens distintos e fanout limitado a 24 jobs; os expirados procuram apenas dados históricos reais. Retries até um minuto durante a janela e backoff posterior limitado a 24h.
+- Acrescentados arquivo imutável de observações, recuperação dentro da janela original e diagnóstico temporal do provider. Migration incremental `0006` aplicada após ponto integral D1 Time Travel; schema e hash verificados.
+- Baseline de 471 testes; suite final de 480 testes sem falhas e três ciclos workerd com 15/14/14 RPC. Em produção, duas observações novas e três outcomes +15m elevaram o total de 28 para 31, com preço, liquidez e timestamps confirmados em D1.
+- Primeiro push concluído em `urbanz95/memecoin-radar-mvp`, com branch novo para a continuação. Alterações seguintes de wallets mantidas em espera a pedido do utilizador. Pendências e riscos no [relatório](docs/MVP-VERIFICATION-2026-10-24.md).
+
 ## MVP — fase 3, 23/10/2026
 
 - Ledger aditivo de swaps/transfers, intervalos, recibos e perfis por geração, reutilizando evidência dos módulos existentes. Contabilidade FIFO incremental, montantes racionais/decimais exatos, taxas e replay explícito dentro de 16 KiB de estado.

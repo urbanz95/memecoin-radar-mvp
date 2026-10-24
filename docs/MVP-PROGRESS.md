@@ -6,7 +6,7 @@
 |---|---|---|
 | 1 | Auditoria, testes de compatibilidade e arquivo de dados/outcomes | Concluída: código, migration e gravação remota confirmados; mercado recuperado e verificado na fase 2 |
 | 2 | Filtros duros e alertas Telegram em dry-run, modo A <24h | Concluída e verificada em produção; outbox vazia, sem inventar score de wallets |
-| 3 | Score de wallets e relatório semanal por faixa de score | Código e execução automática verificados; PnL real permanece desconhecido sem provas completas. Execução parada aqui |
+| 3 | Score de wallets e relatório semanal por faixa de score | Base existente publicada; continuação pendente de provas de wallets, ponderação por realização e faixas de wallet score. Verificação dos outcomes concluída em 24/10 |
 | 4 | Integração X | Fora desta execução; exige confirmação |
 | 5 | Novo modo B ≥2.880h, com ENTRY/EXIT | Fora desta execução; exige confirmação |
 | 6 | Backtest e modelo | Fora desta execução; exige confirmação e pelo menos 300 lançamentos completos elegíveis |
@@ -58,4 +58,8 @@ O relatório semanal é descritivo: bandas 0–49, 50–64, 65–74, 75–84 e 8
 
 A recolha limitada de pools e transfers não comprova o histórico integral, custos e taxas em USD, atribuição económica ou financiamento/clustering de cada wallet. Por isso, o adaptador de produção conserva PnL desconhecido e perfis inelegíveis até haver prova suficiente; não cria aliases de cluster ou métricas favoráveis para produzir alertas. O cron continua de **60 em 60 segundos**, não em segundos individuais, reutilizando os módulos de pool/holders existentes.
 
-Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. Esta execução terminou na fase 3: não construiu X, novo modo B, backtest/modelo ou operações. O push para um novo repositório está bloqueado pela permissão GitHub de criação; o branch local está preservado.
+Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. X, novo modo B, backtest/modelo e operações continuam desativados. Em 24/10 o utilizador criou [memecoin-radar-mvp](https://github.com/urbanz95/memecoin-radar-mvp), e o primeiro push foi concluído.
+
+## Continuação — verificação de 24/10/2026
+
+Foi corrigida e validada a prioridade das capturas de outcomes, acrescentando arquivo imutável de observações e recuperação por timestamps originais. Passaram 480 testes; a base real confirmou 31 outcomes completos, incluindo três novos de +15m. Os horizontes +24h/+7d ainda não eram devidos. As alterações seguintes da fase 3 ficaram em espera até fechar esta verificação, conforme o pedido mais recente. Estado detalhado, pendências e riscos: [relatório da verificação](MVP-VERIFICATION-2026-10-24.md).

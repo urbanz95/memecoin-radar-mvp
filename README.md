@@ -122,4 +122,4 @@ O campo `finalityStage` distingue confirmação pelo sequenciador, publicação 
 - [Página gratuita na Vercel Hobby](docs/VERCEL.md)
 - [Validação histórica e critérios para revisão dos limiares](docs/VALIDATION.md)
 
-A pasta é independente do projeto que já existia no ambiente. O collector está publicado na Cloudflare e o dashboard na Vercel Hobby. A criação do novo repositório privado `memecoin-radar-mvp` foi solicitada, mas o GitHub recusou `createRepository` à credencial atual; ainda não houve push. O branch local `feat/mvp-wallet-signals` está pronto. A publicação na Vercel não tem integração Git; o Telegram permanece exclusivamente em dry-run.
+A pasta é independente do projeto que já existia no ambiente. O collector está publicado na Cloudflare e o dashboard na Vercel Hobby. O repositório [urbanz95/memecoin-radar-mvp](https://github.com/urbanz95/memecoin-radar-mvp) foi criado pelo utilizador e recebeu o primeiro push em 24/10/2026: `main` conserva a base `5386059` e a continuação está no branch `feat/phase3-wallet-outcome-quality`. A publicação na Vercel não tem integração Git; o Telegram permanece exclusivamente em dry-run.
