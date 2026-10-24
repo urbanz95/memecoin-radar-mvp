@@ -1,0 +1,48 @@
+name: Collector heartbeat
+
+on:
+  schedule:
+    # Nominal cadence only: GitHub can delay or suspend scheduled workflows.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: collector-heartbeat
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    if: github.repository == 'urbanz95/memecoin-radar-mvp' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Test independent monitor
+        run: node --test test/heartbeat.test.mjs
+      - name: Restore external observation clock
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: .heartbeat/monitor-state.json
+          key: collector-heartbeat-v1-main-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: collector-heartbeat-v1-main-
+      - name: Check collector and maintain one incident
+        id: monitor
+        run: node scripts/heartbeat.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Save external observation clock
+        if: always() && steps.monitor.outcome != 'skipped'
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: .heartbeat/monitor-state.json
+          key: collector-heartbeat-v1-main-${{ github.run_id }}-${{ github.run_attempt }}
