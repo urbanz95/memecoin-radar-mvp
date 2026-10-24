@@ -7,14 +7,15 @@ import { prepareWeeklyReport, getLatestWeeklyReport, WEEKLY_SCORE_BANDS } from '
 import { setup, TOKEN, policyHash, time } from './helpers/mvp-sqlite.mjs';
 
 const migration = await readFile(new URL('../cloudflare/migrations/0005_mvp_weekly.sql', import.meta.url), 'utf8');
+const walletMigration = await readFile(new URL('../cloudflare/migrations/0007_mvp_wallet_score_bands.sql', import.meta.url), 'utf8');
 const WEEK_START = Date.parse('2026-10-19T00:00:00.000Z');
 const REPORT_AT = Date.parse('2026-11-02T00:15:00.000Z');
 const VERSION = 'weekly-v1';
-function db(t) { const DB = setup(t); DB.sqlite.exec(migration); return DB; }
+function db(t) { const DB = setup(t); DB.sqlite.exec(migration); DB.sqlite.exec(walletMigration); return DB; }
 async function seed(DB, n, { score = 80, status = 'REJECTED', scoreVersion = VERSION, profile = 'profile_new',
-  observedAt = time, shape = 'new', synthetic = false, marker = true, baseline = 10, extraFeatures = {} } = {}) {
+  observedAt = time, shape = 'new', synthetic = false, marker = true, baseline = 10, extraFeatures = {}, wallets } = {}) {
   const features = { externalMarket: { priceUsd: baseline, liquidityUsd: 1000, fetchedAt: new Date(observedAt).toISOString() }, ...extraFeatures };
-  if (shape === 'new') features.decision = { score, ...(marker ? { synthetic } : {}) };
+  if (shape === 'new') features.decision = { score, ...(marker ? { synthetic } : {}), ...(wallets === undefined ? {} : { wallets }) };
   else if (shape === 'legacy-object') features.legacy = { score };
   else features.score = score;
   if (marker) features.snapshot = { synthetic };
@@ -52,13 +53,15 @@ test('weekly migration is additive and immutable reports survive repeat migratio
   const key = await seed(DB, 1); await outcome(DB, key, '15m');
   const before = ['mvp_decisions', 'mvp_outcomes', 'mvp_stats', 'wallet_phase3_fixture'].map(table => [table,
     DB.sqlite.prepare(`SELECT * FROM ${table}`).all().map(row => ({ ...row }))]);
-  DB.sqlite.exec(migration); DB.sqlite.exec(migration);
+  DB.sqlite.exec(migration); DB.sqlite.exec(walletMigration); DB.sqlite.exec(migration); DB.sqlite.exec(walletMigration);
   for (const [table, rows] of before) assert.deepEqual(DB.sqlite.prepare(`SELECT * FROM ${table}`).all().map(row => ({ ...row })), rows);
   const prepared = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
   await DB.batch(prepared.commands); DB.sqlite.exec(migration);
   assert.equal((await getLatestWeeklyReport(DB)).totals.realDecisions, 1);
   assert.throws(() => DB.sqlite.exec("UPDATE mvp_weekly_reports SET report_json='{}'"), /MVP_WEEKLY_REPORT_IMMUTABLE/);
   assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_weekly_reports'), /MVP_WEEKLY_REPORT_APPEND_ONLY/);
+  assert.throws(() => DB.sqlite.exec("UPDATE mvp_weekly_wallet_bands SET extension_json='{}'"), /MVP_WEEKLY_WALLET_IMMUTABLE/);
+  assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_weekly_wallet_bands'), /MVP_WEEKLY_WALLET_APPEND_ONLY/);
 });
 
 test('default schedule is Monday 00:15 UTC for the cohort two weeks earlier and catches up once during that week', async t => {
@@ -66,19 +69,19 @@ test('default schedule is Monday 00:15 UTC for the cohort two weeks earlier and 
   const early = await prepareWeeklyReport(DB, { now: REPORT_AT - 1, scoreVersion: VERSION });
   assert.equal(early.due, false); assert.equal(early.report, null); assert.equal(calls.length, 0);
   const scheduled = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
-  assert.equal(scheduled.due, true); assert.equal(scheduled.commands.length, 1);
+  assert.equal(scheduled.due, true); assert.equal(scheduled.commands.length, 2);
   assert.equal(scheduled.report.weekStart, new Date(WEEK_START).toISOString());
   assert.equal(scheduled.report.weekEndExclusive, '2026-10-26T00:00:00.000Z');
   assert.equal(scheduled.report.scheduledFor, new Date(REPORT_AT).toISOString());
   assert.equal(calls[0].method, 'first'); assert.match(calls[0].sql, /WHERE report_key=\?/);
-  assert.equal(calls.filter(call => call.sql.startsWith('WITH raw')).length, 1);
+  assert.equal(calls.filter(call => call.sql.startsWith('WITH raw')).length, 2);
   assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 0, 'prepare has no writes');
   await DB.batch(scheduled.commands);
   calls.length = 0;
   const friday = await prepareWeeklyReport(DB, { now: REPORT_AT + 4 * 86400000, scoreVersion: VERSION });
   assert.equal(friday.due, false); assert.deepEqual(friday.commands, []);
   assert.deepEqual(friday.report, scheduled.report);
-  assert.equal(calls.length, 1); assert.equal(calls[0].method, 'first'); assert.match(calls[0].sql, /WHERE report_key=\?/);
+  assert.equal(calls.length, 2); assert.ok(calls.every(call => call.method === 'first' && /WHERE report_key=\?/.test(call.sql)));
   const nextWeek = await prepareWeeklyReport(DB, { now: REPORT_AT + 7 * 86400000, scoreVersion: VERSION });
   assert.equal(nextWeek.due, true); assert.equal(nextWeek.report.weekStart, '2026-10-26T00:00:00.000Z');
 });
@@ -222,7 +225,126 @@ test('weekly aggregate uses a bounded decision-time index and subsequent minute 
   assert.equal(plan.some(row => /SCAN d\b/.test(row.detail)), false);
   await DB.batch(first.commands); calls.length = 0;
   for (let minute = 1; minute <= 3; minute++) await prepareWeeklyReport(DB, { now: REPORT_AT + minute * 60000, scoreVersion: VERSION });
-  assert.equal(calls.length, 3); assert.ok(calls.every(call => call.method === 'first' && /WHERE report_key=\?/.test(call.sql)));
+  assert.equal(calls.length, 6); assert.ok(calls.every(call => call.method === 'first' && /WHERE report_key=\?/.test(call.sql)));
+});
+
+test('wallet bands use only READY numeric decision-time aggregate scores and preserve rejected and dead denominators', async t => {
+  const DB = db(t); let n = 1;
+  for (const [low, high] of [[0, 49], [50, 64], [65, 74], [75, 84], [85, 100]]) {
+    for (const [score, status] of [[low, 'REJECTED'], [high, 'DEAD']]) {
+      const key = await seed(DB, n++, { score: 90, status, wallets: { status: 'READY', score } });
+      for (const horizon of Object.keys(OUTCOME_HORIZONS)) await outcome(DB, key, horizon, { price: status === 'DEAD' ? 0 : 20 });
+    }
+  }
+  for (const wallets of [undefined, null, { status: 'READY', score: null }, { status: 'INCOMPLETE', score: 99 },
+    { status: 'READY', score: '99' }, { status: 'READY', score: 101 }, { status: 'READY', score: -1 }])
+    await seed(DB, n++, { wallets });
+  await seed(DB, n++, { shape: 'legacy', extraFeatures: { wallets: { status: 'READY', score: 99 } } });
+  await seed(DB, n++, { synthetic: true, wallets: { status: 'READY', score: 99 } });
+  await seed(DB, n++, { marker: false, wallets: { status: 'READY', score: 99 } });
+  const prepared = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  const { report } = prepared;
+  assert.equal(report.walletScoreReport.status, 'READY');
+  assert.equal(report.totals.realDecisions, 18); assert.equal(report.totals.unknownWalletScoreDecisions, 8);
+  assert.equal(report.walletUnknownScore.decisions, 8);
+  for (const band of report.walletScoreBands) {
+    assert.equal(band.decisions, 2); assert.equal(band.rejected, 1); assert.equal(band.dead, 1);
+    for (const horizon of Object.values(band.horizons)) {
+      assert.equal(horizon.denominator, 2); assert.equal(horizon.observed, 2);
+      assert.equal(horizon.averageReturnPct, 0); assert.equal(horizon.averagePriceUsd, 10);
+    }
+  }
+  assert.deepEqual(report.cohorts[0].walletScoreBands, report.walletScoreBands.map(band => ({
+    ...band, uniqueTokens: 2, tokenCohortMemberships: undefined,
+  })).map(({ tokenCohortMemberships, ...band }) => band));
+  await DB.batch(prepared.commands);
+  assert.deepEqual(await getLatestWeeklyReport(DB, { scoreVersion: VERSION }), report);
+});
+
+test('wallet bands never replace first-decision evidence with later wallet signals or later outcomes', async t => {
+  const DB = db(t);
+  const first = await seed(DB, 1, { wallets: { status: 'READY', score: 65 } });
+  await outcome(DB, first, '15m', { price: 15 });
+  await seed(DB, 1, { observedAt: time + 60000, wallets: { status: 'READY', score: 99 } });
+  const late = await seed(DB, 2, { wallets: { status: 'READY', score: 65 } });
+  await outcome(DB, late, '15m', { price: 99, collectedAt: REPORT_AT + 1000 });
+  const { report } = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  const band = report.walletScoreBands.find(b => b.id === '65-74');
+  assert.equal(band.decisions, 2); assert.equal(band.horizons['15m'].observed, 1);
+  assert.equal(band.horizons['15m'].averageReturnPct, 50);
+  assert.equal(report.walletScoreBands.at(-1).decisions, 0);
+});
+
+test('old immutable weekly reports are enriched at their original cutoff without rewriting their JSON', async t => {
+  const DB = db(t); const key = await seed(DB, 1, { wallets: { status: 'READY', score: 85 } });
+  const original = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  await DB.batch([original.commands[0]]);
+  const before = DB.sqlite.prepare('SELECT * FROM mvp_weekly_reports').get();
+  await outcome(DB, key, '15m', { price: 20, collectedAt: REPORT_AT + 1000 });
+  const enriched = await prepareWeeklyReport(DB, { now: REPORT_AT + 60000, scoreVersion: VERSION });
+  assert.equal(enriched.due, false); assert.equal(enriched.commands.length, 1);
+  assert.equal(enriched.report.dataCutoff, original.report.dataCutoff);
+  assert.equal(enriched.report.walletScoreReport.dataCutoff, original.report.dataCutoff);
+  assert.equal(enriched.report.walletScoreBands.at(-1).horizons['15m'].observed, 0);
+  await DB.batch(enriched.commands);
+  assert.deepEqual(DB.sqlite.prepare('SELECT * FROM mvp_weekly_reports').get(), before);
+  assert.deepEqual(await getLatestWeeklyReport(DB), enriched.report);
+  const calls = instrument(DB);
+  const cached = await prepareWeeklyReport(DB, { now: REPORT_AT + 120000, scoreVersion: VERSION });
+  assert.deepEqual(cached.commands, []); assert.deepEqual(cached.report, enriched.report);
+  assert.equal(calls.length, 2); assert.ok(calls.every(call => call.method === 'first'));
+});
+
+test('an old weekly cohort changed by late backfill is flagged instead of using later cohort membership', async t => {
+  const DB = db(t); await seed(DB, 1, { wallets: { status: 'READY', score: 85 } });
+  const original = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  await DB.batch([original.commands[0]]);
+  await seed(DB, 2, { wallets: { status: 'READY', score: 85 } });
+  const enriched = await prepareWeeklyReport(DB, { now: REPORT_AT + 60000, scoreVersion: VERSION });
+  assert.equal(enriched.report.walletScoreReport.status, 'COHORT_CHANGED');
+  assert.equal(enriched.report.totals.realDecisions, 1);
+  assert.equal(enriched.report.totals.unknownWalletScoreDecisions, null);
+  assert.equal(enriched.report.walletScoreBands, null); assert.equal(enriched.report.walletUnknownScore, null);
+  await DB.batch(enriched.commands);
+  const calls = instrument(DB);
+  const cached = await prepareWeeklyReport(DB, { now: REPORT_AT + 120000, scoreVersion: VERSION });
+  assert.equal(cached.report.walletScoreReport.status, 'COHORT_CHANGED');
+  assert.equal(calls.length, 2, 'a mismatched historical cohort is cached, never scanned every minute');
+});
+
+test('a concurrent older base report cannot receive wallet groups from the later preparation cutoff', async t => {
+  const DB = db(t); const key = await seed(DB, 1, { wallets: { status: 'READY', score: 85 } });
+  const older = await prepareWeeklyReport(DB, { now: REPORT_AT, scoreVersion: VERSION });
+  await outcome(DB, key, '15m', { price: 20, collectedAt: REPORT_AT + 1000 });
+  const later = await prepareWeeklyReport(DB, { now: REPORT_AT + 60000, scoreVersion: VERSION });
+  assert.equal(later.report.walletScoreBands.at(-1).horizons['15m'].observed, 1);
+  await DB.batch([older.commands[0]]);
+  await DB.batch(later.commands);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_wallet_bands').get().n, 0,
+    'the extension must match the base report actually committed, not the losing prepared cutoff');
+  const caughtUp = await prepareWeeklyReport(DB, { now: REPORT_AT + 120000, scoreVersion: VERSION });
+  assert.equal(caughtUp.commands.length, 1);
+  assert.equal(caughtUp.report.walletScoreReport.dataCutoff, older.report.dataCutoff);
+  assert.equal(caughtUp.report.walletScoreBands.at(-1).horizons['15m'].observed, 0);
+  await DB.batch(caughtUp.commands);
+  assert.deepEqual(await getLatestWeeklyReport(DB), caughtUp.report);
+});
+
+test('wallet bands keep score versions and profiles separate and extensions roll back with the collector fence', async t => {
+  const DB = db(t);
+  await seed(DB, 1, { scoreVersion: 'v1', wallets: { status: 'READY', score: 50 } });
+  await seed(DB, 1, { scoreVersion: 'v2', profile: 'legacy_new', wallets: { status: 'READY', score: 90 } });
+  const prepared = await prepareWeeklyReport(DB, { now: REPORT_AT });
+  await assert.rejects(DB.batch([...prepared.commands, DB.prepare('INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,0)')]), /CHECK constraint failed/);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_wallet_bands').get().n, 0);
+  await DB.batch(prepared.commands); await DB.batch(prepared.commands);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_wallet_bands').get().n, 1);
+  const report = await getLatestWeeklyReport(DB);
+  assert.equal(report.walletScoreBands.find(b => b.id === '50-64').decisions, 1);
+  assert.equal(report.walletScoreBands.at(-1).decisions, 1);
+  assert.equal(report.walletScoreBands.at(-1).uniqueTokens, null);
+  assert.equal(report.cohorts.find(c => c.scoreVersion === 'v1').walletScoreBands.find(b => b.id === '50-64').uniqueTokens, 1);
+  assert.equal(report.cohorts.find(c => c.scoreVersion === 'v2').walletScoreBands.at(-1).uniqueTokens, 1);
 });
 
 test('weekStart overrides require UTC Mondays, wait for maturity and do not replace a newer latest cohort', async t => {
