@@ -83,6 +83,12 @@ Está criada uma continuação condicional em Europe/Lisbon, a partir de **25/10
 
 ## Decisões de implementação
 
+Evidência de publicação, configuração e observações: [PHASE3B-RELEASE-2026-10-25.json](PHASE3B-RELEASE-2026-10-25.json). Código do último release: `93484a4`; Cloudflare `b6359d30-08e3-48d4-926e-127bb0216498`. Dashboard Vercel Hobby `dpl_FzwGpoEpwYyiXPgAA9JDpXEb5qmP`, fonte estática `828c525` (os ficheiros da página não mudaram nos commits seguintes do backend). CI remoto aprovado no commit do release.
+
+O limite foi observado em produção: **6 jobs LIVE + 4 EXPIRED**, com onze retries históricos adiados e 138 escritas no batch desse ciclo. A consulta SQL confirmou **121 outcomes +15m, 99 +1h e cinco +24h**; são observações versionadas, não 225 lançamentos únicos. +7d ainda não tinha amostras. Permaneciam 145 wallets acompanhadas e zero elegíveis. A primeira leitura administrativa mais recente falhou com `7403`; a repetição só de leitura teve sucesso, sem atribuir esse erro administrativo à saúde do collector.
+
+Na amostra do último release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem exceções de runtime; um pedido `/weekly` foi cancelado pelo cliente. O tempo de parede chegou a 60 s em I/O, distinto do tempo de CPU. As verificações de abertura/fecho do heartbeat passaram, mas **não havia ainda invocação GitHub do tipo schedule observada** nesta sessão; os ensaios foram manuais e o agendamento está ativo. Essa continuidade externa deve continuar a ser verificada.
+
 - Reservar 20.000 escritas/dia da conta e começar com 180 s entre ciclos, ajustando pelo custo, para evitar novo esgotamento do Free.
 - Priorizar outcomes ainda capturáveis e adiar retries fora da janela, sem reescrever ou apagar o arquivo.
 - Marcar tiers históricos como UNKNOWN e preservar a primeira decisão imutável: não atribuir T0 ou um score posterior retroativamente. Uma primeira decisão incompleta continua na faixa UNKNOWN; uma coorte acionável própria ainda não foi acrescentada.
