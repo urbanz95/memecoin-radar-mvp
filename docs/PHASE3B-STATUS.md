@@ -85,13 +85,13 @@ Os custos seguintes variaram de 215 a 320 escritas; não se extrapolou consumo d
 
 Está criada uma continuação condicional em Europe/Lisbon, a partir de **25/10 às 06:15**, de hora a hora. Só inicia 3B-2/3 com o gate comprovado e testes aprovados; caso contrário continua a estabilização. O pedido completo e o estado ficam no repositório para retoma. A automação deve parar no fim da etapa 1 do shadow; não autoriza etapas ou fases seguintes.
 
-## Decisões de implementação
+## Decisões da primeira publicação
 
-Evidência de publicação, configuração e observações: [PHASE3B-RELEASE-2026-10-25.json](PHASE3B-RELEASE-2026-10-25.json). Código do último release: `93484a4`; Cloudflare `b6359d30-08e3-48d4-926e-127bb0216498`. Dashboard Vercel Hobby `dpl_FzwGpoEpwYyiXPgAA9JDpXEb5qmP`, fonte estática `828c525` (os ficheiros da página não mudaram nos commits seguintes do backend). CI remoto aprovado no commit do release.
+Evidência de publicação, configuração e observações: [PHASE3B-RELEASE-2026-10-25.json](PHASE3B-RELEASE-2026-10-25.json). Código desse release: `93484a4`; Cloudflare `b6359d30-08e3-48d4-926e-127bb0216498`. Dashboard Vercel Hobby `dpl_FzwGpoEpwYyiXPgAA9JDpXEb5qmP`, fonte estática `828c525` (os ficheiros da página não mudaram nos commits seguintes do backend). CI remoto aprovado no commit do release.
 
 O limite foi observado em produção: **6 jobs LIVE + 4 EXPIRED**, com onze retries históricos adiados e 138 escritas no batch desse ciclo. A consulta SQL confirmou **121 outcomes +15m, 99 +1h e cinco +24h**; são observações versionadas, não 225 lançamentos únicos. +7d ainda não tinha amostras. Permaneciam 145 wallets acompanhadas e zero elegíveis. A primeira leitura administrativa mais recente falhou com `7403`; a repetição só de leitura teve sucesso, sem atribuir esse erro administrativo à saúde do collector.
 
-Na amostra do último release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem exceções de runtime; um pedido `/weekly` foi cancelado pelo cliente. O tempo de parede chegou a 60 s em I/O, distinto do tempo de CPU. As verificações de abertura/fecho do heartbeat passaram, mas **não havia ainda invocação GitHub do tipo schedule observada** nesta sessão; os ensaios foram manuais e o agendamento está ativo. Essa continuidade externa deve continuar a ser verificada.
+Na amostra desse release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem exceções de runtime; um pedido `/weekly` foi cancelado pelo cliente. O tempo de parede chegou a 60 s em I/O, distinto do tempo de CPU. As verificações de abertura/fecho do heartbeat passaram, mas **não havia ainda invocação GitHub do tipo schedule observada** nesta sessão; os ensaios foram manuais e o agendamento está ativo. Essa continuidade externa deve continuar a ser verificada.
 
 - Reservar 20.000 escritas/dia da conta e começar com 180 s entre ciclos, ajustando pelo custo, para evitar novo esgotamento do Free.
 - Priorizar outcomes ainda capturáveis e adiar retries fora da janela, sem reescrever ou apagar o arquivo.
@@ -105,7 +105,7 @@ Na amostra do último release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem
 
 Correção isolada no branch `fix/phase3b-write-pacing-20261025`, código `e84af86`, publicada na Cloudflare como **`dd06e0fd-5f70-4cec-a8eb-9210200dc868`**. A cadência passa a amortizar oito cobranças observadas, preservando o orçamento integral e as reservas para trabalho desconhecido. Custos sustentados altos continuam a atrasar ciclos. A telemetria por módulo usa o mesmo batch atómico; não aumenta chamadas D1. A limpeza de `operations.mjs` conserva o código executável normalizado; a documentação corrige fanout e paginação desatualizados. Não houve migration, eliminação de dados, mudança de plano ou novo deployment Vercel.
 
-**605 testes aprovados**, `validate`, `profiles:check`, build e três fases workerd com 15/14/14 RPC; skip sem RPC e jobs independentes também passaram. Primeiro ciclo natural da nova versão às **06:06:29.035**, com **87 escritas no batch**, 97 cobradas com overhead e cadência de 180 s. Custos: records 27, outcomes 28, catálogo 14, mercado 6, runs 4, wallets 3, fencing 1, control 1; restantes grupos zero medido. Uma amostra não comprova o custo de todos os ciclos.
+**605 testes aprovados**, CI remoto Node 22/24 aprovado, `validate`, `profiles:check`, build e três fases workerd com 15/14/14 RPC; skip sem RPC e jobs independentes também passaram. Primeiro ciclo natural da nova versão às **06:06:29.035**, com **87 escritas no batch**, 97 cobradas com overhead e cadência de 180 s. Custos: records 27, outcomes 28, catálogo 14, mercado 6, runs 4, wallets 3, decisões MVP 3, fencing 1, control 1; restantes grupos zero medido. Uma amostra não comprova o custo de todos os ciclos.
 
 O arquivo nessa leitura tinha **4.174 tokens avistados, 487 decisões versionadas e 258 outcomes completos**, com 146 wallets e zero elegíveis/outbox. Tokens avistados não equivalem a tokens avaliados nem a lançamentos com quatro outcomes. Analytics D1, por volta das 06:03, registavam 12.807 escritas e 579.801 leituras no dia UTC, para toda a conta consultada. Não extrapolar uma amostra para garantir quota ou retenção.
 

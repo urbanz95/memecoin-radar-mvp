@@ -27,7 +27,17 @@
     ],
     "cadenceSkipNoRpc": true,
     "independentWeeklyAndHeartbeat": true,
-    "productionSixHourProof": false
+    "productionSixHourProof": false,
+    "githubCI": {
+      "runId": 40168052551,
+      "commit": "8bee6fac79d39e661ca6bd99d21e5997005e8e22",
+      "status": "completed",
+      "conclusion": "success",
+      "nodeVersions": [
+        22,
+        24
+      ]
+    }
   },
   "liveHealth": {
     "status": "COMPLETED",
@@ -222,5 +232,12 @@
   "trades": false,
   "plansChanged": false,
   "vercelDeploymentChanged": false,
-  "financialTtlsAndStabilityGateChanged": false
+  "financialTtlsAndStabilityGateChanged": false,
+  "endpointVerification": {
+    "checkedAt": "2026-10-25T06:10:03.332259Z",
+    "healthHttp": 200,
+    "latestHttp": 200,
+    "vercelHealthStatus": "COMPLETED",
+    "vercelStale": false
+  }
 }
