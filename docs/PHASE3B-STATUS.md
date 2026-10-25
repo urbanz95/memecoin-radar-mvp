@@ -4,7 +4,7 @@ Branch: `fix/phase3b-consolidation-20261025`, criado a partir de `b888ae5` e atu
 
 ## Estado e gates
 
-**Gate 3B-1 comprovado; 3B-2 implementado e validado para publicação. O bloco 3B-3 ainda não foi ativado.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
+**Gate 3B-1 comprovado; 3B-2 publicado, com cobertura real ainda em recolha. O bloco 3B-3 ainda não foi ativado.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
 
 `/health.operations.stability` publica início, número cumulativo de ciclos concluídos e `qualified`. O início da continuidade (`stableSince`) reinicia após falha ou intervalo superior a seis minutos; o total `completedCycles` preserva-se. A qualificação exige um intervalo real de seis horas entre o primeiro e o último ciclo concluídos, dados recentes e ausência de ciclo interrompido.
 
@@ -137,3 +137,5 @@ Decisões: manter `wallet-manual-v2` já ativo, pesos 50/30/20 e mínimo de cinc
 Pendências: fontes completas de histórico de deployer/funding, provas negativas de manipulação, cobertura global dos movimentos nativos/internos, equity inicial e preços históricos USD. Privilégios indiretos do contrato, simulação em USD e proteção LP v3/v4 continuam a exigir as provas existentes; não foram contornados. Nenhum trade/envio Telegram, modo B, X ou backtest foi ativado.
 
 Preparação 3B-3: [pesquisa do registry](PHASE3B-REGISTRY-RESEARCH.md) localizou o factory e validou o lookup de UID; isto ainda não ativa cotações. A etapa seguinte continua obrigada a shadow sem score/alertas e pelo menos três dias reais de observação.
+
+Publicação 3B-2 confirmada: código `e81f639`, Cloudflare `7aaa6e1f-fadc-4945-832f-461389805fc4`, migration 0013 às 17:09 UTC após o backup. Primeiro ciclo natural observado às **17:10:30**, com 128 escritas no batch, cadência 180 s, gate ainda aprovado, quatro pedidos de backfill e um job em BOUNDARY. A janela real inicia em 25/09 às 17:10:23 e termina em 25/10 às 17:10:23; fronteira inicial, scan e cobertura financeira ainda pendentes. A base tinha 87.322.624 bytes após a migration. Nenhuma cotação nova ativada, shadow ainda não iniciado; Vercel Hobby mantém o mesmo deployment. [Prova da publicação](PHASE3B-2-RELEASE-2026-10-25.json).

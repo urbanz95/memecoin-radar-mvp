@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-25T17:08:37.357189Z",
+  "updatedAt": "2026-10-25T17:15:10.496365Z",
   "phase": "3B-2",
-  "state": "VALIDATED_3B2_AWAITING_MIGRATION_DEPLOY",
+  "state": "3B2_PUBLISHED_3B3_NEXT",
   "continuationBranch": "fix/phase3b-consolidation-20261025",
   "changeBranch": "feat/phase3b-real-proofs-20261025",
   "lock": {
@@ -14,9 +14,9 @@
     "resumedAt": "2026-10-25T17:08:37.357189Z"
   },
   "production": {
-    "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
-    "codeCommit": "e84af863c5f3a488938ba5908f44f169dab8147a",
-    "verifiedCompletedRun": "c415b19e-ae87-44fb-bf88-8d89d89eb222"
+    "workerVersion": "7aaa6e1f-fadc-4945-832f-461389805fc4",
+    "codeCommit": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+    "verifiedCompletedRun": "94d68561-5b7b-4e50-a612-2401e07a9966"
   },
   "gate": {
     "qualified": true,
@@ -37,7 +37,7 @@
   },
   "blocks": {
     "3B-1": "GATE_PASSED",
-    "3B-2": "IN_PROGRESS",
+    "3B-2": "PUBLISHED_REAL_COVERAGE_PENDING",
     "3B-3": "NOT_STARTED"
   },
   "shadow": {
@@ -55,10 +55,11 @@
   "databaseMigrations": [
     {
       "name": "0013_mvp_wallet_backfill.sql",
-      "state": "PENDING_BACKUP_RECORDED"
+      "state": "APPLIED",
+      "appliedAt": "2026-10-25T17:09:04Z"
     }
   ],
-  "nextAction": "Complete and test 3B-2 real proofs/window/accounting, commit the block, then 3B-3 canonical pairs and shadow. New quotes must remain without scores/alerts. Stop after at least three actual shadow days.",
+  "nextAction": "3B-2 published and actual backfill job observed. Implement 3B-3 canonical pairs, registry refresh, census and shadow on a new branch. Backfill/financial coverage still incomplete; no fake completeness. Stop only after at least three real shadow days; no stage2/phases4-6.",
   "validation": {
     "tests": 716,
     "failures": 0,
@@ -73,6 +74,6 @@
     ],
     "productionSixHoursVerified": true
   },
-  "evidence": "PHASE3B-OBSERVATION-2026-10-25T0600Z.json",
+  "evidence": "PHASE3B-2-RELEASE-2026-10-25.json",
   "backup": "PHASE3B-2-BACKUP-2026-10-25.json"
 }
