@@ -3,6 +3,7 @@
 ## Fase 3B-1 — consolidação, 25/10/2026
 
 - Diagnosticada a interrupção por quota diária de escritas D1. Cadência gerida, orçamento preventivo, circuit breaker, journal independente, heartbeat externo com issue GitHub e causas estruturadas; Telegram continua sem envios.
+- Respostas públicas construídas no DO para reduzir CPU no Worker Free; schemas, GET-only e cache preservados. Suite final: 589 testes, validate, profiles:check, build e workerd aprovados.
 - Relatório semanal separado da ingestão, paginado por versão/perfil/tier. Clusters válidos chegam à outbox; contagem de wallets respeita TTL. Reorgs invalidam baselines e colocam relatórios/labels em quarentena sem apagar dados.
 - FIFO e resumos temporais persistem componentes racionais por posição com adaptadores antigos e limites separados de precisão/memória. Nunca arredondam ou inventam PnL para completar perfis.
 - Migrations aditivas 0009/0010/0012; aplicação apenas após novo ponto Time Travel. Estado de publicação, testes, pendências e riscos em [PHASE3B-STATUS.md](docs/PHASE3B-STATUS.md).

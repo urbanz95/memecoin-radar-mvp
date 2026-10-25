@@ -28,6 +28,8 @@ Validação anterior à publicação inicial: baseline de 511 testes; suite de *
 
 A revisão A08 também corrigiu a compatibilidade do fingerprint económico ao acrescentar componentes opcionais e o excesso de 16 KiB de evidência por realização. Eventos inválidos ficam isolados; a ingestão persiste apenas as realizações validadas, sem converter falhas em carteiras completas.
 
+Após o ensaio com Chromium e a medição real de CPU, a suite passou a **589 testes sem falhas**; `validate`, `profiles:check`, build e ensaio workerd voltaram a passar. As leituras públicas foram extraídas para um handler compatível no DO: o Worker gerido encaminha `/health`, `/latest` e `/weekly` sem ler D1 ou construir o JSON. Mantêm-se contratos, cache, GET-only e rotas públicas.
+
 ## Operação no plano gratuito
 
 Fonte validada: [`config/operations.json`](../config/operations.json). Cadência inicial de 180 s, adaptável ao custo medido do ciclo; máximo 900 s. O cron de um minuto só delega: ciclos antes da data permitida saltam sem RPC nem escrita D1. Isto reduz a frequência de enriquecimento; não é ingestão em segundos.
@@ -63,4 +65,10 @@ Após o reset UTC, foram aplicadas `0009`, `0010` e `0012` às 01:00 de Lisboa, 
 
 A primeira recolha natural da versão 3B terminou em **25/10 às 01:04 de Lisboa** (`2026-10-25T00:04:26.987Z`), run `491e2b00-59c7-4e33-a9ed-41d068f4712d`. O endpoint direto e a Vercel passaram a HTTP 200/COMPLETED. O arquivo avançou para 3.918 tokens, 459 decisões versionadas e 4.335 eventos de decisão. Permaneciam 222 outcomes completos, 145 wallets e zero elegíveis, sem alertas fabricados.
 
-Esse ciclo registou 513 escritas D1 no batch e adaptou a próxima tentativa para 565 s; não foi atribuído esse custo a um módulo sem evidência. A cadência superior a seis minutos impede neste momento qualificar o gate. São necessárias observações adicionais e, se o custo persistir, redução de lotes. Recuperação inicial não equivale a seis horas de estabilidade.
+Esse ciclo registou 513 escritas D1 no batch e adaptou a próxima tentativa para 565 s; não foi atribuído esse custo a um módulo sem evidência. O ciclo seguinte terminou às **01:14 de Lisboa**, com 215 escritas e cadência adaptada de 243 s. O intervalo anterior de dez minutos reiniciou corretamente o contador de continuidade às `2026-10-25T00:14:30.149Z`. Recuperação inicial não equivale a seis horas de estabilidade.
+
+O cron semanal separado produziu o primeiro relatório v2 às 01:12 de Lisboa, sem coortes maduras; `/weekly` respondeu HTTP 200. O heartbeat interno executou separadamente. O monitor GitHub comprovou abertura e recuperação: a issue #2 foi fechada pelo bot às 01:08 de Lisboa, com comentário do ciclo recuperado. Os dois ensaios externos foram `workflow_dispatch`; o workflow periódico está ativo, com a ressalva de atraso do agendamento gratuito.
+
+Nas amostras anteriores à extração do handler, `/latest` usou até 17 ms de CPU no Worker, com outcome `ok`; o DO usou até 85 ms de CPU. Não foi atribuída a paragem original a CPU: o erro D1 de quota é a causa comprovada. A extração reduz trabalho no Worker, cujo referencial Free é 10 ms, usando o orçamento de 30 s de CPU do DO. Tempo de parede em I/O não é tempo de CPU; é necessário medir novamente depois da publicação.
+
+Está criada uma continuação condicional em Europe/Lisbon, a partir de **25/10 às 06:15**, de hora a hora. Só inicia 3B-2/3 com o gate comprovado e testes aprovados; caso contrário continua a estabilização. O pedido completo e o estado ficam no repositório para retoma. A automação deve parar no fim da etapa 1 do shadow; não autoriza etapas ou fases seguintes.

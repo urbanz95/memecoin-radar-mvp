@@ -716,6 +716,10 @@ test('MVP phase 3 ingestion persists independently of the separate weekly job an
   assert.equal(f.DB.sqlite.prepare("SELECT count(*) AS n FROM mvp_decisions WHERE profile='profile_new'").get().n, 1);
   assert.equal((await runWeeklyReportJob(f.DB, { now: f.now })).status, 'COMPLETE');
   f.env.OPERATIONS_ENABLED = '1';
+  const operationState = new Map();
+  const localActor = new Collector({ storage: { async get(key) { return operationState.get(key); },
+    async put(key, value) { operationState.set(key, structuredClone(value)); } } }, f.env);
+  f.env.COLLECTOR = { idFromName: name => name, get: () => ({ fetch: (input, init) => localActor.fetch(new Request(input, init)) }) };
   const published = await (await worker.fetch(new Request('https://example.test/latest'), f.env)).json();
   assert.equal(published.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
   assert.equal(published.mvp.weeklyReport.schemaVersion, 2);
