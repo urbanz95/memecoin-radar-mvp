@@ -5,9 +5,10 @@ const keysAre = (value, keys) => value && typeof value === 'object' && !Array.is
 export function validateOperationsConfig(value) {
   const c=value?.collector,h=value?.heartbeat,w=value?.weekly;
   if(!keysAre(value,['schemaVersion','collector','weekly','heartbeat']) || value?.schemaVersion!==1 ||
-    !keysAre(c,['minimumCadenceSeconds','maximumCadenceSeconds','dailyD1WriteBudget','estimatedWriteOverhead','unknownCycleWriteEstimate','unfinishedCycleWriteReservation','retryBackoffSeconds','stabilityHours','maximumContinuityGapSeconds']) ||
+    !keysAre(c,['minimumCadenceSeconds','maximumCadenceSeconds','dailyD1WriteBudget','estimatedWriteOverhead','unknownCycleWriteEstimate','unfinishedCycleWriteReservation','maximumExpiredOutcomeJobs','retryBackoffSeconds','stabilityHours','maximumContinuityGapSeconds']) ||
     !keysAre(h,['cron','staleAfterSeconds','notificationChannel']) || !keysAre(w,['cron','cohortsPerInvocation']) ||
-    !['minimumCadenceSeconds','maximumCadenceSeconds','dailyD1WriteBudget','estimatedWriteOverhead','unknownCycleWriteEstimate','unfinishedCycleWriteReservation','stabilityHours','maximumContinuityGapSeconds'].every(key=>positive(c[key])) ||
+    !['minimumCadenceSeconds','maximumCadenceSeconds','dailyD1WriteBudget','estimatedWriteOverhead','unknownCycleWriteEstimate','unfinishedCycleWriteReservation','maximumExpiredOutcomeJobs','stabilityHours','maximumContinuityGapSeconds'].every(key=>positive(c[key])) ||
+    c.maximumExpiredOutcomeJobs>24 ||
     c.unfinishedCycleWriteReservation<c.unknownCycleWriteEstimate+c.estimatedWriteOverhead || c.unfinishedCycleWriteReservation>c.dailyD1WriteBudget ||
     c.minimumCadenceSeconds<60 || c.maximumCadenceSeconds<c.minimumCadenceSeconds || c.maximumCadenceSeconds>3600 ||
     c.dailyD1WriteBudget>80000 || c.maximumContinuityGapSeconds>600 || c.stabilityHours<6 ||
@@ -18,6 +19,18 @@ export function validateOperationsConfig(value) {
   return value;
 }
 export const OPERATIONS_CONFIG=validateOperationsConfig(settings);
+/** Defer only historical retries. Every selected open capture window retains
+ * its ordering and full version/profile fanout; no persisted job is modified. */
+export function limitOutcomeRetries(jobs,{config=OPERATIONS_CONFIG}={}) {
+  const maximum=config?.collector?.maximumExpiredOutcomeJobs;
+  if(!Array.isArray(jobs)||!positive(maximum)||maximum>24)throw Error('INVALID_OUTCOME_RETRY_BUDGET');
+  let expired=0;
+  return jobs.filter(job=>{
+    if(job?.captureState==='LIVE')return true;
+    if(job?.captureState!=='EXPIRED')throw Error('INVALID_OUTCOME_CAPTURE_STATE');
+    return expired++<maximum;
+  });
+}
 const KEY='operations.v1',day=at=>new Date(at).toISOString().slice(0,10),iso=at=>at===null||at===undefined?null:new Date(at).toISOString();
 const nextDay=at=>Date.parse(day(at)+'T00:00:00Z')+86400000;
 const timestamp=value=>typeof value==='string'?Date.parse(value):Number.isSafeInteger(value)?value:NaN;

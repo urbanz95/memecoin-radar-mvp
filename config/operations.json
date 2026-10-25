@@ -7,6 +7,7 @@
     "estimatedWriteOverhead": 10,
     "unknownCycleWriteEstimate": 180,
     "unfinishedCycleWriteReservation": 2048,
+    "maximumExpiredOutcomeJobs": 4,
     "retryBackoffSeconds": [180, 360, 720, 900],
     "stabilityHours": 6,
     "maximumContinuityGapSeconds": 360

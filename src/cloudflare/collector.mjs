@@ -19,7 +19,7 @@ import { prepareDryRunAlerts } from '../mvp/alerts.mjs';
 import { decisionKey } from '../mvp/records.mjs';
 import { prepareWalletLedger, enrichWalletTransactions, readWalletProfiles } from '../mvp/wallet-ledger.mjs';
 import { projectObservedWallets } from '../mvp/wallet-runtime.mjs';
-import { operationError } from './operations.mjs';
+import { operationError, limitOutcomeRetries, OPERATIONS_CONFIG } from './operations.mjs';
 import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
 import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
 import PROFILES_CONFIG from '../mvp/config.mjs';
@@ -286,7 +286,8 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     let screeningEntries = analysisEnabled ? screeningHistory(reorg ? [] : saved.screeningEntries, analysis?.entry, scan.results, now()) : undefined;
     let marketData; let marketSignals;
     stage = 'outcomes';
-    const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4, maxJobs: 24 }) : [];
+    const selectedOutcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4, maxJobs: 24 }) : [];
+    const outcomeJobs = limitOutcomeRetries(selectedOutcomeJobs);
     let outcomeUpdates = { commands: [], diagnostics: [] };
     let marketObservations = { commands: [], counts: {}, diagnostics: [] };
     if (analysisEnabled) {
@@ -367,7 +368,9 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         canonicality: { ...canonicalEpoch, reorgDetected: reorg, diagnostics: canonicality.diagnostics,
           asOf: 'PRE_COMMIT', plannedGeneration: canonicalEpoch.generation + (reorg ? 1 : 0) },
         scoreVersion: mvpPhase >= 2 ? MVP_SCORE_VERSION : policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
-        outcomeCollection: { jobs: outcomeJobs.length,
+        outcomeCollection: { jobs: outcomeJobs.length, selectedJobs: selectedOutcomeJobs.length,
+          expiredDeferred: selectedOutcomeJobs.length-outcomeJobs.length,
+          maxExpiredPerCycle: OPERATIONS_CONFIG.collector.maximumExpiredOutcomeJobs,
           liveJobs: outcomeJobs.filter(job => job.captureState === 'LIVE').length,
           expiredJobs: outcomeJobs.filter(job => job.captureState === 'EXPIRED').length,
           marketObservations: marketObservations.counts, diagnostics: outcomeUpdates.diagnostics },

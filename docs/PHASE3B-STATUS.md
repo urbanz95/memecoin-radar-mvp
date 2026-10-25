@@ -30,6 +30,8 @@ A revisão A08 também corrigiu a compatibilidade do fingerprint económico ao a
 
 Após o ensaio com Chromium e a medição real de CPU, a suite passou a **589 testes sem falhas**; `validate`, `profiles:check`, build e ensaio workerd voltaram a passar. As leituras públicas foram extraídas para um handler compatível no DO: o Worker gerido encaminha `/health`, `/latest` e `/weekly` sem ler D1 ou construir o JSON. Mantêm-se contratos, cache, GET-only e rotas públicas.
 
+O ajuste final dos lotes de outcomes elevou a suite a **593 testes aprovados**, novamente com validate/profiles:check/build/workerd. Mantém todos os jobs LIVE selecionados, incluindo fanout de 24, e limita a quatro os retries EXPIRED por ciclo. A regressão SQLite comprovou que os restantes jobs ficam integralmente inalterados, sem perda de prazos, estado ou provas.
+
 ## Operação no plano gratuito
 
 Fonte validada: [`config/operations.json`](../config/operations.json). Cadência inicial de 180 s, adaptável ao custo medido do ciclo; máximo 900 s. O cron de um minuto só delega: ciclos antes da data permitida saltam sem RPC nem escrita D1. Isto reduz a frequência de enriquecimento; não é ingestão em segundos.
@@ -41,6 +43,8 @@ O orçamento é uma proteção deste collector, **não uma medição global da c
 Os TTLs financeiros não foram alargados: cabeça com mais de 60 s e mercado com mais de 120 s continuam a caducar. Com recolha mais espaçada, existem intervalos sem sinais frescos, mesmo quando o processo está a respeitar a sua cadência. A solução definitiva pode exigir separar capturas prioritárias e reduzir escritas por ciclo; não é correto ocultar a caducidade para apresentar sinais.
 
 Cron semanal: `2-59/5 * * * *`, ator separado. Heartbeat interno: `4-59/5 * * * *`. O relatório só cobre semanas maduras, duas semanas anteriores; uma coorte vazia agora não significa arquivo vazio. A página `/weekly` e `/latest` leem dados, sem iniciar o scanner.
+
+`collector.maximumExpiredOutcomeJobs=4` limita apenas tentativas históricas que já perderam a janela. A seleção de até 24 jobs continua a dar prioridade a janelas abertas; nenhuma captura LIVE é removida por esse limite. O backlog preserva-se para recuperação histórica. `outcomeCollection.selectedJobs`, `expiredDeferred` e `maxExpiredPerCycle` mostram o que foi adiado. Isto reduz escritas de retries sem converter falta de preço em zero ou eliminar tokens mortos.
 
 Monitor externo: [workflow heartbeat](../.github/workflows/heartbeat.yml), nominalmente a cada cinco minutos, executa fora da Cloudflare. Após mais de dez minutos sem ciclo concluído, cria uma única issue atribuída a `urbanz95`, com causa sanitizada. Mudança de causa atualiza essa issue; recuperação comprovada comenta e fecha. Usa o token automático da execução, sem novas chaves ou Telegram. Agendamentos GitHub podem atrasar ou ser suspensos; não há garantia de notificação exatamente ao décimo minuto. Notificações pessoais dependem das definições da conta GitHub. Cache externo guarda apenas timestamps; perda do cache pode atrasar a deteção se a última recolha também for desconhecida.
 
@@ -71,4 +75,16 @@ O cron semanal separado produziu o primeiro relatório v2 às 01:12 de Lisboa, s
 
 Nas amostras anteriores à extração do handler, `/latest` usou até 17 ms de CPU no Worker, com outcome `ok`; o DO usou até 85 ms de CPU. Não foi atribuída a paragem original a CPU: o erro D1 de quota é a causa comprovada. A extração reduz trabalho no Worker, cujo referencial Free é 10 ms, usando o orçamento de 30 s de CPU do DO. Tempo de parede em I/O não é tempo de CPU; é necessário medir novamente depois da publicação.
 
+Primeira amostra depois da extração: **16 eventos stateless, máximo 1 ms de CPU; 14 eventos DO, máximo 11 ms**, sem erros. Esta amostra não garante todos os pedidos futuros. Em Chromium, duas consultas automáticas consecutivas tiveram `/health` e `/latest` HTTP 200, sem cliques ou erros JS; a hora da vista avançou, enquanto o `runId` e a hora de recolha permaneceram corretamente iguais porque não havia nova recolha nesse intervalo.
+
+Os custos seguintes variaram de 215 a 320 escritas; não se extrapolou consumo diário a partir de um único ciclo. Como intervalos longos reiniciam o gate, foi aplicado o limite dos retries históricos referido acima. A continuidade tem de ser medida novamente após este ajuste.
+
 Está criada uma continuação condicional em Europe/Lisbon, a partir de **25/10 às 06:15**, de hora a hora. Só inicia 3B-2/3 com o gate comprovado e testes aprovados; caso contrário continua a estabilização. O pedido completo e o estado ficam no repositório para retoma. A automação deve parar no fim da etapa 1 do shadow; não autoriza etapas ou fases seguintes.
+
+## Decisões de implementação
+
+- Reservar 20.000 escritas/dia da conta e começar com 180 s entre ciclos, ajustando pelo custo, para evitar novo esgotamento do Free.
+- Priorizar outcomes ainda capturáveis e adiar retries fora da janela, sem reescrever ou apagar o arquivo.
+- Marcar tiers históricos como UNKNOWN e preservar a primeira decisão imutável: não atribuir T0 ou um score posterior retroativamente. Uma primeira decisão incompleta continua na faixa UNKNOWN; uma coorte acionável própria ainda não foi acrescentada.
+- Persistir componentes exatos no JSON existente, sem migration adicional, com limites explícitos de 4.096 bits e 16 KiB; não prometer replay recuperável quando o limite exige checkpoint segmentado.
+- Usar o mesmo DO para construção das respostas públicas, evitando custo de serialização no Worker e mantendo as interfaces.

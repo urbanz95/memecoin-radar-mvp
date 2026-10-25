@@ -75,3 +75,13 @@ test('a killed invocation retains its reservation and cannot silently preserve s
   const recovered=await readOperations(storage,{now:at});
   assert.equal(recovered.budget.estimatedRowsWritten,2158);assert.equal(recovered.stability.qualified,false);
 });
+
+test('historical outcome retry budget is central and validated without reducing live fanout',()=>{
+  assert.equal(OPERATIONS_CONFIG.collector.maximumExpiredOutcomeJobs,4);
+  for(const limit of [0,-1,25,4.5,'4',null]){
+    const candidate=structuredClone(OPERATIONS_CONFIG);candidate.collector.maximumExpiredOutcomeJobs=limit;
+    assert.throws(()=>validateOperationsConfig(candidate),/INVALID_OPERATIONS_CONFIG/);
+  }
+  const missing=structuredClone(OPERATIONS_CONFIG);delete missing.collector.maximumExpiredOutcomeJobs;
+  assert.throws(()=>validateOperationsConfig(missing),/INVALID_OPERATIONS_CONFIG/);
+});
