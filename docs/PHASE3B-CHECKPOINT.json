@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-25T06:07:41.204886Z",
-  "phase": "3B-1",
-  "state": "WAITING_STABILITY_GATE",
+  "updatedAt": "2026-10-25T12:28:05.784286Z",
+  "phase": "3B-2",
+  "state": "IMPLEMENTING_REAL_PROOFS",
   "continuationBranch": "fix/phase3b-consolidation-20261025",
-  "changeBranch": "fix/phase3b-write-pacing-20261025",
+  "changeBranch": "feat/phase3b-real-proofs-20261025",
   "lock": {
-    "state": "RELEASED",
-    "owner": "phase3b-write-pacing-20261025",
-    "startedAt": "2026-10-25T06:05:41.344240Z",
-    "instruction": "No implementation is running. Resume this checkpoint and the continuation branch; acquire an execution checkpoint before changes.",
-    "completedAt": "2026-10-25T06:07:41.204886Z"
+    "state": "IN_PROGRESS",
+    "owner": "phase3b-real-proofs-20261025",
+    "startedAt": "2026-10-25T12:28:05.784286Z",
+    "instruction": "Implementation active in this branch/workspace; resume existing work, do not duplicate."
   },
   "production": {
     "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
@@ -18,9 +17,9 @@
     "verifiedCompletedRun": "c415b19e-ae87-44fb-bf88-8d89d89eb222"
   },
   "gate": {
-    "qualified": false,
+    "qualified": true,
     "stableSince": "2026-10-25T06:02:28.544Z",
-    "reason": "Measured 354-write burst projected every cycle; 394s cadence produced a 418.639s completion gap, restarting actual continuity.",
+    "reason": "Actual completed six-hour span proved in production, with full current-code tests approved.",
     "priorCompletedAt": "2026-10-25T05:55:29.905Z",
     "nextCompletedAt": "2026-10-25T06:02:28.544Z",
     "actualCompletionGapSeconds": 418.639,
@@ -28,13 +27,16 @@
     "maximumGapSeconds": 360,
     "earliestPossibleQualification": "2026-10-25T12:02:28.544Z",
     "instruction": "Require current /health.operations.stability.qualified plus complete tests, validate and profiles:check. Clock time alone never opens the gate.",
-    "completedCycles": 87,
-    "lastSuccessAt": "2026-10-25T06:06:29.035Z"
+    "completedCycles": 182,
+    "lastSuccessAt": "2026-10-25T12:26:29.638Z",
+    "verifiedAt": "2026-10-25T12:28:05.784286Z",
+    "completedSpanSeconds": 23041.094,
+    "evidence": "PHASE3B-GATE-2026-10-25.json"
   },
   "blocks": {
-    "3B-1": "PUBLISHED_OBSERVING",
-    "3B-2": "NOT_STARTED_GATE_BLOCKED",
-    "3B-3": "NOT_STARTED_GATE_BLOCKED"
+    "3B-1": "GATE_PASSED",
+    "3B-2": "IN_PROGRESS",
+    "3B-3": "NOT_STARTED"
   },
   "shadow": {
     "startedAt": null,
@@ -49,7 +51,7 @@
     "phases4To6": "REQUIRE_EXPLICIT_AVANÇA_FASE_N"
   },
   "databaseMigrations": [],
-  "nextAction": "Read live health/latest and current production version. If healthy but not qualified, wait without starting 3B-2/3 or changing code unnecessarily. Only after the actual six-hour gate and full tests, validate, profiles:check pass, implement 3B-2 then 3B-3 shadow; stop after at least three actual days. Continue 3B-1 fixes only if a measured fault recurs.",
+  "nextAction": "Complete and test 3B-2 real proofs/window/accounting, commit the block, then 3B-3 canonical pairs and shadow. New quotes must remain without scores/alerts. Stop after at least three actual shadow days.",
   "validation": {
     "tests": 605,
     "failures": 0,
@@ -62,7 +64,7 @@
       14,
       14
     ],
-    "productionSixHoursVerified": false
+    "productionSixHoursVerified": true
   },
   "evidence": "PHASE3B-OBSERVATION-2026-10-25T0600Z.json"
 }
