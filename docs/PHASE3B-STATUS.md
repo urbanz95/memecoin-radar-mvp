@@ -10,6 +10,8 @@ Branch: `fix/phase3b-consolidation-20261025`, criado a partir de `b888ae5` e atu
 
 As Fases 4, 5 e 6 continuam desativadas. Só começam com a instrução explícita `AVANÇA FASE N`. Sem trades nem envio Telegram; a outbox mantém pré-visualizações.
 
+Checkpoint de retoma: [PHASE3B-CHECKPOINT.json](PHASE3B-CHECKPOINT.json). Contém estado por bloco, lock de execução, versão publicada e condição de continuação. Uma execução nova deve retomar esse checkpoint antes de criar trabalho paralelo.
+
 ## Changelog por achado
 
 | Achado | Alteração | Validação / limite |
@@ -96,3 +98,19 @@ Na amostra do último release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem
 - Marcar tiers históricos como UNKNOWN e preservar a primeira decisão imutável: não atribuir T0 ou um score posterior retroativamente. Uma primeira decisão incompleta continua na faixa UNKNOWN; uma coorte acionável própria ainda não foi acrescentada.
 - Persistir componentes exatos no JSON existente, sem migration adicional, com limites explícitos de 4.096 bits e 16 KiB; não prometer replay recuperável quando o limite exige checkpoint segmentado.
 - Usar o mesmo DO para construção das respostas públicas, evitando custo de serialização no Worker e mantendo as interfaces.
+
+## Retoma das 06:00 — custo e continuidade
+
+Às 06:00 UTC/Lisboa, a versão `b6359d30` continuava a recolher, mas o último batch de 354 escritas tinha projetado uma cadência de 394 s. O ciclo seguinte só terminou às **06:02:28.544**, 418,639 s depois do anterior, reiniciando corretamente `stableSince`. Não houve nova exceção de quota; o intervalo excessivo bastou para perder o gate. A primeira sequência durou cerca de 5h24, sem chegar às seis horas.
+
+Correção isolada no branch `fix/phase3b-write-pacing-20261025`, código `e84af86`, publicada na Cloudflare como **`dd06e0fd-5f70-4cec-a8eb-9210200dc868`**. A cadência passa a amortizar oito cobranças observadas, preservando o orçamento integral e as reservas para trabalho desconhecido. Custos sustentados altos continuam a atrasar ciclos. A telemetria por módulo usa o mesmo batch atómico; não aumenta chamadas D1. A limpeza de `operations.mjs` conserva o código executável normalizado; a documentação corrige fanout e paginação desatualizados. Não houve migration, eliminação de dados, mudança de plano ou novo deployment Vercel.
+
+**605 testes aprovados**, `validate`, `profiles:check`, build e três fases workerd com 15/14/14 RPC; skip sem RPC e jobs independentes também passaram. Primeiro ciclo natural da nova versão às **06:06:29.035**, com **87 escritas no batch**, 97 cobradas com overhead e cadência de 180 s. Custos: records 27, outcomes 28, catálogo 14, mercado 6, runs 4, wallets 3, fencing 1, control 1; restantes grupos zero medido. Uma amostra não comprova o custo de todos os ciclos.
+
+O arquivo nessa leitura tinha **4.174 tokens avistados, 487 decisões versionadas e 258 outcomes completos**, com 146 wallets e zero elegíveis/outbox. Tokens avistados não equivalem a tokens avaliados nem a lançamentos com quatro outcomes. Analytics D1, por volta das 06:03, registavam 12.807 escritas e 579.801 leituras no dia UTC, para toda a conta consultada. Não extrapolar uma amostra para garantir quota ou retenção.
+
+O gate permanece **`qualified:false`**. A primeira possibilidade é um ciclo concluído às **12:02:28.544 ou depois**, apenas se a continuidade desde as 06:02 se mantiver, sem falhas/intervalos excessivos, e os testes do código atual passarem. Os blocos 3B-2/3 e o shadow continuam por iniciar. Novas cotações: nenhuma ativada ou avaliada nesta correção.
+
+Foi finalmente observada uma execução GitHub `schedule` às 01:48 UTC, com sucesso; não existe ainda uma série de execuções que comprove cadência de cinco minutos. O monitor gratuito continua best effort, sem SLA de dez minutos. Nenhum segredo/permissão adicional é necessário neste checkpoint.
+
+Prova detalhada desta retoma: [PHASE3B-OBSERVATION-2026-10-25T0600Z.json](PHASE3B-OBSERVATION-2026-10-25T0600Z.json). Não substituir a evidência histórica do primeiro release. Para continuar, ler também o checkpoint; se estiver saudável e o gate ainda não tiver sido atingido, aguardar sem iniciar os blocos seguintes.

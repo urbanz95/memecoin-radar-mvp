@@ -1,19 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-25T06:06:04.041716Z",
+  "updatedAt": "2026-10-25T06:07:41.204886Z",
   "phase": "3B-1",
-  "state": "VALIDATED_NOT_DEPLOYED",
+  "state": "WAITING_STABILITY_GATE",
   "continuationBranch": "fix/phase3b-consolidation-20261025",
   "changeBranch": "fix/phase3b-write-pacing-20261025",
   "lock": {
-    "state": "IN_PROGRESS",
+    "state": "RELEASED",
     "owner": "phase3b-write-pacing-20261025",
     "startedAt": "2026-10-25T06:05:41.344240Z",
-    "instruction": "Resume this checkpoint; do not start duplicate implementation. Verify branch, commits and active work before taking over."
+    "instruction": "No implementation is running. Resume this checkpoint and the continuation branch; acquire an execution checkpoint before changes.",
+    "completedAt": "2026-10-25T06:07:41.204886Z"
   },
   "production": {
-    "workerVersion": "b6359d30-08e3-48d4-926e-127bb0216498",
-    "codeCommit": "93484a4c5bfe08b6521ce845fbc418fbda32c64f"
+    "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
+    "codeCommit": "e84af863c5f3a488938ba5908f44f169dab8147a",
+    "verifiedCompletedRun": "c415b19e-ae87-44fb-bf88-8d89d89eb222"
   },
   "gate": {
     "qualified": false,
@@ -25,10 +27,12 @@
     "requiredHours": 6,
     "maximumGapSeconds": 360,
     "earliestPossibleQualification": "2026-10-25T12:02:28.544Z",
-    "instruction": "Require current /health.operations.stability.qualified plus complete tests, validate and profiles:check. Clock time alone never opens the gate."
+    "instruction": "Require current /health.operations.stability.qualified plus complete tests, validate and profiles:check. Clock time alone never opens the gate.",
+    "completedCycles": 87,
+    "lastSuccessAt": "2026-10-25T06:06:29.035Z"
   },
   "blocks": {
-    "3B-1": "IN_PROGRESS",
+    "3B-1": "PUBLISHED_OBSERVING",
     "3B-2": "NOT_STARTED_GATE_BLOCKED",
     "3B-3": "NOT_STARTED_GATE_BLOCKED"
   },
@@ -45,7 +49,7 @@
     "phases4To6": "REQUIRE_EXPLICIT_AVANÇA_FASE_N"
   },
   "databaseMigrations": [],
-  "nextAction": "Finish validation, publish only the 3B-1 cost-pacing correction, record production proof and release this lock. Then await genuine six-hour stability before 3B-2/3.",
+  "nextAction": "Read live health/latest and current production version. If healthy but not qualified, wait without starting 3B-2/3 or changing code unnecessarily. Only after the actual six-hour gate and full tests, validate, profiles:check pass, implement 3B-2 then 3B-3 shadow; stop after at least three actual days. Continue 3B-1 fixes only if a measured fault recurs.",
   "validation": {
     "tests": 605,
     "failures": 0,
@@ -59,5 +63,6 @@
       14
     ],
     "productionSixHoursVerified": false
-  }
+  },
+  "evidence": "PHASE3B-OBSERVATION-2026-10-25T0600Z.json"
 }
