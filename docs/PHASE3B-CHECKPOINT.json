@@ -9,7 +9,8 @@
     "state": "IN_PROGRESS",
     "owner": "phase3b-real-proofs-20261025",
     "startedAt": "2026-10-25T12:28:05.784286Z",
-    "instruction": "Implementation active in this branch/workspace; resume existing work, do not duplicate."
+    "instruction": "Implementation active in this branch/workspace. Acquire flock -n runtime/phase3b-execution.lock before taking over; an occupied lock means another execution is active. Preserve uncommitted changes and resume existing work, do not duplicate.",
+    "workspaceLockFile": "runtime/phase3b-execution.lock"
   },
   "production": {
     "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
