@@ -48,7 +48,12 @@ export async function main(args = process.argv.slice(2)) {
     return;
   }
   const config = validateConfig(await readJson(resolve(values.config)));
-  if (values['validate-config']) { console.log(`Configuração válida: ${config.version}`); return; }
+  if (values['validate-config']) {
+    await import('./cloudflare/operations.mjs');
+    await import('./mvp/wallet-accounting-config.mjs');
+    await import('./mvp/wallet-evidence-config.mjs');
+    console.log(`Configuração válida: ${config.version}`); return;
+  }
   const pipelines = values.pipeline === 'all' ? Object.keys(config.pipelines) : [values.pipeline];
   if (pipelines.some((id) => !Object.hasOwn(config.pipelines, id))) throw new Error('Pipeline deve ser new, established ou all');
   const input = resolve(values.input);

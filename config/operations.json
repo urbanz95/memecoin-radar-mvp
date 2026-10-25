@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "collector": {
+    "minimumCadenceSeconds": 180,
+    "maximumCadenceSeconds": 900,
+    "dailyD1WriteBudget": 80000,
+    "estimatedWriteOverhead": 10,
+    "unknownCycleWriteEstimate": 180,
+    "unfinishedCycleWriteReservation": 2048,
+    "maximumExpiredOutcomeJobs": 4,
+    "retryBackoffSeconds": [
+      180,
+      360,
+      720,
+      900
+    ],
+    "stabilityHours": 6,
+    "maximumContinuityGapSeconds": 360,
+    "cadenceCostWindow": 8
+  },
+  "weekly": {
+    "cron": "2-59/5 * * * *",
+    "cohortsPerInvocation": 1
+  },
+  "heartbeat": {
+    "cron": "4-59/5 * * * *",
+    "staleAfterSeconds": 600,
+    "notificationChannel": "GITHUB_ISSUE"
+  }
+}

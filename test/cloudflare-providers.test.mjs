@@ -154,6 +154,10 @@ test('gateway timestamps generated during the fetch are checked against receipt 
       return Response.json([pair()], { headers: { 'x-radar-fetched-at': new Date(current).toISOString() } });
     } });
   assert.equal(result.diagnostics.status, 'REFRESHED');
+  assert.equal(result.diagnostics.sourceTimestamp, new Date(current).toISOString());
+  assert.equal(result.diagnostics.receivedAt, new Date(current).toISOString());
+  assert.equal(result.diagnostics.sourceAgeMs, 0);
+  assert.equal(result.diagnostics.sourceTimeStatus, 'FRESH');
   assert.equal(result.entries[0].externalMarket.fetchedAt, new Date(current).toISOString());
   assert.equal(result.entries[0].marketData.expiresAt, new Date(current + 120000).toISOString());
 });
@@ -167,6 +171,24 @@ test('source data that expires during a fetch is not refreshed or assigned a new
       return Response.json([pair()], { headers: { 'x-radar-fetched-at': new Date(sourceTime).toISOString() } });
     } });
   assert.equal(result.diagnostics.status, 'STALE_SOURCE');
+  assert.equal(result.diagnostics.sourceTimestamp, new Date(sourceTime).toISOString());
+  assert.equal(result.diagnostics.receivedAt, new Date(current).toISOString());
+  assert.equal(result.diagnostics.sourceAgeMs, 121000);
+  assert.equal(result.diagnostics.sourceTimeStatus, 'EXPIRED');
+  assert.equal(result.entries[0].externalMarket, undefined);
+  assert.equal(result.providerState.cache.dexscreener.length, 0);
+});
+
+test('future gateway timestamps are distinguished from expired data without relaxing acceptance', async () => {
+  const result = await refreshMarketData([{ address: TOKEN }], undefined, { now,
+    fetchImpl: async () => Response.json([pair()], {
+      headers: { 'x-radar-fetched-at': new Date(time + 250).toISOString() },
+    }) });
+  assert.equal(result.diagnostics.status, 'STALE_SOURCE');
+  assert.equal(result.diagnostics.sourceTimestamp, new Date(time + 250).toISOString());
+  assert.equal(result.diagnostics.receivedAt, new Date(time).toISOString());
+  assert.equal(result.diagnostics.sourceAgeMs, -250);
+  assert.equal(result.diagnostics.sourceTimeStatus, 'FUTURE');
   assert.equal(result.entries[0].externalMarket, undefined);
   assert.equal(result.providerState.cache.dexscreener.length, 0);
 });

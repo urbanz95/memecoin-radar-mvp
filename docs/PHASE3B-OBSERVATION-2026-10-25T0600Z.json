@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-25T06:07:41.204886Z",
+  "block": "3B-1",
+  "sourceCommit": "e84af863c5f3a488938ba5908f44f169dab8147a",
+  "changeBranch": "fix/phase3b-write-pacing-20261025",
+  "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
+  "previousWorkerVersion": "b6359d30-08e3-48d4-926e-127bb0216498",
+  "reason": "A measured 354-write cycle forced 394s cadence and a 418.639s completion gap; gate correctly restarted.",
+  "changes": [
+    "Bounded eight-charge mean for pacing; full actual budget charge and conservative unknown reservation retained.",
+    "Per-module costs from existing atomic batch results; no extra D1 calls.",
+    "Operations readability cleanup with equivalent normalized executable code.",
+    "Corrected stale outcome fanout and weekly pagination documentation."
+  ],
+  "validation": {
+    "tests": 605,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true,
+    "cloudflareBuild": true,
+    "fixtureWorkerdCycles": 3,
+    "fixtureRpcPerPhase": [
+      15,
+      14,
+      14
+    ],
+    "cadenceSkipNoRpc": true,
+    "independentWeeklyAndHeartbeat": true,
+    "productionSixHourProof": false,
+    "githubCI": {
+      "runId": 40168052551,
+      "commit": "8bee6fac79d39e661ca6bd99d21e5997005e8e22",
+      "status": "completed",
+      "conclusion": "success",
+      "nodeVersions": [
+        22,
+        24
+      ]
+    }
+  },
+  "liveHealth": {
+    "status": "COMPLETED",
+    "stale": false,
+    "lastError": null,
+    "lastSuccessAt": "2026-10-25T06:06:28.233Z",
+    "operations": {
+      "schemaVersion": 1,
+      "lastSuccessAt": "2026-10-25T06:06:29.035Z",
+      "lastError": null,
+      "completedCycles": 87,
+      "stableSince": 1792908148544,
+      "nextEligibleAt": 1792908569035,
+      "failures": 0,
+      "lastCycleStartedAt": "2026-10-25T06:06:22.965Z",
+      "budget": {
+        "dayUtc": "2026-10-25",
+        "estimatedRowsWritten": 12700,
+        "limit": 80000,
+        "circuitUntil": null,
+        "scope": "collector-estimate-plus-overhead; excludes administrative writes and weekly job; 20000-row account reserve"
+      },
+      "lastCycleCompletedAt": "2026-10-25T06:06:29.035Z",
+      "lastCycleRowsWritten": 87,
+      "cadenceSeconds": 180,
+      "circuitUntil": 0,
+      "writePacing": {
+        "dayUtc": "2026-10-25",
+        "samples": [
+          97
+        ],
+        "meanRowsPerCycle": 97,
+        "windowSize": 8
+      },
+      "stability": {
+        "stableSince": "2026-10-25T06:02:28.544Z",
+        "requiredHours": 6,
+        "completedCycles": 87,
+        "qualified": false
+      }
+    },
+    "heartbeat": {
+      "event": "COLLECTOR_HEARTBEAT",
+      "checkedAt": "2026-10-25T06:06:29.036Z",
+      "lastSuccessAt": "2026-10-25T06:06:29.035Z",
+      "ageSeconds": 0.001,
+      "alert": false,
+      "thresholdSeconds": 600,
+      "cause": null,
+      "notificationChannel": "GITHUB_ISSUE",
+      "telegramDelivery": false
+    },
+    "currentSignalsAvailable": false,
+    "marketSignalsAvailable": false
+  },
+  "firstNewVersionCycle": {
+    "workerVersion": {
+      "id": "dd06e0fd-5f70-4cec-a8eb-9210200dc868"
+    },
+    "outcome": "ok",
+    "eventTimestamp": 1792908382845,
+    "message": {
+      "status": "COMPLETED",
+      "runId": "c415b19e-ae87-44fb-bf88-8d89d89eb222",
+      "head": 97369520,
+      "snapshots": 1,
+      "recentRange": [
+        95769482,
+        95769609
+      ],
+      "recentBacklogBlocks": 1599911,
+      "olderRange": [
+        94406538,
+        94406665
+      ],
+      "latestSampleRange": [
+        97369457,
+        97369520
+      ],
+      "latestSampleRequestedRange": [
+        97369457,
+        97369520
+      ],
+      "latestSampleBlockPartial": false,
+      "latestSampleLogOffset": 0,
+      "latestSampleIsCompleteIndex": false,
+      "recentBlockPartial": false,
+      "recentLogOffset": 0,
+      "olderMode": "contiguous-backfill",
+      "discoveredPoolsThisRun": 3,
+      "historicalCoverageComplete": false,
+      "catalogLimit": 50000,
+      "retentionCadenceCycles": 1440,
+      "scope": "Configured Uniswap deployments; one token enriched; not a complete memecoin index",
+      "event": "COLLECTION_COMPLETED",
+      "phase": 3,
+      "d1RowsWritten": 87,
+      "d1WriteBreakdown": {
+        "fencing": 1,
+        "canonicality": 0,
+        "wallets": 3,
+        "records": 27,
+        "marketObservations": 6,
+        "outcomes": 28,
+        "mvpRecords": 3,
+        "outbox": 0,
+        "catalog": 14,
+        "runs": 4,
+        "control": 1
+      },
+      "walletEvents": 0,
+      "walletReceipts": 0,
+      "operations": {
+        "cadenceSeconds": 180,
+        "estimatedRowsWritten": 12700,
+        "dayUtc": "2026-10-25",
+        "lastError": null
+      },
+      "job": "collect"
+    }
+  },
+  "latest": {
+    "runId": "c415b19e-ae87-44fb-bf88-8d89d89eb222",
+    "capturedAt": "2026-10-25T06:06:28.233Z",
+    "dataStale": false,
+    "currentSignalsAvailable": false,
+    "marketSignalsAvailable": false,
+    "archive": {
+      "schemaVersion": 1,
+      "tokensSeen": 4174,
+      "seenEvents": 7850,
+      "decisions": 487,
+      "decisionEvents": 4593,
+      "outcomeJobs": {
+        "pending": 780,
+        "retry": 910,
+        "complete": 258
+      },
+      "outcomeAttempts": 7492,
+      "outcomesComplete": 258,
+      "updatedAt": "2026-10-25T06:06:28.233Z"
+    },
+    "wallets": {
+      "schemaVersion": 1,
+      "events": 665,
+      "ranges": 1099,
+      "receipts": 367,
+      "tracked": 146,
+      "eligible": 0,
+      "historicalEligible": 0,
+      "eligibilityAsOf": "2026-10-25T06:07:11.677Z",
+      "maxProfileAgeSeconds": 600,
+      "profileObservations": 365,
+      "generation": 0,
+      "lastReorgAt": null,
+      "updatedAt": "2026-10-25T06:06:28.233Z"
+    },
+    "outbox": {
+      "schemaVersion": 1,
+      "dryRun": true,
+      "queuedDryRun": 0,
+      "synthetic": 0,
+      "lastCreatedAt": null
+    }
+  },
+  "d1AccountAnalytics": {
+    "utcDay": "2026-10-25",
+    "observedAround": "2026-10-25T06:03:00Z",
+    "scope": "Cloudflare analytics at query time; not a daily forecast",
+    "rowsRead": 579801,
+    "rowsWritten": 12807
+  },
+  "heartbeat": {
+    "scheduledRunsObserved": [
+      {
+        "conclusion": "success",
+        "createdAt": "2026-10-25T01:48:03Z",
+        "databaseId": 40152031228,
+        "headSha": "8a4b2863e20132d15fe447655597ac34faab7fba",
+        "status": "completed"
+      }
+    ],
+    "limitation": "One schedule run confirmed at01:48UTC. No reliable five-minute series established; free GitHub scheduling remains best effort."
+  },
+  "databaseMigrations": [],
+  "dataDeleted": false,
+  "newQuotesActivated": [],
+  "shadowStarted": false,
+  "blocks3B2And3": "NOT_STARTED_GATE_BLOCKED",
+  "dryRun": true,
+  "telegramDelivery": false,
+  "trades": false,
+  "plansChanged": false,
+  "vercelDeploymentChanged": false,
+  "financialTtlsAndStabilityGateChanged": false,
+  "endpointVerification": {
+    "checkedAt": "2026-10-25T06:10:03.332259Z",
+    "healthHttp": 200,
+    "latestHttp": 200,
+    "vercelHealthStatus": "COMPLETED",
+    "vercelStale": false
+  }
+}

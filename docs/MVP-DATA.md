@@ -8,7 +8,7 @@ A migration [`0002_mvp_records.sql`](../cloudflare/migrations/0002_mvp_records.s
 |---|---|---|
 | `mvp_tokens` | Primeiro avistamento, fonte, pool e run | Um por chain ID + endereço normalizado; imutável |
 | `mvp_token_seen_events` | Avistamentos posteriores | Append-only, deduplicado por token/run/pool |
-| `mvp_decisions` | Primeira decisão, features, baseline, fonte, versão e perfil | Um registo canónico por token/score version/perfil; imutável |
+| `mvp_decisions` | Primeira decisão, features, baseline, fonte, versão e perfil | Um baseline imutável por token/score version/perfil; elegibilidade canónica verificada no ledger 0009 |
 | `mvp_decision_events` | Decisões posteriores com as suas features | Append-only; não substituem a primeira decisão |
 | `mvp_outcome_jobs` | Horizonte, vencimento, estado e próximo retry | Identidade/vencimento imutáveis; progresso atualizável |
 | `mvp_outcome_attempts` | Tentativa, data, motivo e fonte | Append-only, incluindo `MISSING` e `INVALID` |
@@ -57,7 +57,9 @@ O benchmark local observou cerca de 46–54% de poupança nos dados ensaiados; a
 
 ## Relatório semanal
 
-A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescenta índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. O cron existente gera o relatório na segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se o cron regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
+**Atualização 3B-1:** a geração saiu da transação de ingestão. O job próprio, agendado a cada cinco minutos, verifica o vencimento semanal das 00:15 UTC e produz uma coorte por invocação. As páginas imutáveis de até 64 KiB separam versão, perfil e tier, sem relatório global misturado. Tiers antigos sem prova são `UNKNOWN`. O painel consulta `/weekly?reportKey=...&page=N`; `/latest` inclui uma página. As tabelas antigas permanecem como arquivo compatível. Ver [estado 3B](PHASE3B-STATUS.md).
+
+A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescentou índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. Essa implementação anterior gerava o relatório dentro do cron de ingestão. O job independente da 3B-1 conserva o vencimento à segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
 
 A fonte é a primeira decisão/score congelados, com outcomes armazenados até ao cutoff. As bandas são 0–49, 50–64, 65–74, 75–84 e 85–100, mais `UNKNOWN`. Cada versão/perfil mantém a sua coorte. Sintéticos e proveniência desconhecida ficam excluídos e contabilizados separadamente; decisões reais rejeitadas, mortas e incompletas permanecem no denominador. Somar coortes pode repetir um token, pelo que membros de coorte não são apresentados como tokens únicos globais.
 
@@ -65,7 +67,7 @@ Por horizonte, publica amostras, outcomes desconhecidos, cobertura e retorno mé
 
 ## Outcomes
 
-Cada primeira decisão cria jobs **15m, 1h, 24h e 7d**, vencidos relativamente à sua hora inicial. O collector consulta até quatro jobs devidos por ciclo e pode pedir mercado para tokens que já saíram da lista visível.
+Cada primeira decisão cria jobs **15m, 1h, 24h e 7d**, vencidos relativamente à sua hora inicial. O collector seleciona até quatro tokens distintos e até 24 jobs devidos por ciclo, incluindo as suas versões/perfis. As janelas ainda abertas (`LIVE`) têm prioridade e todos os jobs LIVE selecionados são preservados. O limite de quatro em `collector.maximumExpiredOutcomeJobs` aplica-se apenas aos retries históricos com janela expirada (`EXPIRED`); os restantes ficam adiados sem alterar os jobs guardados. Pode pedir mercado para tokens que já saíram da lista visível; para jobs expirados procura pontos históricos arquivados, sem usar o preço atual como substituto.
 
 Um ponto completo exige preço, liquidez, fonte e timestamp efetivo entre o vencimento e **cinco minutos depois**. A captura pode chegar mais tarde apenas se a fonte histórica comprovar um ponto dentro dessa janela. O timestamp original do gateway é preservado através de `x-radar-fetched-at`; servir cache não cria uma observação nova.
 
@@ -80,3 +82,27 @@ Falha HTTP, token ausente, falta de preço/liquidez ou ponto fora da janela gera
 Os registos MVP não são apagados pela retenção de três horas dos relatórios antigos. O Free continua a ter armazenamento e escritas limitados; a política de arquivo/retenção de longo prazo ainda falta. Triggers append-only impedem uma limpeza automática informal. Acompanhar tamanho, filas pendentes e quotas antes de acumular histórico prolongado.
 
 Ver [MVP-AUDIT.md](MVP-AUDIT.md) para o ponto Time Travel e a inexistência de export SQL offline; [MVP-PROGRESS.md](MVP-PROGRESS.md) para as fases ainda pendentes.
+
+## Canonicalidade e componentes exatos — 3B-1
+
+A migration aditiva `0009` liga cada baseline ao bloco da primeira decisão, conserva reorgs e invalidações e coloca as gerações anteriores em quarentena até revalidar os hashes. Filas, commits de outcomes, relatórios e gate de 300 lançamentos excluem baselines órfãos ou sem referência comprovável; os registos originais não são apagados nem substituídos por preços posteriores. Um relatório já congelado fica em quarentena se a geração/validação mudar. Headers indisponíveis deixam a prova pendente e não interrompem a ingestão.
+
+`accountingState.pnlComponents` e os resumos temporais passam a persistir componentes exatos por posição, conservando os campos cumulativos anteriores. O ficheiro validado `config/wallet-accounting.json` separa 16 KiB de estado, 128 lotes/componentes e 4.096 bits de orçamento aritmético. O limite de precisão antigo de 180 dígitos foi removido; não há arredondamento monetário para aprovar wallets. Excesso de recursos preserva checkpoints e mantém métricas incompletas, com recuperação explícita; o serviço de checkpoints segmentados ainda falta.
+
+O TTL do contador atual de carteiras usa a configuração (600 s) e a geração corrente; `historicalEligible` identifica a projeção antiga. Nada desta alteração acrescenta as provas em falta de histórico, preços, taxas ou ETH nativo. A janela de 30 dias pertence ao bloco 3B-2 e ainda não foi implementada.
+
+## Janela declarada e produtores reais — 3B-2
+
+A 3B-2 acrescenta `historyWindow` com início/fim UTC, 30 dias exatos, blocos/hashes de fronteira, escopo, fonte e provas. A compatibilidade com históricos vitalícios mantém-se; os campos antigos não passam a significar cobertura de 30 dias retroativamente. Uma mudança de janela/escopo, uma aquisição perdida ou um recibo não conciliado exige replay verificado, preservando o checkpoint anterior até esse replay terminar.
+
+O backfill usa as tabelas aditivas `0013_mvp_wallet_backfill.sql`: jobs, páginas imutáveis, dedupe, fila de recibos e arquivo de casos não resolvidos. Descobre eventos ERC20 Transfer de entrada e saída em todos os contratos, e reconcilia swaps das pools conhecidas com os recibos. Mantém uma janela fixa por job e avança por lotes dentro do orçamento do collector: até quatro pedidos RPC, oito eventos e um recibo por ciclo disponível. Os comandos entram no mesmo batch protegido por lease/fencing e comparação de versão do cursor. Reorgs e falhas históricas não fabricam cobertura. Um scan ERC20 completo não comprova histórico nativo/interno, equity inicial ou preço USD.
+
+Uma venda sem aquisição conciliada dentro da janela fica em `excludedSells`, fora do PnL e da contagem de realizações; não ganha custo zero. Saldos iniciais e transferências recebidas sem custo provado continuam desconhecidos. Completar métricas exige cobertura canónica/contígua, saldos iniciais comprovados, preços, taxas e atribuição. `scanComplete` e `financialCoverage.complete` são conceitos separados; perfis parciais mostram a janela e as lacunas sem se tornarem elegíveis.
+
+Os novos produtores conservam provas de criação, histórico/atividade tipados e componentes de fees observados. `executionFeeNativeRaw` pode ser medido pelo recibo sem afirmar que todas as taxas estão cobertas. ETH nativo v4 exige transação e trace completo ou diff de saldo específico da transação, taxas completas e validação canónica. `gasUsedForL1` do Nitro é tratado como componente já incluído em `gasUsed`; campos adicionais precisam de conciliação. Ausência de trace ou prova de fees não é interpretada como zero.
+
+Clustering reutiliza os eventos/recibos existentes: financiamento comum, compras no bloco da criação e transferências diretas positivas. Relações observadas reduzem independência; não provam fraude. Completar independência exige cobertura e classificação de financiadores não-hub. Flags insider/bundler/wash só são preenchidas por provas próprias; desconhecidos permanecem desconhecidos. A pontuação continua `wallet-manual-v2`, que já estava ativa antes deste bloco, com pesos 50/30/20. A política inclui agora a configuração de evidência, criando coorte nova sem reescrever labels anteriores.
+
+Limitações reais: RPC Ethereum normal não enumera contratos históricos de um deployer, não identifica por si a primeira origem nativa dos fundos, nem demonstra ausência de bundles privados ou wash trading. Sem esses providers e sem preços históricos USD comprovados, o PnL e a elegibilidade continuam incompletos. O job de 30 dias foi implementado para recolha incremental; uma janela declarada ou um teste local não equivale a 30 dias já recolhidos em produção. O custo e a duração de cobertura têm de ser medidos nos ciclos reais.
+
+Evidência individual acima de 128 KiB fica como digest SHA-256, com tamanho e motivo explícitos; isso não é uma prova reconstruível nem permite aprovar o caso. O arquivo imutável deduplica falhas idênticas. Logs financeiros acima do limite não são emitidos parcialmente como válidos.

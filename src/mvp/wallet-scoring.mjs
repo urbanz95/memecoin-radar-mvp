@@ -1,5 +1,6 @@
 import PROFILES_CONFIG from './config.mjs';
 import { NETWORK, isEvmAddress } from '../network.mjs';
+import { walletTemporalEvidence, WALLET_TEMPORAL_METHOD } from './wallet-temporal.mjs';
 
 const defaults = PROFILES_CONFIG.profiles.profile_new;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -52,7 +53,10 @@ export function scoreWalletProfile(profile, { now = Date.now(), config } = {}) {
     earlyEntryPct: percentage(profile?.earlyEntryPct) ? profile.earlyEntryPct : null,
     maxDrawdownPct: percentage(profile?.maxDrawdownPct) ? profile.maxDrawdownPct : null,
     lastRealizedAt: Number.isFinite(last) ? profile.lastRealizedAt : null,
-    timeDecayFactor: null, baseScore: null, pnlCappedAtUsd: cfg.targets.netRealizedPnlUsd };
+    timeDecayFactor: null, baseScore: null, pnlCappedAtUsd: cfg.targets.netRealizedPnlUsd,
+    temporalMethod: WALLET_TEMPORAL_METHOD, temporalCoverageComplete: false,
+    weightedRankingPnlUsd: null, weightedWinRatePct: null, weightedHoldingSeconds: null,
+    weightedEarlyEntryPct: null, weightedDrawdownPct: null };
   const finish = status => ({ version: cfg.version, chainId: whole(profile?.chainId) ? profile.chainId : null,
     walletAddress: isEvmAddress(profile?.walletAddress) ? normalized(profile.walletAddress) : null, status, eligible: status === 'ELIGIBLE',
     score: status === 'EXCLUDED' ? 0 : score, components, features, realizedTradeCount: features.realizedTradeCount,
@@ -88,14 +92,37 @@ export function scoreWalletProfile(profile, { now = Date.now(), config } = {}) {
     reasons.push(`A carteira ainda não tem ${cfg.minRealizedTrades} trades realizados comprovados.`); return finish('INELIGIBLE');
   }
   if (!pnl.positive) { score = 0; reasons.push('O PnL realizado líquido não é positivo.'); return finish('INELIGIBLE'); }
-  const ratios = { profit: pnl.ratio, winRate: clamp(profile.winRatePct / cfg.targets.winRatePct),
-    earlyEntry: clamp(profile.earlyEntryPct / cfg.targets.earlyEntryPct),
-    drawdown: clamp(1 - profile.maxDrawdownPct / cfg.targets.drawdownCapPct),
-    holding: clamp(profile.avgHoldingSeconds / cfg.targets.holdingSeconds) };
+  const temporal = profile.realizationHistory?.complete === true
+    ? walletTemporalEvidence(profile, profile.realizationHistory.summary, { now, config: cfg }) : null;
+  if (temporal?.complete !== true) {
+    pushGap(gaps, 'WALLET_TEMPORAL_HISTORY_UNPROVEN', 'realizationHistory',
+      'Falta histórico reconciliado por realização; os agregados antigos exigem replay verificado.');
+    return finish('INCOMPLETE');
+  }
+  const summary = temporal.summary; const weighted = summary.weighted;
+  const decay = clamp(weighted.count / summary.disposalCount
+    * 2 ** (-(now - Date.parse(summary.anchorAt)) / (cfg.timeDecayHalfLifeDays * 86400000)));
+  // Only ranking features use floating point. Subtract the accumulated error
+  // bound before using weighted profit; exact lifetime cash metrics stay above.
+  const rankingPnl = (weighted.netPnlUsd - weighted.pnlErrorUsd) / weighted.count * summary.disposalCount;
+  features.temporalCoverageComplete = true; features.timeDecayFactor = decay;
+  features.weightedRankingPnlUsd = rankingPnl;
+  features.weightedWinRatePct = Math.max(0, Math.min(100, weighted.wins / weighted.count * 100));
+  features.weightedHoldingSeconds = weighted.holdingSeconds / weighted.count;
+  features.weightedEarlyEntryPct = Math.max(0, Math.min(100, weighted.earlyEntryPct / weighted.count));
+  features.weightedDrawdownPct = Math.max(0, Math.min(100, weighted.drawdownPct / weighted.count));
+  if (rankingPnl <= 0) {
+    score = 0; reasons.push('A performance realizada recente, ponderada pelo tempo, não tem lucro líquido positivo comprovado.');
+    return finish('INELIGIBLE');
+  }
+  const ratios = { profit: clamp(rankingPnl / cfg.targets.netRealizedPnlUsd),
+    winRate: clamp(features.weightedWinRatePct / cfg.targets.winRatePct),
+    earlyEntry: clamp(features.weightedEarlyEntryPct / cfg.targets.earlyEntryPct),
+    drawdown: clamp(1 - features.weightedDrawdownPct / cfg.targets.drawdownCapPct),
+    holding: clamp(features.weightedHoldingSeconds / cfg.targets.holdingSeconds) };
   for (const [component, ratio] of Object.entries(ratios)) components.push({ component, score: round(ratio * 100),
     weight: cfg.weights[component], weightedPoints: round(ratio * cfg.weights[component]) });
   const baseScore = Object.entries(ratios).reduce((sum, [component, ratio]) => sum + ratio * cfg.weights[component], 0);
-  const decay = 2 ** (-(now - last) / (cfg.timeDecayHalfLifeDays * 86400000));
   features.baseScore = round(baseScore); features.timeDecayFactor = decay;
   score = round(baseScore * decay);
   if (score < cfg.minScore) reasons.push('O score manual, após decaimento temporal, está abaixo do mínimo.');
@@ -147,15 +174,21 @@ export function aggregateWalletSignal(profiles, { tokenAddress, entries = [], no
     if (!object(entry) || !isEvmAddress(entry.walletAddress)) continue;
     const address = normalized(entry.walletAddress); if (!eligible.has(address)) continue;
     const at = time(entry.observedAt); const first = time(entry.firstEntryAt);
+    // A new ingestion timestamp cannot make an old canonical buy recent.
+    // Legacy rows without a last-entry field use their proven first buy.
+    const lastEntry = Object.hasOwn(entry, 'lastEntryAt') ? time(entry.lastEntryAt) : first;
     const valid = entry.chainId === NETWORK.chainId && normalized(entry.tokenAddress) === normalized(tokenAddress)
       && entry.attributionVerified === true && entry.entryType === 'buy' && source(entry.source) && refs(entry.evidence)
       && Number.isFinite(at) && now - at <= cfg.maxEntryAgeSeconds * 1000 && at <= now + cfg.maxFutureSkewSeconds * 1000
       && Number.isFinite(first) && first <= now && first <= at + cfg.maxFutureSkewSeconds * 1000
+      && Number.isFinite(lastEntry) && lastEntry >= first && lastEntry <= now
+      && now - lastEntry <= cfg.maxEntryAgeSeconds * 1000 && lastEntry <= at + cfg.maxFutureSkewSeconds * 1000
       && entry.clusteringComplete === true && source(entry.clusterId) && entry.clusterId.length <= 128 && refs(entry.clusterEvidence);
     if (!valid) { pushGap(gaps, 'WALLET_ENTRY_UNPROVEN', `walletEntries.${address}`, 'A entrada ou a independência da carteira ainda não está comprovada.'); continue; }
     const existing = buyers.get(address);
-    if (existing) { join(existing.clusterId, entry.clusterId); existing.expiresAt = Math.min(existing.expiresAt, at + cfg.maxEntryAgeSeconds * 1000); }
-    else { find(entry.clusterId); buyers.set(address, { clusterId: entry.clusterId, expiresAt: at + cfg.maxEntryAgeSeconds * 1000 }); }
+    const expiresAt = Math.min(at, lastEntry) + cfg.maxEntryAgeSeconds * 1000;
+    if (existing) { join(existing.clusterId, entry.clusterId); existing.expiresAt = Math.min(existing.expiresAt, expiresAt); }
+    else { find(entry.clusterId); buyers.set(address, { clusterId: entry.clusterId, expiresAt }); }
   }
   const clusterMap = new Map();
   for (const [address, entry] of buyers) {

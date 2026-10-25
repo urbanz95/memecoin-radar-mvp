@@ -39,6 +39,14 @@ test('central YAML activates only dry-run profile_new, younger than 24 hours, wi
   assert.deepEqual(fresh.weights, { wallets: 50, security: 30, momentum: 20 });
   assert.equal(fresh.minWalletTrades, 5);
   assert.equal(fresh.minScore, 75);
+  assert.equal(fresh.walletScoring.version, 'wallet-manual-v2');
+});
+
+test('wallet method changes keep legacy configuration readable without accepting unknown methods', () => {
+  assert.equal(validateProfiles(change(config => { config.profiles.profile_new.walletScoring.version = 'wallet-manual-v1'; }))
+    .profiles.profile_new.walletScoring.version, 'wallet-manual-v1');
+  assert.throws(() => validateProfiles(change(config => { config.profiles.profile_new.walletScoring.version = 'wallet-model-v1'; })),
+    /PROFILE_CONFIG_INVALID/);
 });
 
 test('future profile_existing remains disabled and 2880 hours means 120 days, not 2880 minutes', () => {

@@ -25,7 +25,7 @@ profiles:
     minScore: 75
     walletScoring:
       # Manual hypotheses, not fitted or backtested probabilities.
-      version: wallet-manual-v1
+      version: wallet-manual-v2
       minRealizedTrades: 5
       minScore: 70
       minIndependentGroups: 2

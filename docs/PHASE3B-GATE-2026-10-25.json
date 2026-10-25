@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-25T12:28:05.784286Z",
+  "sourceCommit": "acdcb34d49e95c326d5dd2d1ed53cfab5c58080f",
+  "healthHttp": 200,
+  "latestHttp": 200,
+  "workerVersion": "dd06e0fd-5f70-4cec-a8eb-9210200dc868",
+  "health": {
+    "status": "COMPLETED",
+    "stale": false,
+    "lastError": null,
+    "lastSuccessAt": "2026-10-25T12:26:28.793Z",
+    "operations": {
+      "schemaVersion": 1,
+      "lastSuccessAt": "2026-10-25T12:26:29.638Z",
+      "lastError": null,
+      "completedCycles": 182,
+      "stableSince": 1792908148544,
+      "nextEligibleAt": 1792931402638,
+      "failures": 0,
+      "lastCycleStartedAt": "2026-10-25T12:26:22.527Z",
+      "budget": {
+        "dayUtc": "2026-10-25",
+        "estimatedRowsWritten": 25633,
+        "limit": 80000,
+        "circuitUntil": null,
+        "scope": "collector-estimate-plus-overhead; excludes administrative writes and weekly job; 20000-row account reserve"
+      },
+      "lastCycleCompletedAt": "2026-10-25T12:26:29.638Z",
+      "lastCycleRowsWritten": 152,
+      "cadenceSeconds": 213,
+      "circuitUntil": 0,
+      "writePacing": {
+        "dayUtc": "2026-10-25",
+        "samples": [
+          202,
+          339,
+          218,
+          159,
+          178,
+          160,
+          154,
+          162
+        ],
+        "meanRowsPerCycle": 196.5,
+        "windowSize": 8
+      },
+      "stability": {
+        "stableSince": "2026-10-25T06:02:28.544Z",
+        "requiredHours": 6,
+        "completedCycles": 182,
+        "qualified": true
+      }
+    },
+    "heartbeat": {
+      "event": "COLLECTOR_HEARTBEAT",
+      "checkedAt": "2026-10-25T12:26:32.162Z",
+      "lastSuccessAt": "2026-10-25T12:26:29.638Z",
+      "ageSeconds": 2.524,
+      "alert": false,
+      "thresholdSeconds": 600,
+      "cause": null,
+      "notificationChannel": "GITHUB_ISSUE",
+      "telegramDelivery": false
+    },
+    "currentSignalsAvailable": false,
+    "marketSignalsAvailable": false
+  },
+  "completedSpanSeconds": 23041.094,
+  "validation": {
+    "tests": 605,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true
+  },
+  "archive": {
+    "schemaVersion": 1,
+    "tokensSeen": 4437,
+    "seenEvents": 8335,
+    "decisions": 515,
+    "decisionEvents": 4878,
+    "outcomeJobs": {
+      "pending": 610,
+      "retry": 1177,
+      "complete": 273
+    },
+    "outcomeAttempts": 8123,
+    "outcomesComplete": 273,
+    "updatedAt": "2026-10-25T12:26:28.793Z"
+  },
+  "nextAuthorizedBlock": "3B-2",
+  "shadowStarted": false,
+  "restrictions": {
+    "dryRun": true,
+    "trades": false,
+    "telegramDelivery": false,
+    "stage2": false,
+    "phases4To6": false
+  }
+}

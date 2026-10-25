@@ -69,6 +69,23 @@ test('wallet eligibility requires actual score, five realized trades and distinc
     assert.throws(() => formatDryRunAlert(eligible({ wallets })), /MVP_ALERT_/);
 });
 
+test('three eligible wallets in two independent groups produce one dry-run preview without counting a cluster twice', t => {
+  const DB = db(t);
+  const [a, b] = eligible().wallets;
+  const wallets = [a, { ...a, address: TOKEN(12) }, b];
+  const result = formatDryRunAlert(eligible({ wallets }));
+  assert.equal(result.wallets.length, 3);
+  assert.equal(new Set(result.wallets.map(wallet => wallet.clusterId)).size, 2);
+  assert.ok(result.text.includes(TOKEN(12)));
+  const prepared = prepareDryRunAlerts(DB, [eligible({ wallets })], { runId: 'two-groups', observedAt: time });
+  assert.equal(prepared.accepted.length, 1);
+  assert.equal(prepared.commands.length, 1);
+  assert.throws(() => formatDryRunAlert(eligible({ wallets: [a] })), /MVP_ALERT_DEPENDENT_WALLET_GROUPS/);
+  assert.throws(() => formatDryRunAlert(eligible({ wallets: [a, { ...a, address: TOKEN(12) }] })), /MVP_ALERT_DEPENDENT_WALLET_GROUPS/);
+  assert.throws(() => formatDryRunAlert(eligible({ wallets }), { minIndependentGroups: 3 }), /MVP_ALERT_DEPENDENT_WALLET_GROUPS/);
+  assert.throws(() => formatDryRunAlert(eligible({ wallets }), { minIndependentGroups: 1 }), /MVP_ALERT_INVALID_MIN_GROUPS/);
+});
+
 test('known critical risk flags and high severity evidence block an otherwise PASS decision', () => {
   for (const riskFlags of [['HONEYPOT'], ['canMint'], ['hidden_owner'], ['SELL_TAX_POSITIVE'], ['EMPTY_LIQUIDITY'],
     ['SYBIL_CLUSTER'], ['BUY_SIMULATION_FAILED'], ['SECURITY_CHECK_MISSING'],

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "historyDays": 30,
+  "backfill": {
+    "maxStepRequests": 4,
+    "chunkBlocks": 2048,
+    "maxLogs": 32,
+    "maxEvents": 8,
+    "maxReceipts": 1
+  },
+  "native": {
+    "enabled": true,
+    "maxTraceTransfers": 512,
+    "maxFeeComponents": 16
+  }
+}

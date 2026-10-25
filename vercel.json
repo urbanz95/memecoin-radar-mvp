@@ -9,7 +9,8 @@
   },
   "rewrites": [
     { "source": "/health", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/health" },
-    { "source": "/latest", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/latest" }
+    { "source": "/latest", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/latest" },
+    { "source": "/weekly", "destination": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev/weekly" }
   ],
   "headers": [
     {
@@ -22,7 +23,7 @@
       ]
     },
     {
-      "source": "/(health|latest)",
+      "source": "/(health|latest|weekly)",
       "headers": [
         { "key": "x-vercel-enable-rewrite-caching", "value": "0" },
         { "key": "Vercel-CDN-Cache-Control", "value": "no-store" },

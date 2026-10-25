@@ -105,12 +105,15 @@ function fixtureResponse(payload) {
   });
   return new LocalResponse(JSON.stringify(batch ? results : results[0]), { headers: { 'content-type': 'application/json' } });
 }
-const mf = new Miniflare(convertV4MiniflareOptions({
+// Consecutive pipeline phases use a local-only unmanaged cadence. The managed
+// actor is verified separately below; no production binding is changed.
+const repeatedPhaseProbe = count > 1 && config.vars?.OPERATIONS_ENABLED === '1';
+const runtimeOptions = {
   modules: true,
   scriptPath: join(root, 'worker.mjs'),
   compatibilityDate: config.compatibility_date,
   compatibilityFlags: config.compatibility_flags,
-  bindings: config.vars,
+  bindings: { ...config.vars, ...(repeatedPhaseProbe ? { OPERATIONS_ENABLED: '0' } : {}) },
   d1Databases: { DB: 'runtime-probe' },
   durableObjects: { COLLECTOR: { className: 'Collector', useSQLite: true } },
   resourcePersistencePath: join(root, 'storage'),
@@ -138,9 +141,10 @@ const mf = new Miniflare(convertV4MiniflareOptions({
         ...(upstream.headers.get('retry-after') ? { 'retry-after': upstream.headers.get('retry-after') } : {}) }
     });
   }
-}));
+};
+const mf = new Miniflare(convertV4MiniflareOptions(runtimeOptions));
 try {
-  const db = await mf.getD1Database('DB');
+  let db = await mf.getD1Database('DB');
   for (const name of (await readdir('cloudflare/migrations')).filter(name => /^\d+_[a-z0-9_]+\.sql$/.test(name)).sort()) {
     const schema = await readFile(join('cloudflare/migrations', name), 'utf8');
     let statement = '';
@@ -173,7 +177,7 @@ try {
     const result = {
       cycle: i + 1, synthetic: fixture, localRuntime: 'workerd', remoteDeployment: false,
       scheduledOutcome: scheduled.outcome, wallMs: Math.round(performance.now() - started),
-      analysisEnabled, forwardedRequests, rpcRequests, cycleRpcRequests: rpcRequests - rpcBefore,
+      analysisEnabled, managedCadence: !repeatedPhaseProbe, forwardedRequests, rpcRequests, cycleRpcRequests: rpcRequests - rpcBefore,
       providerRequests: { ...providerRequests }, safetyFocusPhase: state.safetyFocus?.phase ?? null,
       healthHttpStatus: healthResponse.status, latestHttpStatus: latestResponse.status, health,
       report: report ? { runId: report.runId, observedHead: report.observedHead,
@@ -265,6 +269,28 @@ try {
       }
     }
     previousRunId = report.runId;
+  }
+  if (config.vars?.OPERATIONS_ENABLED === '1') {
+    if (repeatedPhaseProbe) {
+      await mf.setOptions(convertV4MiniflareOptions({ ...runtimeOptions, bindings: config.vars }));
+      db = await mf.getD1Database('DB');
+      assert.equal((await (await mf.getWorker()).scheduled({ cron: '* * * * *' })).outcome, 'ok');
+    }
+    const managedWorker = await mf.getWorker();
+    const before = await db.prepare('SELECT id FROM runs ORDER BY completed_at DESC LIMIT 1').first();
+    const callsBefore = rpcRequests;
+    const healthBefore = await (await mf.dispatchFetch('https://local.test/health')).json();
+    assert.ok(healthBefore.operations.budget.estimatedRowsWritten > 0);
+    assert.equal(healthBefore.operations.stability.qualified, false, 'A local probe cannot prove six hours of production continuity');
+    assert.equal((await managedWorker.scheduled({ cron: '* * * * *' })).outcome, 'ok');
+    assert.equal(rpcRequests, callsBefore, 'The managed cadence skip must not issue RPC calls');
+    assert.equal((await db.prepare('SELECT id FROM runs ORDER BY completed_at DESC LIMIT 1').first()).id, before.id);
+    assert.equal((await managedWorker.scheduled({ cron: '2-59/5 * * * *' })).outcome, 'ok');
+    assert.equal((await managedWorker.scheduled({ cron: '4-59/5 * * * *' })).outcome, 'ok');
+    assert.equal(rpcRequests, callsBefore, 'Weekly and heartbeat jobs must not run the scanner');
+    assert.equal((await db.prepare('SELECT id FROM runs ORDER BY completed_at DESC LIMIT 1').first()).id, before.id);
+    console.log(JSON.stringify({ event: 'OPERATIONS_RUNTIME_VERIFIED', localRuntime: 'workerd', synthetic: fixture,
+      cadenceSkipNoRpc: true, separateWeeklyJob: true, heartbeatJob: true, productionStabilityHoursVerified: 0 }));
   }
 } finally {
   await mf.dispose(); await dispatcher.close();

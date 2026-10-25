@@ -8,12 +8,20 @@ import { FreeRpc, hex } from '../src/cloudflare/rpc.mjs';
 import worker, { Collector } from '../src/cloudflare/worker.mjs';
 import { EVENTS } from '../src/onchain/abi.mjs';
 import { QUOTE_ASSETS } from '../src/network.mjs';
+import { prepareDecisionRecords } from '../src/mvp/records.mjs';
+import { runWeeklyReportJob } from '../src/mvp/weekly-report.mjs';
 
 const schema = await readFile(new URL('../cloudflare/migrations/0001_collector.sql', import.meta.url), 'utf8');
-const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8');
+const mvpSchema = await readFile(new URL('../cloudflare/migrations/0002_mvp_records.sql', import.meta.url), 'utf8')
+  + await readFile(new URL('../cloudflare/migrations/0009_mvp_decision_canonicality.sql', import.meta.url), 'utf8');
 const outboxSchema = await readFile(new URL('../cloudflare/migrations/0003_mvp_outbox.sql', import.meta.url), 'utf8');
 const walletSchema = await readFile(new URL('../cloudflare/migrations/0004_mvp_wallets.sql', import.meta.url), 'utf8');
 const weeklySchema = await readFile(new URL('../cloudflare/migrations/0005_mvp_weekly.sql', import.meta.url), 'utf8');
+const outcomeCaptureSchema = await readFile(new URL('../cloudflare/migrations/0006_mvp_outcome_capture.sql', import.meta.url), 'utf8');
+const walletBandsSchema = await readFile(new URL('../cloudflare/migrations/0007_mvp_wallet_score_bands.sql', import.meta.url), 'utf8');
+const walletTemporalSchema = await readFile(new URL('../cloudflare/migrations/0008_mvp_wallet_realizations.sql', import.meta.url), 'utf8');
+const weeklyJobSchema = await readFile(new URL('../cloudflare/migrations/0010_mvp_weekly_jobs.sql', import.meta.url), 'utf8');
+const walletTtlSchema = await readFile(new URL('../cloudflare/migrations/0012_mvp_wallet_eligibility_ttl.sql', import.meta.url), 'utf8');
 const TOKEN = '0x1111111111111111111111111111111111111111';
 const POOL = '0x2222222222222222222222222222222222222222';
 const FACTORY = '0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f';
@@ -222,7 +230,7 @@ test('análise adicional publica filtros e histórico persistente sem aprovar da
 });
 
 test('MVP archival records real collector inputs and preserves rejected decisions after operational run expiry', async t => {
-  const f = setup(t); f.DB.sqlite.exec(mvpSchema);
+  const f = setup(t); f.DB.sqlite.exec(mvpSchema); f.DB.sqlite.exec(outcomeCaptureSchema);
   f.env.ANALYSIS_ENABLED = '1'; f.env.MVP_RECORDING_ENABLED = '1';
   const fetchImpl = async () => Response.json({}, { status: 404 });
   assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now, fetchImpl })).status, 'COMPLETED');
@@ -241,6 +249,58 @@ test('MVP archival records real collector inputs and preserves rejected decision
   assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decisions').get().n, 2);
   assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_decision_events').get().n, 4);
   assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_outcomes').get().n, 0);
+});
+
+test('collector prioritizes live outcome targets, archives original provider times and recovers expired jobs without a new price fetch', async t => {
+  const f = setup(t); f.DB.sqlite.exec(mvpSchema); f.DB.sqlite.exec(outcomeCaptureSchema);
+  Object.assign(f.env, { ANALYSIS_ENABLED: '1', MVP_RECORDING_ENABLED: '1' });
+  const expiredToken = '0x3333333333333333333333333333333333333333';
+  const seedAt = f.now() - 62 * 60000;
+  await f.DB.batch(prepareDecisionRecords(f.DB, {
+    runId: 'prior-decisions', observedAt: seedAt, scoreVersion: 'prior-test-v1', profile: 'prior-test', policyHash: 'prior-policy',
+    source: { blockNumber: 900, blockHash: blockHash(900) },
+    decisions: [TOKEN].map(address => ({ address, status: 'REJECTED', isLaunch: true,
+      features: { externalMarket: { priceUsd: 1, liquidityUsd: 100 } } }))
+  }).commands);
+  const expiredSeedAt = seedAt - 10 * 60000;
+  await f.DB.batch(prepareDecisionRecords(f.DB, {
+    runId: 'older-decision', observedAt: expiredSeedAt, scoreVersion: 'prior-test-v1', profile: 'prior-test', policyHash: 'prior-policy',
+    source: { blockNumber: 800, blockHash: blockHash(800) },
+    decisions: [{ address: expiredToken, status: 'REJECTED', isLaunch: true,
+      features: { externalMarket: { priceUsd: 1, liquidityUsd: 100 } } }]
+  }).commands);
+  // A stored, genuine point can recover the old +15m window. The other token's
+  // +1h window is made expired so it must not consume a provider target slot.
+  const { prepareMarketObservations } = await import('../src/mvp/outcomes.mjs');
+  const historicalAt = expiredSeedAt + 16 * 60000;
+  await f.DB.batch(prepareMarketObservations(f.DB, [{ address: expiredToken, externalMarket: {
+    source: 'dexscreener', trust: 'provider-reported', chain: 'robinhood', chainId: 4663,
+    baseTokenAddress: expiredToken, quoteTokenAddress: QUOTE_ASSETS.WETH, quoteAsset: 'WETH',
+    pairAddress: POOL, pairKind: 'address', fetchedAt: new Date(historicalAt).toISOString(), priceUsd: 0, liquidityUsd: 0
+  } }], { runId: 'actual-historical-source', observedAt: historicalAt, refreshed: true }).commands);
+  const requested = [];
+  const fetchImpl = async url => {
+    if (!String(url).includes('dexscreener.com/tokens/')) return Response.json({}, { status: 404 });
+    requested.push(String(url));
+    return Response.json([{ chainId: 'robinhood', pairAddress: POOL,
+      baseToken: { address: TOKEN }, quoteToken: { address: QUOTE_ASSETS.WETH },
+      priceUsd: '2', liquidity: { usd: 200 } }], { headers: { 'x-radar-fetched-at': new Date(f.now() - 1000).toISOString() } });
+  };
+  const result = await collectFree(f.env, { rpc: f.rpc, now: f.now, fetchImpl });
+  assert.equal(result.status, 'COMPLETED');
+  assert.ok(requested.length > 0);
+  assert.ok(requested.every(url => !url.includes(expiredToken)), 'expired jobs must use archive recovery, not current provider requests');
+  const rows = f.DB.sqlite.prepare('SELECT d.address,o.horizon,o.source_timestamp,o.price_usd,o.liquidity_usd FROM mvp_outcomes o JOIN mvp_decisions d USING(decision_key)').all();
+  const recovered = rows.find(row => row.address === expiredToken && row.horizon === '15m');
+  assert.ok(recovered); assert.equal(recovered.source_timestamp, historicalAt);
+  assert.equal(recovered.price_usd, 0); assert.equal(recovered.liquidity_usd, 0);
+  const current = rows.find(row => row.address === TOKEN && row.horizon === '1h');
+  assert.ok(current); assert.equal(current.source_timestamp, f.now() - 1000);
+  const archived = f.DB.sqlite.prepare('SELECT * FROM mvp_market_observations WHERE address=?').get(TOKEN);
+  assert.ok(archived); assert.equal(archived.source_timestamp, f.now() - 1000);
+  const report = JSON.parse(f.DB.sqlite.prepare('SELECT report_json FROM runs').get().report_json);
+  assert.ok(report.mvp.outcomeCollection.liveJobs > 0);
+  assert.ok(report.mvp.outcomeCollection.diagnostics.some(point => point.result === 'COMPLETE'));
 });
 
 test('a lost collector fence rolls back archival rows and their exact counters', async t => {
@@ -531,7 +591,9 @@ test('erros HTTP conservam apenas o status e nunca o URL, corpo ou credenciais',
     assert.deepEqual(rpc.audit, [{ error: `RPC_HTTP_${status}` }]);
     const f = setup(t);
     f.rpc.request = async () => { throw new Error(`RPC_HTTP_${status}`); };
-    assert.deepEqual(await collectFree(f.env, { rpc: f.rpc, now: f.now }), { status: 'ERROR', reason: `RPC_HTTP_${status}` });
+    const result = await collectFree(f.env, { rpc: f.rpc, now: f.now });
+    assert.deepEqual({ status: result.status, reason: result.reason }, { status: 'ERROR', reason: `RPC_HTTP_${status}` });
+    assert.equal(result.cause.code, `RPC_HTTP_${status}`); assert.equal(result.cause.stage, 'rpc-head');
     assert.equal(f.DB.sqlite.prepare('SELECT last_error FROM control').get().last_error, `RPC_HTTP_${status}`);
   }
 });
@@ -630,9 +692,10 @@ test('MVP phase 2 archives its own profile and keeps legacy results without manu
   assert.deepEqual(published.mvp.outbox.recent, []);
 });
 
-test('MVP phase 3 integrates the permanent wallet ledger and one weekly report without claiming an absent wallet history', async t => {
+test('MVP phase 3 ingestion persists independently of the separate weekly job and keeps absent wallet history unknown', async t => {
   const f = setup(t);
-  for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema]) f.DB.sqlite.exec(sql);
+  for (const sql of [mvpSchema, outboxSchema, walletSchema, weeklySchema, outcomeCaptureSchema,
+    walletBandsSchema, walletTemporalSchema, weeklyJobSchema, walletTtlSchema]) f.DB.sqlite.exec(sql);
   Object.assign(f.env, { MVP_RECORDING_ENABLED: '1', MVP_PHASE: '3' });
   for (let i = 0; i < 2; i++) {
     assert.equal((await collectFree(f.env, { rpc: f.rpc, now: f.now })).status, 'COMPLETED');
@@ -645,7 +708,23 @@ test('MVP phase 3 integrates the permanent wallet ledger and one weekly report w
   assert.equal(body.mvp.outbox.stats.queuedDryRun, 0);
   assert.equal(body.recordedResults.length, 2);
   assert.equal(body.mvp.futurePhasesEnabled, false);
-  assert.equal(body.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
-  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 1);
+  assert.equal(body.mvp.weeklyReport, null);
+  assert.equal(body.mvp.walletCollection.scoreMethod, 'wallet-manual-v2');
+  assert.equal(body.mvp.walletCollection.realizedDisposals, 0);
+  assert.equal(body.mvp.walletCollection.temporalProfilesUpdated, 0);
+  assert.equal(f.DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_weekly_reports').get().n, 0);
   assert.equal(f.DB.sqlite.prepare("SELECT count(*) AS n FROM mvp_decisions WHERE profile='profile_new'").get().n, 1);
+  assert.equal((await runWeeklyReportJob(f.DB, { now: f.now })).status, 'COMPLETE');
+  f.env.OPERATIONS_ENABLED = '1';
+  const operationState = new Map();
+  const localActor = new Collector({ storage: { async get(key) { return operationState.get(key); },
+    async put(key, value) { operationState.set(key, structuredClone(value)); } } }, f.env);
+  f.env.COLLECTOR = { idFromName: name => name, get: () => ({ fetch: (input, init) => localActor.fetch(new Request(input, init)) }) };
+  const published = await (await worker.fetch(new Request('https://example.test/latest'), f.env)).json();
+  assert.equal(published.mvp.weeklyReport.kind, 'mvp-weekly-observation-report');
+  assert.equal(published.mvp.weeklyReport.schemaVersion, 2);
+  assert.equal(published.mvp.weeklyReport.pagination.totalPages, 0);
+  const page = await worker.fetch(new Request('https://example.test/weekly?page=0'), f.env);
+  assert.equal(page.status, 200); assert.equal(page.headers.get('cache-control'), 'no-store');
+  assert.equal((await worker.fetch(new Request('https://example.test/weekly?page=-1'), f.env)).status, 400);
 });

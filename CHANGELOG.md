@@ -1,5 +1,31 @@
 # Alterações
 
+## Fase 3B-1 — consolidação, 25/10/2026
+
+- Diagnosticada a interrupção por quota diária de escritas D1. Cadência gerida, orçamento preventivo, circuit breaker, journal independente, heartbeat externo com issue GitHub e causas estruturadas; Telegram continua sem envios.
+- Respostas públicas construídas no DO para reduzir CPU no Worker Free; schemas, GET-only e cache preservados. Suite final: 589 testes, validate, profiles:check, build e workerd aprovados.
+- Retries históricos limitados a quatro por ciclo, preservando todos os LIVE selecionados e o backlog. Suite final do bloco: 593 testes e verificações de configuração/build/workerd aprovadas.
+- Relatório semanal separado da ingestão, paginado por versão/perfil/tier. Clusters válidos chegam à outbox; contagem de wallets respeita TTL. Reorgs invalidam baselines e colocam relatórios/labels em quarentena sem apagar dados.
+- FIFO e resumos temporais persistem componentes racionais por posição com adaptadores antigos e limites separados de precisão/memória. Nunca arredondam ou inventam PnL para completar perfis.
+- Migrations aditivas 0009/0010/0012; aplicação apenas após novo ponto Time Travel. Estado de publicação, testes, pendências e riscos em [PHASE3B-STATUS.md](docs/PHASE3B-STATUS.md).
+- 3B-2/3B-3 ficam condicionados a seis horas reais de estabilidade. Nenhuma fase 4–6 iniciada.
+
+## Fase 3 concluída — 24/10/2026
+
+- Reaproveitado o tracking existente, com provas tipadas de recibos/histórico/custos/risco/clusters, primeira compra preservada, replay explícito e eventos de realização com PnL racional exato. Compras antigas não ganham frescura ao serem relidas.
+- Score manual por realização com decaimento exponencial incremental, proteção contra rejuvenescimento de lucros antigos, clusters coordenados a contar uma vez e perfil A 50/30/20 em YAML. Método `wallet-manual-v2`, score `mvp-new-v3:45d248bff4b9a3ee`; configurações antigas continuam legíveis.
+- Relatório semanal por token score e wallet score no momento da decisão; tabelas no painel com +15m/+1h/+24h/+7d, cobertura, zero real distinto de desconhecido e relatórios antigos preservados.
+- 511 testes passaram, cinco cenários DOM, três ciclos workerd com 15/14/14 RPC e ensaio com RPC real usando 28. Migrations aditivas `0007`/`0008` aplicadas após novo backup integral D1 Time Travel.
+- Cloudflare `a38fe3b8-143b-4838-bf81-13295a4242a3` e Vercel Hobby `dpl_93GrwTCGXChKNNJoFnAaYXwXBY5Z` publicados a partir de `3f6a199`. Duas recolhas naturais verificadas no painel: 3.432 → 3.434 tokens, 194 outcomes e bloqueados ocultos.
+- O PnL real permanece desconhecido: 111 carteiras acompanhadas, zero elegíveis; 107 com liquidação nativa por reconciliar e quatro sem fluxos opostos comprovados. Fontes de histórico, preços/taxas e clustering continuam necessárias. Sem X, modo B, backtest/modelo ou execução de trades. Detalhes em [wallet scoring](docs/WALLET-SCORING.md).
+
+## Verificação dos outcomes antes da continuação da fase 3 — 24/10/2026
+
+- Corrigida a prioridade da fila: janelas abertas, quatro tokens distintos e fanout limitado a 24 jobs; os expirados procuram apenas dados históricos reais. Retries até um minuto durante a janela e backoff posterior limitado a 24h.
+- Acrescentados arquivo imutável de observações, recuperação dentro da janela original e diagnóstico temporal do provider. Migration incremental `0006` aplicada após ponto integral D1 Time Travel; schema e hash verificados.
+- Baseline de 471 testes; suite final de 480 testes sem falhas e três ciclos workerd com 15/14/14 RPC. Em produção, duas observações novas e três outcomes +15m elevaram o total de 28 para 31, com preço, liquidez e timestamps confirmados em D1.
+- Primeiro push concluído em `urbanz95/memecoin-radar-mvp`, com branch novo para a continuação. Alterações seguintes de wallets mantidas em espera a pedido do utilizador. Pendências e riscos no [relatório](docs/MVP-VERIFICATION-2026-10-24.md).
+
 ## MVP — fase 3, 23/10/2026
 
 - Ledger aditivo de swaps/transfers, intervalos, recibos e perfis por geração, reutilizando evidência dos módulos existentes. Contabilidade FIFO incremental, montantes racionais/decimais exatos, taxas e replay explícito dentro de 16 KiB de estado.

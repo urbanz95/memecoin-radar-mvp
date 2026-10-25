@@ -11,13 +11,14 @@
     .watchlists{margin:26px 0}.list-heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline}.list-heading h2{margin:0}.list-count{color:var(--green);font-size:.82rem}.watch-entry{border-top:1px solid var(--line);padding:18px 0 0;margin-top:18px;min-width:0}.watch-entry h3{font-size:1rem;margin:0 0 4px;overflow-wrap:anywhere}.entry-state{color:var(--amber);font-size:.85rem;font-weight:650}.entry-state[data-blocked="true"]{color:var(--red)}.entry-age,.entry-time{font-size:.8rem;color:var(--muted);margin-top:8px}.entry-time[data-stale="true"]{color:var(--amber)}.entry-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:14px 0}.entry-metrics dt{font-size:.75rem}.entry-metrics dd{font-size:.88rem;margin:0}.entry-metric{min-width:0}.entry-source{font-size:.75rem;color:var(--muted)}details{margin-top:12px;font-size:.85rem}summary{cursor:pointer;color:var(--green)}details ul{padding-left:20px;color:var(--muted);margin-bottom:8px}details li{margin-bottom:6px}.empty-list{font-size:.9rem;color:var(--muted);margin:16px 0 0}.watch-summary{color:var(--muted);font-size:.9rem;margin-bottom:14px}.unclassified{margin-top:16px}.section-title{font-size:1.2rem;margin-bottom:8px}
     .safety-checks{margin:18px 0}.safety-checks h4{font-size:.85rem;margin:0 0 10px}.safety-check{border:1px solid var(--line);border-radius:7px;padding:10px 12px;margin-top:8px}.safety-check summary{font-size:.82rem;color:var(--text)}.safety-check summary strong{color:var(--amber);font-weight:600}.safety-check[data-tone="error"] summary strong{color:var(--red)}.safety-check .entry-time{margin:10px 0 6px}.safety-check .entry-metrics{margin:10px 0}.safety-check .note{font-size:.8rem}
     .signal-overview{margin:24px 0}.signal-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:14px}.signal-counts dt{font-size:.85rem}.signal-counts dd{font-size:1.6rem;margin:0}.signal-counts .pending{color:var(--amber)}.signal-summary{margin:0;color:var(--muted)}.signal-list:empty{display:none}.signal-list{padding-left:20px;margin-bottom:0}.signal-list li{margin-top:10px}.signal-state{font-size:.9rem;font-weight:700;margin:12px 0 5px;color:var(--amber)}.signal-state[data-status="MARKET_ALERT"]{color:var(--green)}.signal-reasons{font-size:.82rem;color:var(--muted);margin:8px 0;padding-left:18px}.signal-reasons li{margin:4px 0}.signal-criteria{margin-bottom:14px}.signal-criteria li{font-size:.8rem}.market-time{font-size:.78rem;color:var(--muted);margin-top:8px}.market-time[data-stale="true"]{color:var(--amber)}.data-health{margin:12px 0 0;font-size:.85rem;color:var(--amber)}
+    .weekly-controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:16px 0}.weekly-controls select{font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 10px;max-width:100%}.weekly-controls select:focus-visible,.weekly-table-wrap:focus-visible{outline:3px solid var(--amber);outline-offset:3px}.weekly-pages button{font-size:.82rem;padding:7px 10px}.weekly-table-wrap{overflow-x:auto;margin:16px 0}.weekly-table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}.weekly-table caption{text-align:left;font-weight:700;color:var(--text);margin-bottom:8px}.weekly-table th,.weekly-table td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}.weekly-table th:first-child{text-align:left}.weekly-table thead th{color:var(--muted);font-weight:600}.weekly-table tbody th{font-weight:500}.weekly-table tr[data-band="UNKNOWN"]{color:var(--muted)}
   </style>
   <script src="/dashboard.js" defer></script>
 </head>
 <body>
 <main>
   <header>
-    <div><p class="eyebrow">Robinhood Chain · Mainnet 4663</p><h1>Memecoin Radar</h1><p class="muted">Recolha automática a cada minuto. Esta vista consulta os dados a cada 30 segundos.</p></div>
+    <div><p class="eyebrow">Robinhood Chain · Mainnet 4663</p><h1>Memecoin Radar</h1><p class="muted">Recolha automática com intervalo variável. Esta vista consulta os dados a cada 30 segundos.</p></div>
     <button id="refresh" type="button">Atualizar vista</button>
   </header>
 
@@ -45,6 +46,16 @@
     </dl>
     <p class="note">Pesos: carteiras 50% · segurança 30% · momentum 20%. Uma componente desconhecida mantém o score por calcular. Dry-run guarda a mensagem sem a enviar.</p>
     <p id="mvp-weekly" class="note">O relatório semanal mostrará resultados observados por faixa de score.</p>
+    <details id="mvp-weekly-details" hidden>
+      <summary>Resultados semanais por faixa de score</summary>
+      <div class="weekly-controls"><label for="mvp-weekly-cohort">Versão · perfil · tier</label><select id="mvp-weekly-cohort" aria-describedby="mvp-weekly-cohort-status"></select></div>
+      <p id="mvp-weekly-cohort-status" class="note"></p>
+      <div id="mvp-weekly-pages" class="weekly-controls weekly-pages" hidden><button id="mvp-weekly-previous" type="button">Coorte anterior</button><span id="mvp-weekly-page-status" class="note" aria-live="polite"></span><button id="mvp-weekly-next" type="button">Coorte seguinte</button></div>
+      <div class="weekly-controls"><label for="mvp-weekly-horizon">Resultado após</label><select id="mvp-weekly-horizon"><option value="15m">15 minutos</option><option value="1h" selected>1 hora</option><option value="24h">24 horas</option><option value="7d">7 dias</option></select></div>
+      <p class="note">Resultados de uma única versão, perfil e tier de cotação. Retorno médio do preço desde a decisão, com a cobertura dos resultados recolhidos. Inclui decisões rejeitadas e tokens mortos. Não representa PnL executado.</p>
+      <div id="mvp-weekly-tables"></div>
+      <p id="mvp-weekly-wallet-status" class="note"></p>
+    </details>
     <details><summary>Histórico de alertas em dry-run</summary><div id="mvp-preview"><p class="empty-list">Sem alertas para apresentar.</p></div></details>
     <p class="note" style="margin-top:12px">Modo B · tokens com mais de 120 dias: por ativar após revisão do MVP.</p>
   </section>

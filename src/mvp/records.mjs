@@ -48,7 +48,7 @@ export function sourceRecord(value, fallback) {
   if (object(source) && !Object.keys(source).length) throw new Error('MVP_SOURCE_REQUIRED');
   return json({ schemaVersion: MVP_SCHEMA_VERSION, provenance: source }, MAX_SOURCE_BYTES, 'MVP_SOURCE_LIMIT_EXCEEDED');
 }
-const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp', 'lastRealizedAt', 'firstEntryAt', 'holdersCheckedAt', 'liquidityFetchedAt', 'observedLastDisposalAt']);
+const observedKeys = new Set(['observedAt', 'capturedAt', 'checkedAt', 'fetchedAt', 'asOf', 'sourceTimestamp', 'headTimestamp', 'poolCreatedAt', 'contractCreatedAt', 'timestamp', 'blockTimestamp', 'lastRealizedAt', 'firstEntryAt', 'lastEntryAt', 'holdersCheckedAt', 'liquidityFetchedAt', 'observedLastDisposalAt']);
 function assertNoFuture(value, capturedAt, depth = 0) {
   if (depth > 32) throw new Error('MVP_FEATURE_DEPTH_EXCEEDED');
   if (Array.isArray(value)) { for (const item of value) assertNoFuture(item, capturedAt, depth + 1); return; }
@@ -150,4 +150,119 @@ export async function getMvpStats(DB) {
     decisionEvents: row.decision_events, outcomeJobs: { pending: row.outcome_jobs_pending, retry: row.outcome_jobs_retry,
       complete: row.outcome_jobs_complete }, outcomeAttempts: row.outcome_attempts, outcomesComplete: row.outcomes_complete,
     updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : null };
+}
+
+/** Shared predicate for labels, reports and the future training gate. Unknown
+ * block identity is never proof. A reorg quarantines every previous generation
+ * until the baseline's exact block is revalidated; no fork ancestor is guessed.
+ */
+export function canonicalDecisionSql(alias = 'd', { checkedBefore = null } = {}) {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(alias)) throw new Error('MVP_INVALID_SQL_ALIAS');
+  if (checkedBefore !== null) checkedBefore = recordTime(checkedBefore, 'CANONICAL_CUTOFF');
+  const refCutoff = checkedBefore === null ? '' : ` AND cr.recorded_at<=${checkedBefore}`;
+  const checkCutoff = checkedBefore === null ? '' : ` AND cb.checked_at<=${checkedBefore}`;
+  return `(EXISTS(SELECT 1 FROM mvp_decision_chain_refs cr JOIN mvp_decision_epoch ce ON ce.id=1
+    WHERE cr.decision_key=${alias}.decision_key${refCutoff}
+      AND NOT EXISTS(SELECT 1 FROM mvp_decision_block_checks conflict WHERE conflict.chain_id=cr.chain_id
+        AND conflict.block_number=cr.block_number AND conflict.generation=ce.generation AND conflict.block_hash!=cr.block_hash)
+      AND (cr.recorded_generation=ce.generation
+      OR EXISTS(SELECT 1 FROM mvp_decision_block_checks cb WHERE cb.chain_id=cr.chain_id
+        AND cb.block_number=cr.block_number AND cb.generation=ce.generation AND cb.block_hash=cr.block_hash${checkCutoff})))
+    AND NOT EXISTS(SELECT 1 FROM mvp_decision_invalidations ci WHERE ci.decision_key=${alias}.decision_key))`;
+}
+
+export async function readDecisionCanonicality(DB) {
+  const row = await DB.prepare('SELECT generation,last_reorg_at,invalidated_decisions,revalidation_complete FROM mvp_decision_epoch WHERE id=1').first();
+  if (!row) throw new Error('MVP_CANONICALITY_NOT_INITIALIZED');
+  return { generation: row.generation, lastReorgAt: row.last_reorg_at === null ? null : new Date(row.last_reorg_at).toISOString(),
+    invalidatedDecisions: row.invalidated_decisions, revalidationComplete: row.revalidation_complete === 1 };
+}
+
+/** At most two distinct old baseline blocks per cycle, without fetching or
+ * writing. The caller obtains validated canonical RPC headers for these blocks.
+ */
+export async function queryDecisionCanonicalBlocks(DB, { limit = 2 } = {}) {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 2) throw new Error('MVP_INVALID_CANONICAL_BLOCK_LIMIT');
+  if ((await readDecisionCanonicality(DB)).revalidationComplete) return [];
+  const response = await DB.prepare(`SELECT r.chain_id,r.block_number,min(r.recorded_at) AS recorded_at
+    FROM mvp_decision_chain_refs r JOIN mvp_decision_epoch e ON e.id=1
+    WHERE r.recorded_generation!=e.generation
+      AND NOT EXISTS(SELECT 1 FROM mvp_decision_invalidations i WHERE i.decision_key=r.decision_key)
+      AND NOT EXISTS(SELECT 1 FROM mvp_decision_block_checks c WHERE c.chain_id=r.chain_id
+        AND c.block_number=r.block_number AND c.generation=e.generation)
+    GROUP BY r.chain_id,r.block_number ORDER BY recorded_at DESC,r.block_number DESC LIMIT ?`).bind(limit).all();
+  const rows = Array.isArray(response) ? response : response?.results;
+  if (!Array.isArray(rows)) throw new Error('MVP_INVALID_CANONICAL_QUEUE_RESPONSE');
+  return rows.map(row => ({ chainId: row.chain_id, blockNumber: row.block_number }));
+}
+
+function canonicalHeader(value, at, { timestampRequired = true } = {}) {
+  if (!object(value) || !Number.isSafeInteger(value.number) || value.number < 0
+    || typeof value.hash !== 'string' || !/^0x[0-9a-f]{64}$/i.test(value.hash)
+    || (timestampRequired && (!Number.isSafeInteger(value.timestamp) || value.timestamp < 0)))
+    throw new Error('MVP_INVALID_CANONICAL_BLOCK');
+  if (value.timestamp !== undefined && (!Number.isSafeInteger(value.timestamp) || value.timestamp < 0))
+    throw new Error('MVP_INVALID_CANONICAL_BLOCK');
+  if (value.timestamp !== undefined && value.timestamp * 1000 > at) throw new Error('MVP_FUTURE_CANONICAL_BLOCK');
+  return { number: value.number, hash: value.hash.toLowerCase(), timestamp: value.timestamp };
+}
+
+/** Prepare only. Put these commands BEFORE decision/outcome statements in the
+ * collector's fenced batch. The epoch and immutable invalidations commit with
+ * ingestion, so a stale job selected before a reorg cannot publish valid labels.
+ * canonicalBlocks are exact validated eth_getBlockByNumber RPC headers, not
+ * estimated heights or explorer metadata. Unknown ancestor remains quarantined.
+ */
+export function prepareDecisionCanonicality(DB, { runId, observedAt, reorgDetected = false,
+  priorHead = null, canonicalPriorHead = null, canonicalBlocks = [], revalidationComplete = false,
+  expectedGeneration = null } = {}) {
+  recordLabel(runId, 'RUN_ID'); const at = recordTime(observedAt);
+  if (typeof reorgDetected !== 'boolean' || !Array.isArray(canonicalBlocks) || canonicalBlocks.length > 2
+    || typeof revalidationComplete !== 'boolean'
+    || (revalidationComplete && (reorgDetected || !Number.isSafeInteger(expectedGeneration) || expectedGeneration < 0)))
+    throw new Error('MVP_INVALID_CANONICALITY_INPUT');
+  const prior = priorHead === null ? null : canonicalHeader(priorHead, at, { timestampRequired: false });
+  const priorCanonical = canonicalPriorHead === null ? null : canonicalHeader(canonicalPriorHead, at);
+  if (priorCanonical && (!prior || priorCanonical.number !== prior.number)) throw new Error('MVP_INVALID_REORG_BLOCK');
+  if (reorgDetected && priorCanonical && priorCanonical.hash === prior.hash) throw new Error('MVP_REORG_NOT_PROVEN');
+  const blocks = [...canonicalBlocks.map(value => canonicalHeader(value, at)), ...(reorgDetected && priorCanonical ? [priorCanonical] : [])];
+  const known = new Map();
+  for (const block of blocks) {
+    if (known.has(block.number) && known.get(block.number).hash !== block.hash) throw new Error('MVP_CANONICAL_BLOCK_CONFLICT');
+    known.set(block.number, block);
+  }
+  const commands = []; const diagnostics = [];
+  if (reorgDetected) {
+    commands.push(DB.prepare(`INSERT OR IGNORE INTO mvp_decision_reorgs
+      (run_id,observed_at,prior_block_number,prior_block_hash,canonical_block_hash) VALUES(?,?,?,?,?)`)
+      .bind(runId, at, prior?.number ?? null, prior?.hash ?? null, priorCanonical?.hash ?? null));
+    diagnostics.push({ reason: 'REORG_BASELINES_QUARANTINED', ancestorKnown: false });
+  }
+  for (const block of known.values()) {
+    commands.push(DB.prepare(`INSERT OR IGNORE INTO mvp_decision_block_checks
+      (chain_id,block_number,generation,block_hash,checked_at,run_id)
+      VALUES(4663,?,(SELECT generation FROM mvp_decision_epoch WHERE id=1),?,?,?)`)
+      .bind(block.number, block.hash, at, runId));
+    commands.push(DB.prepare(`INSERT OR IGNORE INTO mvp_decision_invalidations
+      (decision_key,reason,observed_at,run_id,generation,orphaned_block_hash,canonical_block_hash)
+      SELECT r.decision_key,'ORPHANED_BASELINE_BLOCK',?,?,e.generation,r.block_hash,c.block_hash
+      FROM mvp_decision_chain_refs r JOIN mvp_decision_epoch e ON e.id=1
+        JOIN mvp_decision_block_checks c ON c.chain_id=r.chain_id AND c.block_number=r.block_number AND c.generation=e.generation
+      WHERE r.chain_id=4663 AND r.block_number=? AND r.block_hash!=c.block_hash`)
+      .bind(at, runId, block.number));
+    diagnostics.push({ reason: 'CANONICAL_BASELINE_BLOCK_CHECKED', blockNumber: block.number });
+  }
+  if (revalidationComplete) {
+    // Final scan happens once per completed generation, never on every healthy
+    // cycle. A stale generation or an unresolved block prevents completion.
+    commands.push(DB.prepare(`UPDATE mvp_decision_epoch SET revalidation_complete=1
+      WHERE id=1 AND generation=? AND revalidation_complete=0
+        AND NOT EXISTS(SELECT 1 FROM mvp_decision_chain_refs r
+          WHERE r.recorded_generation!=mvp_decision_epoch.generation
+            AND NOT EXISTS(SELECT 1 FROM mvp_decision_invalidations i WHERE i.decision_key=r.decision_key)
+            AND NOT EXISTS(SELECT 1 FROM mvp_decision_block_checks c WHERE c.chain_id=r.chain_id
+              AND c.block_number=r.block_number AND c.generation=mvp_decision_epoch.generation))`).bind(expectedGeneration));
+    diagnostics.push({ reason: 'CANONICAL_REVALIDATION_COMPLETION_CHECK', expectedGeneration });
+  }
+  return { commands, diagnostics };
 }

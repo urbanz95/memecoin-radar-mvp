@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-25T17:15:10.496365Z",
+  "phase": "3B-2",
+  "state": "3B2_PUBLISHED_3B3_NEXT",
+  "continuationBranch": "fix/phase3b-consolidation-20261025",
+  "changeBranch": "feat/phase3b-real-proofs-20261025",
+  "lock": {
+    "state": "IN_PROGRESS",
+    "owner": "phase3b-real-proofs-20261025",
+    "startedAt": "2026-10-25T12:28:05.784286Z",
+    "instruction": "Implementation active in this branch/workspace. Acquire flock -n runtime/phase3b-execution.lock before taking over; an occupied lock means another execution is active. Preserve uncommitted changes and resume existing work, do not duplicate.",
+    "workspaceLockFile": "runtime/phase3b-execution.lock",
+    "resumedAt": "2026-10-25T17:08:37.357189Z"
+  },
+  "production": {
+    "workerVersion": "7aaa6e1f-fadc-4945-832f-461389805fc4",
+    "codeCommit": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+    "verifiedCompletedRun": "94d68561-5b7b-4e50-a612-2401e07a9966"
+  },
+  "gate": {
+    "qualified": true,
+    "stableSince": "2026-10-25T06:02:28.544Z",
+    "reason": "Actual completed six-hour span proved in production, with full current-code tests approved.",
+    "priorCompletedAt": "2026-10-25T05:55:29.905Z",
+    "nextCompletedAt": "2026-10-25T06:02:28.544Z",
+    "actualCompletionGapSeconds": 418.639,
+    "requiredHours": 6,
+    "maximumGapSeconds": 360,
+    "earliestPossibleQualification": "2026-10-25T12:02:28.544Z",
+    "instruction": "Require current /health.operations.stability.qualified plus complete tests, validate and profiles:check. Clock time alone never opens the gate.",
+    "completedCycles": 182,
+    "lastSuccessAt": "2026-10-25T12:26:29.638Z",
+    "verifiedAt": "2026-10-25T12:28:05.784286Z",
+    "completedSpanSeconds": 23041.094,
+    "evidence": "PHASE3B-GATE-2026-10-25.json"
+  },
+  "blocks": {
+    "3B-1": "GATE_PASSED",
+    "3B-2": "PUBLISHED_REAL_COVERAGE_PENDING",
+    "3B-3": "NOT_STARTED"
+  },
+  "shadow": {
+    "startedAt": null,
+    "minimumDays": 3,
+    "stage2Enabled": false
+  },
+  "restrictions": {
+    "dryRun": true,
+    "telegramDelivery": false,
+    "trades": false,
+    "paidPlans": false,
+    "phases4To6": "REQUIRE_EXPLICIT_AVANÇA_FASE_N"
+  },
+  "databaseMigrations": [
+    {
+      "name": "0013_mvp_wallet_backfill.sql",
+      "state": "APPLIED",
+      "appliedAt": "2026-10-25T17:09:04Z"
+    }
+  ],
+  "nextAction": "3B-2 published and actual backfill job observed. Implement 3B-3 canonical pairs, registry refresh, census and shadow on a new branch. Backfill/financial coverage still incomplete; no fake completeness. Stop only after at least three real shadow days; no stage2/phases4-6.",
+  "validation": {
+    "tests": 716,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true,
+    "cloudflareBuild": true,
+    "workerdFixtureCycles": 3,
+    "fixtureRpcPerPhase": [
+      15,
+      14,
+      14
+    ],
+    "productionSixHoursVerified": true
+  },
+  "evidence": "PHASE3B-2-RELEASE-2026-10-25.json",
+  "backup": "PHASE3B-2-BACKUP-2026-10-25.json"
+}

@@ -1,0 +1,353 @@
+{
+  "recordedAt": "2026-10-25T00:52:02.318Z",
+  "sourceCommit": "93484a4c5bfe08b6521ce845fbc418fbda32c64f",
+  "branch": "fix/phase3b-consolidation-20261025",
+  "phase": "3B-1 PUBLISHED; SIX-HOUR GATE PENDING",
+  "dryRun": true,
+  "telegramDeliveryEnabled": false,
+  "tradingEnabled": false,
+  "validation": {
+    "baselineTests": 511,
+    "tests": 593,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true,
+    "cloudflareBuild": true,
+    "workerd": true,
+    "fixtureRpcPerSecurityPhase": [
+      15,
+      14,
+      14
+    ],
+    "managedCadenceAndIndependentJobsVerifiedLocally": true,
+    "githubCi": [
+      {
+        "conclusion": "success",
+        "databaseId": 40147376005,
+        "headSha": "93484a4c5bfe08b6521ce845fbc418fbda32c64f",
+        "status": "completed"
+      }
+    ]
+  },
+  "deployments": {
+    "worker": {
+      "origin": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+      "version": "b6359d30-08e3-48d4-926e-127bb0216498"
+    },
+    "vercel": {
+      "checkedAt": "2026-10-25T00:11:18.574Z",
+      "teamId": "team_tqphzLllrhWaWKQMuwstgUWr",
+      "projectId": "prj_NoIuyCmSBmOPr79jHGP4gTClbLi5",
+      "name": "memecoin-radar",
+      "plan": "hobby",
+      "deploymentId": "dpl_FzwGpoEpwYyiXPgAA9JDpXEb5qmP",
+      "url": "memecoin-radar-gthdcayzm-urbanz95s-projects.vercel.app",
+      "state": "READY",
+      "target": "production",
+      "commit": "828c525299efd3c0d08b06bf1eaf57fc32e69680",
+      "aliases": [
+        "memecoin-radar-six.vercel.app",
+        "memecoin-radar-urbanz95s-projects.vercel.app"
+      ]
+    }
+  },
+  "diagnosis": {
+    "cause": "D1_DAILY_WRITE_LIMIT",
+    "utcDay": "2026-10-24",
+    "reportedDailyRowsWritten": 101064,
+    "freeLimit": 100000,
+    "scheduledCronStillFired": true,
+    "quotaExceptionsObserved": true,
+    "cpuNotEstablishedAsOriginalOutageCause": true
+  },
+  "backup": {
+    "manifest": "PHASE3B-BACKUP-2026-10-25.json",
+    "bookmark": "00000022-00000321-0000510e-e7547a3395b2a96f6dda8ceb956c4b05",
+    "applied": [
+      {
+        "file": "0009_mvp_decision_canonicality.sql",
+        "sha256": "70a400a8f6d5ee0ab36381a3b870243edb66b4fba6bd3cef3e13ac0a839d0aac",
+        "bytes": 6391,
+        "alreadyApplied": false
+      },
+      {
+        "file": "0010_mvp_weekly_jobs.sql",
+        "sha256": "16926120679b91070b35207b8ca9eae1a9a567b7c7d15cc61a9c920ba59442b4",
+        "bytes": 3337,
+        "alreadyApplied": false
+      },
+      {
+        "file": "0012_mvp_wallet_eligibility_ttl.sql",
+        "sha256": "f6098422da60a81116c5d803254ca260141b9baa247f6023732152ee193ccd23",
+        "bytes": 282,
+        "alreadyApplied": false
+      }
+    ]
+  },
+  "observedAt": "2026-10-25T00:47:11.124Z",
+  "health": {
+    "host": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+    "path": "/health",
+    "http": 200,
+    "cacheControl": "no-store",
+    "status": "COMPLETED",
+    "stale": false,
+    "lastError": null,
+    "lastSuccessAt": "2026-10-25T00:44:28.269Z",
+    "operations": {
+      "schemaVersion": 1,
+      "lastSuccessAt": "2026-10-25T00:44:29.009Z",
+      "lastError": null,
+      "completedCycles": 8,
+      "stableSince": 1792888290288,
+      "nextEligibleAt": 1792889249009,
+      "failures": 0,
+      "lastCycleStartedAt": "2026-10-25T00:44:23.263Z",
+      "budget": {
+        "dayUtc": "2026-10-25",
+        "estimatedRowsWritten": 2060,
+        "limit": 80000,
+        "circuitUntil": null,
+        "scope": "collector-estimate-plus-overhead; excludes administrative writes and weekly job; 20000-row account reserve"
+      },
+      "lastCycleCompletedAt": "2026-10-25T00:44:29.009Z",
+      "lastCycleRowsWritten": 119,
+      "cadenceSeconds": 180,
+      "circuitUntil": 0,
+      "stability": {
+        "stableSince": "2026-10-25T00:31:30.288Z",
+        "requiredHours": 6,
+        "completedCycles": 8,
+        "qualified": false
+      }
+    },
+    "heartbeat": {
+      "event": "COLLECTOR_HEARTBEAT",
+      "checkedAt": "2026-10-25T00:47:09.445Z",
+      "lastSuccessAt": "2026-10-25T00:44:29.009Z",
+      "ageSeconds": 160.436,
+      "alert": false,
+      "thresholdSeconds": 600,
+      "cause": null,
+      "notificationChannel": "GITHUB_ISSUE",
+      "telegramDelivery": false
+    },
+    "currentSignalsAvailable": false,
+    "marketSignalsAvailable": false
+  },
+  "archive": {
+    "schemaVersion": 1,
+    "tokensSeen": 3943,
+    "seenEvents": 7425,
+    "decisions": 462,
+    "decisionEvents": 4356,
+    "outcomeJobs": {
+      "pending": 894,
+      "retry": 729,
+      "complete": 225
+    },
+    "outcomeAttempts": 6981,
+    "outcomesComplete": 225,
+    "updatedAt": "2026-10-25T00:44:28.269Z"
+  },
+  "wallets": {
+    "schemaVersion": 1,
+    "events": 637,
+    "ranges": 1010,
+    "receipts": 366,
+    "tracked": 145,
+    "eligible": 0,
+    "historicalEligible": 0,
+    "eligibilityAsOf": "2026-10-25T00:47:10.191Z",
+    "maxProfileAgeSeconds": 600,
+    "profileObservations": 364,
+    "generation": 0,
+    "lastReorgAt": null,
+    "updatedAt": "2026-10-25T00:44:28.269Z"
+  },
+  "outbox": {
+    "schemaVersion": 1,
+    "dryRun": true,
+    "queuedDryRun": 0,
+    "synthetic": 0,
+    "lastCreatedAt": null
+  },
+  "endpoints": [
+    {
+      "host": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+      "path": "/health",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+      "path": "/latest",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+      "path": "/weekly",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-collector.radar-605437d4ee90.workers.dev",
+      "path": "/dashboard.js",
+      "http": 200,
+      "cacheControl": "no-store",
+      "hashMatches": true
+    },
+    {
+      "host": "https://memecoin-radar-six.vercel.app",
+      "path": "/health",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-six.vercel.app",
+      "path": "/latest",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-six.vercel.app",
+      "path": "/weekly",
+      "http": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "host": "https://memecoin-radar-six.vercel.app",
+      "path": "/dashboard.js",
+      "http": 200,
+      "cacheControl": "no-store",
+      "hashMatches": true
+    }
+  ],
+  "outcomeBudgetProof": {
+    "observedAt": "2026-10-25T00:44:02.952Z",
+    "runId": "dac996ed-0d46-4162-a788-cc7463bd7ded",
+    "selectedJobs": 21,
+    "processed": 10,
+    "liveJobsPreserved": 6,
+    "expiredJobs": 4,
+    "expiredDeferred": 11,
+    "maximumExpiredPerCycle": 4
+  },
+  "cpu": {
+    "version": "b6359d30-08e3-48d4-926e-127bb0216498",
+    "after": {
+      "durableObject": {
+        "events": 46,
+        "errors": 0,
+        "canceled": 0,
+        "maxCpuMs": 89,
+        "maxWallMs": 60022
+      },
+      "stateless": {
+        "events": 49,
+        "errors": 0,
+        "canceled": 1,
+        "maxCpuMs": 2,
+        "maxWallMs": 6631
+      }
+    },
+    "before": {
+      "path": "/latest",
+      "statelessMaxCpuMs": 17,
+      "outcome": "ok"
+    },
+    "scope": "Observed samples, not a guarantee of every future request."
+  },
+  "browser": {
+    "checkedAt": "2026-10-25T00:25:26.707Z",
+    "before": {
+      "checkedAt": "25/10/2026, 01:24:54",
+      "runId": "0910e10d-afd7-4b6d-8a87-53d2cb9eca2f",
+      "collectedAt": "25/10/2026, 01:24:28",
+      "result": "Primeira recolha recebida"
+    },
+    "after": {
+      "checkedAt": "25/10/2026, 01:25:26",
+      "runId": "0910e10d-afd7-4b6d-8a87-53d2cb9eca2f",
+      "collectedAt": "25/10/2026, 01:24:28",
+      "result": "Consulta concluída · ainda sem nova recolha"
+    },
+    "pollTimedOut": false,
+    "visibility": "visible",
+    "automaticPollConfirmed": true,
+    "errors": [],
+    "requests": [
+      {
+        "path": "/health",
+        "http": 200
+      },
+      {
+        "path": "/latest",
+        "http": 200
+      },
+      {
+        "path": "/health",
+        "http": 200
+      },
+      {
+        "path": "/latest",
+        "http": 200
+      }
+    ],
+    "minutePromiseRemoved": true
+  },
+  "outcomesByHorizon": [
+    {
+      "horizon": "15m",
+      "observations": 121,
+      "returns_available": 93,
+      "last_collected_at": 1792850665226
+    },
+    {
+      "horizon": "1h",
+      "observations": 99,
+      "returns_available": 77,
+      "last_collected_at": 1792848924096
+    },
+    {
+      "horizon": "24h",
+      "observations": 5,
+      "returns_available": 3,
+      "last_collected_at": 1792888289333
+    }
+  ],
+  "administrativeSqlError": null,
+  "heartbeat": {
+    "workflowState": "active",
+    "manualSuccessfulRuns": [
+      40144383240,
+      40145545120
+    ],
+    "incident": "https://github.com/urbanz95/memecoin-radar-mvp/issues/2",
+    "incidentClosedAt": "2026-10-25T00:08:54Z",
+    "scheduledRunsObserved": 0,
+    "scheduledRunEvidence": {
+      "runs": [],
+      "total_count": 0
+    },
+    "limitation": "GitHub schedule is best effort; two live open/recovery checks were workflow_dispatch."
+  },
+  "continuation": {
+    "enabled": true,
+    "timezone": "Europe/Lisbon",
+    "firstCheck": "2026-10-25T06:15:00",
+    "cadence": "HOURLY",
+    "requiresActualSixHourGate": true
+  },
+  "deferred": {
+    "proofProviders": "3B-2 NOT STARTED",
+    "historyWindow30Days": "NOT IMPLEMENTED",
+    "nativeEthReconciliation": "NOT IMPLEMENTED",
+    "quoteCensusRegistry": "3B-3 NOT STARTED",
+    "newQuoteActivations": [],
+    "newQuoteAssessment": "NOT STARTED",
+    "shadowStarted": false,
+    "phases4To6": "AWAIT EXPLICIT USER CONFIRMATION"
+  }
+}

@@ -1,0 +1,642 @@
+{
+  "auditedCommit": "8c89f2741c9ccc4fb7412727ad9388ff8754785f",
+  "reportDate": "2026-10-24",
+  "timezone": "Europe/Lisbon",
+  "scope": "Read-only audit; local isolated reproductions; no corrective production actions.",
+  "suite": {
+    "passed": 511,
+    "failed": 0,
+    "note": "Full suite executed during the earlier audit stage against this unchanged source commit; additional audit repros are outside that suite."
+  },
+  "currentProductionObservation": {
+    "observedAt": "2026-10-24T18:47:49.823Z",
+    "observedAtLisbon": "24/10/26, 19:47:49 WEST",
+    "healthStatus": 503,
+    "health": {
+      "status": "STALE",
+      "stale": true,
+      "lastError": null,
+      "lastSuccessAt": "2026-10-24T14:17:24.660Z",
+      "currentSignalsAvailable": false,
+      "marketSignalsAvailable": false
+    },
+    "apiStatus": 200,
+    "apiCacheControl": "no-store",
+    "runId": "0e8e3bf5-0f9c-4f46-892d-a08f880adf96",
+    "capturedAt": "2026-10-24T14:17:24.660Z",
+    "dataStale": true,
+    "scoreVersion": "mvp-new-v3:45d248bff4b9a3ee",
+    "dryRun": true,
+    "archive": {
+      "schemaVersion": 1,
+      "tokensSeen": 3914,
+      "seenEvents": 7380,
+      "decisions": 456,
+      "decisionEvents": 4332,
+      "outcomeJobs": {
+        "pending": 922,
+        "retry": 680,
+        "complete": 222
+      },
+      "outcomeAttempts": 6834,
+      "outcomesComplete": 222,
+      "updatedAt": "2026-10-24T14:17:24.660Z"
+    },
+    "wallets": {
+      "schemaVersion": 1,
+      "events": 635,
+      "ranges": 1000,
+      "receipts": 366,
+      "tracked": 145,
+      "eligible": 0,
+      "profileObservations": 364,
+      "generation": 0,
+      "lastReorgAt": null,
+      "updatedAt": "2026-10-24T14:17:24.660Z"
+    },
+    "outbox": {
+      "schemaVersion": 1,
+      "dryRun": true,
+      "queuedDryRun": 0,
+      "synthetic": 0,
+      "lastCreatedAt": null
+    },
+    "market": "REQUEST_INTERVAL",
+    "scriptMatchesLocal": true
+  },
+  "incidentConfirmation": [
+    {
+      "key": "cf-health",
+      "status": 503,
+      "cacheControl": "no-store",
+      "health": {
+        "status": "STALE",
+        "stale": true,
+        "lastError": null,
+        "lastSuccessAt": "2026-10-24T14:17:24.660Z",
+        "currentSignalsAvailable": false,
+        "marketSignalsAvailable": false
+      },
+      "observedAt": "2026-10-24T18:49:49.242Z"
+    },
+    {
+      "key": "cf-latest",
+      "status": 200,
+      "cacheControl": "no-store",
+      "runId": "0e8e3bf5-0f9c-4f46-892d-a08f880adf96",
+      "capturedAt": "2026-10-24T14:17:24.660Z",
+      "stale": true,
+      "archive": {
+        "schemaVersion": 1,
+        "tokensSeen": 3914,
+        "seenEvents": 7380,
+        "decisions": 456,
+        "decisionEvents": 4332,
+        "outcomeJobs": {
+          "pending": 922,
+          "retry": 680,
+          "complete": 222
+        },
+        "outcomeAttempts": 6834,
+        "outcomesComplete": 222,
+        "updatedAt": "2026-10-24T14:17:24.660Z"
+      },
+      "observedAt": "2026-10-24T18:49:49.332Z"
+    },
+    {
+      "key": "vercel-health",
+      "status": 503,
+      "cacheControl": "no-store",
+      "health": {
+        "status": "STALE",
+        "stale": true,
+        "lastError": null,
+        "lastSuccessAt": "2026-10-24T14:17:24.660Z",
+        "currentSignalsAvailable": false,
+        "marketSignalsAvailable": false
+      },
+      "observedAt": "2026-10-24T18:49:49.315Z"
+    }
+  ],
+  "earlierDatabaseSnapshot": {
+    "observedAtApproxLisbon": "2026-10-24 13:34",
+    "sizeBytes": 90710016,
+    "queries": [
+      {
+        "index": 0,
+        "results": [
+          {
+            "tokens": 3595
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 1,
+        "results": [
+          {
+            "evaluated_tokens": 136,
+            "rejected_tokens": 112,
+            "explicitly_dead_tokens": 0
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 2,
+        "results": [
+          {
+            "horizon": "15m",
+            "state": "COMPLETE",
+            "jobs": 115,
+            "due": 115,
+            "missed_window": 0
+          },
+          {
+            "horizon": "15m",
+            "state": "PENDING",
+            "jobs": 6,
+            "due": 0,
+            "missed_window": 0
+          },
+          {
+            "horizon": "15m",
+            "state": "RETRY",
+            "jobs": 305,
+            "due": 305,
+            "missed_window": 302
+          },
+          {
+            "horizon": "1h",
+            "state": "COMPLETE",
+            "jobs": 92,
+            "due": 92,
+            "missed_window": 0
+          },
+          {
+            "horizon": "1h",
+            "state": "PENDING",
+            "jobs": 30,
+            "due": 0,
+            "missed_window": 0
+          },
+          {
+            "horizon": "1h",
+            "state": "RETRY",
+            "jobs": 304,
+            "due": 304,
+            "missed_window": 301
+          },
+          {
+            "horizon": "24h",
+            "state": "PENDING",
+            "jobs": 426,
+            "due": 0,
+            "missed_window": 0
+          },
+          {
+            "horizon": "7d",
+            "state": "PENDING",
+            "jobs": 426,
+            "due": 0,
+            "missed_window": 0
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 3,
+        "results": [
+          {
+            "profiles": 111,
+            "proven_pnl": 0,
+            "eligible": 0
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 4,
+        "results": [
+          {
+            "gap": "NATIVE_OR_UNKNOWN_QUOTE_SETTLEMENT",
+            "profiles": 107
+          },
+          {
+            "gap": "OPPOSING_WALLET_NET_FLOWS_NOT_PROVEN",
+            "profiles": 4
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 5,
+        "results": [
+          {
+            "events": 4023
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 6,
+        "results": [
+          {
+            "market_points": 1046
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 7,
+        "results": [
+          {
+            "attempts": 6177
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 8,
+        "results": [
+          {
+            "realizations": 0
+          }
+        ],
+        "rowsWritten": 0
+      },
+      {
+        "index": 9,
+        "results": [
+          {
+            "summaries": 0
+          }
+        ],
+        "rowsWritten": 0
+      }
+    ]
+  },
+  "latestAdministrativeQuery": {
+    "status": "FAILED",
+    "code": 7403,
+    "causeOfProductionOutageEstablished": false
+  },
+  "reproductions": {
+    "weeklyCollector": {
+      "first": {
+        "status": "ERROR",
+        "reason": "COLLECTION_FAILED"
+      },
+      "second": {
+        "status": "ERROR",
+        "reason": "COLLECTION_FAILED"
+      },
+      "control": {
+        "status": "ERROR",
+        "last_error": "COLLECTION_FAILED",
+        "last_success": null
+      },
+      "initialDecisionEvents": 15,
+      "finalDecisionEvents": 15,
+      "publishedRuns": 0,
+      "weeklyReports": 0
+    },
+    "weeklyScale": [
+      {
+        "cohorts": 1,
+        "decisions": 1,
+        "bytes": 36828,
+        "result": "OK"
+      },
+      {
+        "cohorts": 2,
+        "decisions": 2,
+        "bytes": 54130,
+        "result": "OK"
+      },
+      {
+        "cohorts": 3,
+        "decisions": 3,
+        "bytes": 71432,
+        "result": "OK"
+      },
+      {
+        "cohorts": 4,
+        "decisions": 4,
+        "bytes": 88734,
+        "result": "OK"
+      },
+      {
+        "cohorts": 5,
+        "decisions": 5,
+        "bytes": 106036,
+        "result": "OK"
+      },
+      {
+        "cohorts": 6,
+        "decisions": 6,
+        "bytes": 123338,
+        "result": "OK"
+      },
+      {
+        "cohorts": 7,
+        "decisions": 7,
+        "bytes": 140640,
+        "result": "OK"
+      },
+      {
+        "cohorts": 8,
+        "decisions": 8,
+        "bytes": 157942,
+        "result": "OK"
+      },
+      {
+        "cohorts": 9,
+        "decisions": 9,
+        "bytes": 175244,
+        "result": "OK"
+      },
+      {
+        "cohorts": 10,
+        "decisions": 10,
+        "bytes": 192590,
+        "result": "OK"
+      },
+      {
+        "cohorts": 11,
+        "decisions": 11,
+        "bytes": 209893,
+        "result": "OK"
+      },
+      {
+        "cohorts": 12,
+        "decisions": 12,
+        "bytes": 227196,
+        "result": "OK"
+      },
+      {
+        "cohorts": 13,
+        "decisions": 13,
+        "bytes": 244499,
+        "result": "OK"
+      },
+      {
+        "cohorts": 14,
+        "decisions": 14,
+        "bytes": 261802,
+        "result": "OK"
+      },
+      {
+        "cohorts": 15,
+        "decisions": 15,
+        "error": "MVP_WEEKLY_REPORT_LIMIT_EXCEEDED"
+      }
+    ],
+    "alertClusters": {
+      "synthetic": true,
+      "status": "PASS",
+      "score": 100,
+      "groups": 2,
+      "wallets": [
+        {
+          "address": "0x000000000000000000000000000000000000000a",
+          "score": 100,
+          "clusterId": "fixture-group-A",
+          "realizedTrades": 5,
+          "eligible": true
+        },
+        {
+          "address": "0x000000000000000000000000000000000000000b",
+          "score": 100,
+          "clusterId": "fixture-group-A",
+          "realizedTrades": 5,
+          "eligible": true
+        },
+        {
+          "address": "0x000000000000000000000000000000000000000c",
+          "score": 100,
+          "clusterId": "fixture-group-B",
+          "realizedTrades": 5,
+          "eligible": true
+        }
+      ],
+      "accepted": 0,
+      "diagnostics": [
+        {
+          "index": 0,
+          "reason": "MVP_ALERT_DEPENDENT_WALLET_GROUPS"
+        }
+      ]
+    },
+    "reorgOutcomes": {
+      "firstDecision": {
+        "first_run_id": "orphaned-first",
+        "baseline_price_usd": 2,
+        "source_json": "{\"schemaVersion\":1,\"provenance\":{\"collector\":\"audit-synthetic\",\"blockNumber\":100,\"blockHash\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reorgDetected\":false}}"
+      },
+      "events": [
+        {
+          "run_id": "orphaned-first",
+          "source_json": "{\"schemaVersion\":1,\"provenance\":{\"collector\":\"audit-synthetic\",\"blockNumber\":100,\"blockHash\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reorgDetected\":false}}"
+        },
+        {
+          "run_id": "canonical-after-reorg",
+          "source_json": "{\"schemaVersion\":1,\"provenance\":{\"collector\":\"audit-synthetic\",\"blockNumber\":100,\"blockHash\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"reorgDetected\":true}}"
+        }
+      ],
+      "outcome": [
+        {
+          "horizon": "7d",
+          "return_pct": 900
+        },
+        {
+          "horizon": "15m",
+          "return_pct": 900
+        },
+        {
+          "horizon": "1h",
+          "return_pct": 900
+        },
+        {
+          "horizon": "24h",
+          "return_pct": 900
+        }
+      ],
+      "gate": {
+        "schemaVersion": 1,
+        "scoreVersion": "audit-reorg-v1",
+        "profile": "CORE",
+        "asOf": "2026-10-30T12:00:00.100Z",
+        "minimumUniqueLaunches": 300,
+        "uniqueLaunchesWithCompleteOutcomes": 1,
+        "eligible": false,
+        "reason": "INSUFFICIENT_COMPLETE_LAUNCH_OUTCOMES"
+      }
+    },
+    "staleEligibility": {
+      "synthetic": true,
+      "initialScore": 100,
+      "secondsLater": 601,
+      "persistedEligible": 1,
+      "actualScoreStatus": "INCOMPLETE",
+      "unsafeLiveSignalDemonstrated": false
+    },
+    "rationalCapacity": {
+      "synthetic": true,
+      "partialSalesAtFailure": 20,
+      "priorStateBytes": 8148,
+      "priorDenominatorDigits": 174,
+      "error": "INVALID_FRACTION",
+      "fullReplayDoesNotResolve": true
+    }
+  },
+  "cloudflareDeploymentHistory": [
+    {
+      "id": "b0dee918-9098-4850-a371-29db40e2ed9f",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "a38fe3b8-143b-4838-bf81-13295a4242a3",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-24T11:40:27.407329Z"
+    },
+    {
+      "id": "5e30d4b2-a5bb-43bf-b34d-76866ce4a180",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "de1b4cdf-1c3b-4555-9805-33efae951a45",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-24T00:24:33.626261Z"
+    },
+    {
+      "id": "dd94e716-9e13-4afe-aa2d-49069d1a5269",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "bd4e130d-e889-4570-8a61-96b787a95760",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-24T00:20:57.527293Z"
+    },
+    {
+      "id": "0e7c9031-b365-40a4-9dd3-391d3aad11e5",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "3067cd8d-5b70-4e81-89ba-198e4a36fd5b",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T23:31:55.574136Z"
+    },
+    {
+      "id": "cd9077b7-34f7-4314-a98a-6c1bf2af46ac",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "7ecc290f-beb4-4dce-8c9c-33bbac20be73",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T23:27:27.809659Z"
+    },
+    {
+      "id": "c3baffd7-1622-4df2-ae52-da6c9b35cd7b",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "181f2942-ec57-4a7b-b1a2-c9aeaa876810",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T14:06:23.904616Z"
+    },
+    {
+      "id": "c603c51c-ea9d-49aa-bf5a-2d1a59aef598",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "04af5127-90b3-4d58-9760-b9b841421241",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T14:02:39.09731Z"
+    },
+    {
+      "id": "e413e610-4422-4d81-abea-985f607feb24",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "755f82fe-6322-4c30-a549-6483549bbcd6",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T13:51:00.650482Z"
+    },
+    {
+      "id": "18e5f505-ae86-41a3-8493-97a7091a29c2",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "4f91ca74-8db1-4be3-beb2-6913b538b315",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-23T09:13:22.929404Z"
+    },
+    {
+      "id": "4018fd2a-80d1-431a-ba1e-6364930d607f",
+      "source": "wrangler",
+      "strategy": "percentage",
+      "versions": [
+        {
+          "version_id": "4e372242-4ad7-4d23-8fbb-f4d975bbfd5f",
+          "percentage": 100
+        }
+      ],
+      "createdOn": "2026-10-22T23:40:39.749891Z"
+    }
+  ],
+  "vercelMetadataEarlier": {
+    "checkedAt": "2026-10-24T12:34:52.587Z",
+    "teamId": "team_tqphzLllrhWaWKQMuwstgUWr",
+    "plan": "hobby",
+    "projectId": "prj_NoIuyCmSBmOPr79jHGP4gTClbLi5",
+    "projectName": "memecoin-radar",
+    "gitLinked": false,
+    "productionTarget": "dpl_93GrwTCGXChKNNJoFnAaYXwXBY5Z",
+    "deploymentId": "dpl_93GrwTCGXChKNNJoFnAaYXwXBY5Z",
+    "state": "READY",
+    "aliases": [
+      "memecoin-radar-six.vercel.app",
+      "memecoin-radar-urbanz95s-projects.vercel.app"
+    ],
+    "commit": "3f6a1993a1b04ecc1c14208daa87699d64a8dc0b"
+  },
+  "githubChecks": {
+    "checks": [],
+    "total_count": 0
+  },
+  "limitations": [
+    "No destructive recovery test",
+    "No full penetration test",
+    "No continuous 24-hour availability measurement",
+    "No complete administrative quota/log access",
+    "Synthetic reproductions are not production financial incidents"
+  ]
+}

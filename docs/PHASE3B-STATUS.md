@@ -1,0 +1,141 @@
+# Fase 3B — consolidação
+
+Branch: `fix/phase3b-consolidation-20261025`, criado a partir de `b888ae5` e atualizado por fast-forward com os commits já publicados da Fase 3 e da auditoria. Preservam-se funcionalidades, migrations aplicadas e interfaces anteriores.
+
+## Estado e gates
+
+**Gate 3B-1 comprovado; 3B-2 publicado, com cobertura real ainda em recolha. O bloco 3B-3 ainda não foi ativado.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
+
+`/health.operations.stability` publica início, número cumulativo de ciclos concluídos e `qualified`. O início da continuidade (`stableSince`) reinicia após falha ou intervalo superior a seis minutos; o total `completedCycles` preserva-se. A qualificação exige um intervalo real de seis horas entre o primeiro e o último ciclo concluídos, dados recentes e ausência de ciclo interrompido.
+
+As Fases 4, 5 e 6 continuam desativadas. Só começam com a instrução explícita `AVANÇA FASE N`. Sem trades nem envio Telegram; a outbox mantém pré-visualizações.
+
+Checkpoint de retoma: [PHASE3B-CHECKPOINT.json](PHASE3B-CHECKPOINT.json). Contém estado por bloco, lock de execução, versão publicada e condição de continuação. Uma execução nova deve retomar esse checkpoint antes de criar trabalho paralelo.
+
+## Changelog por achado
+
+| Achado | Alteração | Validação / limite |
+|---|---|---|
+| A01 | Logs e analytics confirmam esgotamento da quota diária de escritas D1. Cadência gerida no DO, orçamento preventivo, circuit breaker até ao reset UTC e causas estruturadas independentes de D1 | Causa real: 101.064 linhas escritas em 24/10. Cron ativo; exceções específicas de quota, não prova de CPU esgotada |
+| A02 | Job semanal em cron e ator próprios, separado da transação de ingestão; uma coorte por invocação, páginas até 64 KiB, checkpoint, cutoff, lease e backoff | Regressão SQLite com 15 coortes e falha deliberada do job; ingestão continua |
+| A05 | Formatter aceita vários membros do mesmo cluster e conta grupos distintos; preview preserva representantes antes de limitar os membros | Três wallets em dois grupos aceites; um grupo continua a falhar; mínimo de trades e restantes filtros preservados |
+| A06 | Ledger aditivo de referências, reorgs, verificações e invalidações de baselines; validação no commit, fila, relatórios e gate de labels | Blocos órfãos preservados no arquivo e excluídos; geração em quarentena até revalidação, até dois blocos por ciclo |
+| A07 | Elegibilidade atual calculada pela geração e TTL, com índice de cobertura | 601 s expira para TTL 600 s; futuro não conta. Contador histórico fica explicitamente separado |
+| A08 | Componentes racionais por posição persistidos no JSON existente, com adaptação de checkpoints antigos; limites aritméticos separados da memória | 24 posições com denominadores primos, reinício e resumo temporal exatos. Orçamentos: 4.096 bits, 128 componentes/lotes, estado 16 KiB |
+| A09 | Backend e painel apresentam uma coorte por versão/perfil/tier, com paginação | Sem média global misturada. Tier antigo não comprovado fica `UNKNOWN`, sem inventar T0 |
+
+Os achados A03/A04 têm os módulos 3B-2 implementados; a cobertura financeira real continua dependente de histórico e providers comprovados. A entrega original de estabilidade não os incluía; ver a atualização 3B-2 abaixo.
+
+Validação anterior à publicação inicial: baseline de 511 testes; suite de **583 testes sem falhas**, `validate`, `profiles:check`, build Cloudflare e três fases consecutivas em workerd com **15/14/14 pedidos RPC**. O ensaio também verifica separadamente o ator gerido, um ciclo saltado sem RPC e os jobs semanal/heartbeat. As fases consecutivas usam cadência desativada apenas no ambiente local de ensaio, sem alterar produção; não comprovam seis horas de continuidade ou limites de CPU em produção. A verificação no Chromium encontrou ainda duas promessas incorretas de recolha por minuto; foram corrigidas para intervalo variável, com regressão própria.
+
+A revisão A08 também corrigiu a compatibilidade do fingerprint económico ao acrescentar componentes opcionais e o excesso de 16 KiB de evidência por realização. Eventos inválidos ficam isolados; a ingestão persiste apenas as realizações validadas, sem converter falhas em carteiras completas.
+
+Após o ensaio com Chromium e a medição real de CPU, a suite passou a **589 testes sem falhas**; `validate`, `profiles:check`, build e ensaio workerd voltaram a passar. As leituras públicas foram extraídas para um handler compatível no DO: o Worker gerido encaminha `/health`, `/latest` e `/weekly` sem ler D1 ou construir o JSON. Mantêm-se contratos, cache, GET-only e rotas públicas.
+
+O ajuste final dos lotes de outcomes elevou a suite a **593 testes aprovados**, novamente com validate/profiles:check/build/workerd. Mantém todos os jobs LIVE selecionados, incluindo fanout de 24, e limita a quatro os retries EXPIRED por ciclo. A regressão SQLite comprovou que os restantes jobs ficam integralmente inalterados, sem perda de prazos, estado ou provas.
+
+## Operação no plano gratuito
+
+Fonte validada: [`config/operations.json`](../config/operations.json). Cadência inicial de 180 s, adaptável ao custo medido do ciclo; máximo 900 s. O cron de um minuto só delega: ciclos antes da data permitida saltam sem RPC nem escrita D1. Isto reduz a frequência de enriquecimento; não é ingestão em segundos.
+
+O collector dispõe de um orçamento preventivo de **80.000 escritas estimadas/dia UTC**, deixando 20.000 linhas de margem perante as 100.000 do D1 Free. O custo usa `meta.rows_written` do batch mais dez linhas de overhead; antes da execução reserva pelo menos 2.048 linhas no journal do DO. Uma invocação interrompida ou sem medição conserva a reserva. Um ciclo medido reconcilia-a. Ao esgotar orçamento/quota, espera pelo próximo dia UTC. Retém cursores e dados; não apaga tokens nem baixa filtros.
+
+A correção de pacing de 25/10 usa a média das últimas oito cobranças reais do journal (`cadenceCostWindow`), incluindo a reserva conservadora quando falta medição. Não presume que um pico isolado se repete durante todo o dia. `writePacing` publica as amostras e a média; começa apenas com custos observados após a atualização e reinicia no dia UTC. Cada cobrança continua integralmente no orçamento diário, com a mesma reserva preventiva. Custos elevados sustentados continuam a aumentar a cadência e podem impedir o gate; os seis minutos e os TTLs financeiros não mudam. O log de conclusão acrescenta `d1WriteBreakdown`, atribuído aos resultados do mesmo batch, sem queries ou escritas adicionais.
+
+O orçamento é uma proteção deste collector, **não uma medição global da conta**. Escritas administrativas, migrations, outros clientes e job semanal usam a margem; custos atípicos e quotas de leitura/DO/Workers também precisam de observação. Uma cadência adaptada acima de seis minutos impede qualificar o gate de estabilidade; nesse caso é necessário reduzir lotes ou rever prioridades, não declarar o gate concluído.
+
+Os TTLs financeiros não foram alargados: cabeça com mais de 60 s e mercado com mais de 120 s continuam a caducar. Com recolha mais espaçada, existem intervalos sem sinais frescos, mesmo quando o processo está a respeitar a sua cadência. A solução definitiva pode exigir separar capturas prioritárias e reduzir escritas por ciclo; não é correto ocultar a caducidade para apresentar sinais.
+
+Cron semanal: `2-59/5 * * * *`, ator separado. Heartbeat interno: `4-59/5 * * * *`. O relatório só cobre semanas maduras, duas semanas anteriores; uma coorte vazia agora não significa arquivo vazio. A página `/weekly` e `/latest` leem dados, sem iniciar o scanner.
+
+`collector.maximumExpiredOutcomeJobs=4` limita apenas tentativas históricas que já perderam a janela. A seleção de até 24 jobs continua a dar prioridade a janelas abertas; nenhuma captura LIVE é removida por esse limite. O backlog preserva-se para recuperação histórica. `outcomeCollection.selectedJobs`, `expiredDeferred` e `maxExpiredPerCycle` mostram o que foi adiado. Isto reduz escritas de retries sem converter falta de preço em zero ou eliminar tokens mortos.
+
+Monitor externo: [workflow heartbeat](../.github/workflows/heartbeat.yml), nominalmente a cada cinco minutos, executa fora da Cloudflare. Após mais de dez minutos sem ciclo concluído, cria uma única issue atribuída a `urbanz95`, com causa sanitizada. Mudança de causa atualiza essa issue; recuperação comprovada comenta e fecha. Usa o token automático da execução, sem novas chaves ou Telegram. Agendamentos GitHub podem atrasar ou ser suspensos; não há garantia de notificação exatamente ao décimo minuto. Notificações pessoais dependem das definições da conta GitHub. Cache externo guarda apenas timestamps; perda do cache pode atrasar a deteção se a última recolha também for desconhecida.
+
+## Migrations e recuperação
+
+Preparadas migrations aditivas `0009` (canonicalidade), `0010` (job semanal) e `0012` (índice TTL). O número `0011` ficou reservado e não foi necessário; não existe migration aplicada em falta. Antes de aplicar, registar novo bookmark D1 Time Travel, manifest de hashes e lista de migrations já aplicadas. Não reescrever SQL previamente aplicado. Time Travel no Free tem retenção finita; não equivale a export offline ou a ensaio de restauro.
+
+O limite A08 já não é o antigo teto de 180 dígitos nem um replay idêntico repetido. Se exceder os novos limites de precisão/componentes/memória, a wallet permanece incompleta e pede `SEGMENTED_EXACT_CHECKPOINT_REQUIRED`. O serviço externo de checkpoints segmentados não foi implementado. PnL desconhecido permanece `null`; a correção não cria histórico/provas inexistentes.
+
+## Próximos passos autorizados, após o gate
+
+1. Confirmar seis horas reais de estabilidade e manter a suite completa aprovada.
+2. Bloco 3B-2: provas tipadas de deployer e atividade de lançamento; janela declarada de 30 dias, custos/atribuição/riscos comprovados, clustering e ETH nativo. Documentar requisitos ainda não demonstráveis, sem os contornar.
+3. Bloco 3B-3: objeto de par canónico, censo sem filtro de cotação, registry comprovado, rotas e segurança por tier, gravação e shadow de pelo menos três dias. A nova pontuação continua desligada durante o shadow.
+4. Parar no fim da etapa 1 do shadow e apresentar contagens, cobertura, crescimento/quotas, cotações aceites/rejeitadas e riscos. Não ativar etapa 2 ou fases seguintes automaticamente.
+
+Até esses blocos, a descoberta continua limitada às cotações antigas ETH nativo/WETH/USDG. Não foi ativada cotação AMC, stock token, stablecoin adicional ou memecoin como quote.
+
+## Primeira recuperação real
+
+Após o reset UTC, foram aplicadas `0009`, `0010` e `0012` às 01:00 de Lisboa, com o [bookmark e hashes registados](PHASE3B-BACKUP-2026-10-25.json). Confirmados onze migrations e 456 referências de baseline; nenhum SQL anteriormente aplicado foi reescrito.
+
+A primeira recolha natural da versão 3B terminou em **25/10 às 01:04 de Lisboa** (`2026-10-25T00:04:26.987Z`), run `491e2b00-59c7-4e33-a9ed-41d068f4712d`. O endpoint direto e a Vercel passaram a HTTP 200/COMPLETED. O arquivo avançou para 3.918 tokens, 459 decisões versionadas e 4.335 eventos de decisão. Permaneciam 222 outcomes completos, 145 wallets e zero elegíveis, sem alertas fabricados.
+
+Esse ciclo registou 513 escritas D1 no batch e adaptou a próxima tentativa para 565 s; não foi atribuído esse custo a um módulo sem evidência. O ciclo seguinte terminou às **01:14 de Lisboa**, com 215 escritas e cadência adaptada de 243 s. O intervalo anterior de dez minutos reiniciou corretamente o contador de continuidade às `2026-10-25T00:14:30.149Z`. Recuperação inicial não equivale a seis horas de estabilidade.
+
+O cron semanal separado produziu o primeiro relatório v2 às 01:12 de Lisboa, sem coortes maduras; `/weekly` respondeu HTTP 200. O heartbeat interno executou separadamente. O monitor GitHub comprovou abertura e recuperação: a issue #2 foi fechada pelo bot às 01:08 de Lisboa, com comentário do ciclo recuperado. Os dois ensaios externos foram `workflow_dispatch`; o workflow periódico está ativo, com a ressalva de atraso do agendamento gratuito.
+
+Nas amostras anteriores à extração do handler, `/latest` usou até 17 ms de CPU no Worker, com outcome `ok`; o DO usou até 85 ms de CPU. Não foi atribuída a paragem original a CPU: o erro D1 de quota é a causa comprovada. A extração reduz trabalho no Worker, cujo referencial Free é 10 ms, usando o orçamento de 30 s de CPU do DO. Tempo de parede em I/O não é tempo de CPU; é necessário medir novamente depois da publicação.
+
+Primeira amostra depois da extração: **16 eventos stateless, máximo 1 ms de CPU; 14 eventos DO, máximo 11 ms**, sem erros. Esta amostra não garante todos os pedidos futuros. Em Chromium, duas consultas automáticas consecutivas tiveram `/health` e `/latest` HTTP 200, sem cliques ou erros JS; a hora da vista avançou, enquanto o `runId` e a hora de recolha permaneceram corretamente iguais porque não havia nova recolha nesse intervalo.
+
+Os custos seguintes variaram de 215 a 320 escritas; não se extrapolou consumo diário a partir de um único ciclo. Como intervalos longos reiniciam o gate, foi aplicado o limite dos retries históricos referido acima. A continuidade tem de ser medida novamente após este ajuste.
+
+Está criada uma continuação condicional em Europe/Lisbon, a partir de **25/10 às 06:15**, de hora a hora. Só inicia 3B-2/3 com o gate comprovado e testes aprovados; caso contrário continua a estabilização. O pedido completo e o estado ficam no repositório para retoma. A automação deve parar no fim da etapa 1 do shadow; não autoriza etapas ou fases seguintes.
+
+## Decisões da primeira publicação
+
+Evidência de publicação, configuração e observações: [PHASE3B-RELEASE-2026-10-25.json](PHASE3B-RELEASE-2026-10-25.json). Código desse release: `93484a4`; Cloudflare `b6359d30-08e3-48d4-926e-127bb0216498`. Dashboard Vercel Hobby `dpl_FzwGpoEpwYyiXPgAA9JDpXEb5qmP`, fonte estática `828c525` (os ficheiros da página não mudaram nos commits seguintes do backend). CI remoto aprovado no commit do release.
+
+O limite foi observado em produção: **6 jobs LIVE + 4 EXPIRED**, com onze retries históricos adiados e 138 escritas no batch desse ciclo. A consulta SQL confirmou **121 outcomes +15m, 99 +1h e cinco +24h**; são observações versionadas, não 225 lançamentos únicos. +7d ainda não tinha amostras. Permaneciam 145 wallets acompanhadas e zero elegíveis. A primeira leitura administrativa mais recente falhou com `7403`; a repetição só de leitura teve sucesso, sem atribuir esse erro administrativo à saúde do collector.
+
+Na amostra desse release, CPU máxima **2 ms no Worker e 89 ms no DO**, sem exceções de runtime; um pedido `/weekly` foi cancelado pelo cliente. O tempo de parede chegou a 60 s em I/O, distinto do tempo de CPU. As verificações de abertura/fecho do heartbeat passaram, mas **não havia ainda invocação GitHub do tipo schedule observada** nesta sessão; os ensaios foram manuais e o agendamento está ativo. Essa continuidade externa deve continuar a ser verificada.
+
+- Reservar 20.000 escritas/dia da conta e começar com 180 s entre ciclos, ajustando pelo custo, para evitar novo esgotamento do Free.
+- Priorizar outcomes ainda capturáveis e adiar retries fora da janela, sem reescrever ou apagar o arquivo.
+- Marcar tiers históricos como UNKNOWN e preservar a primeira decisão imutável: não atribuir T0 ou um score posterior retroativamente. Uma primeira decisão incompleta continua na faixa UNKNOWN; uma coorte acionável própria ainda não foi acrescentada.
+- Persistir componentes exatos no JSON existente, sem migration adicional, com limites explícitos de 4.096 bits e 16 KiB; não prometer replay recuperável quando o limite exige checkpoint segmentado.
+- Usar o mesmo DO para construção das respostas públicas, evitando custo de serialização no Worker e mantendo as interfaces.
+
+## Retoma das 06:00 — custo e continuidade
+
+Às 06:00 UTC/Lisboa, a versão `b6359d30` continuava a recolher, mas o último batch de 354 escritas tinha projetado uma cadência de 394 s. O ciclo seguinte só terminou às **06:02:28.544**, 418,639 s depois do anterior, reiniciando corretamente `stableSince`. Não houve nova exceção de quota; o intervalo excessivo bastou para perder o gate. A primeira sequência durou cerca de 5h24, sem chegar às seis horas.
+
+Correção isolada no branch `fix/phase3b-write-pacing-20261025`, código `e84af86`, publicada na Cloudflare como **`dd06e0fd-5f70-4cec-a8eb-9210200dc868`**. A cadência passa a amortizar oito cobranças observadas, preservando o orçamento integral e as reservas para trabalho desconhecido. Custos sustentados altos continuam a atrasar ciclos. A telemetria por módulo usa o mesmo batch atómico; não aumenta chamadas D1. A limpeza de `operations.mjs` conserva o código executável normalizado; a documentação corrige fanout e paginação desatualizados. Não houve migration, eliminação de dados, mudança de plano ou novo deployment Vercel.
+
+**605 testes aprovados**, CI remoto Node 22/24 aprovado, `validate`, `profiles:check`, build e três fases workerd com 15/14/14 RPC; skip sem RPC e jobs independentes também passaram. Primeiro ciclo natural da nova versão às **06:06:29.035**, com **87 escritas no batch**, 97 cobradas com overhead e cadência de 180 s. Custos: records 27, outcomes 28, catálogo 14, mercado 6, runs 4, wallets 3, decisões MVP 3, fencing 1, control 1; restantes grupos zero medido. Uma amostra não comprova o custo de todos os ciclos.
+
+O arquivo nessa leitura tinha **4.174 tokens avistados, 487 decisões versionadas e 258 outcomes completos**, com 146 wallets e zero elegíveis/outbox. Tokens avistados não equivalem a tokens avaliados nem a lançamentos com quatro outcomes. Analytics D1, por volta das 06:03, registavam 12.807 escritas e 579.801 leituras no dia UTC, para toda a conta consultada. Não extrapolar uma amostra para garantir quota ou retenção.
+
+O gate permanece **`qualified:false`**. A primeira possibilidade é um ciclo concluído às **12:02:28.544 ou depois**, apenas se a continuidade desde as 06:02 se mantiver, sem falhas/intervalos excessivos, e os testes do código atual passarem. Os blocos 3B-2/3 e o shadow continuam por iniciar. Novas cotações: nenhuma ativada ou avaliada nesta correção.
+
+Foi finalmente observada uma execução GitHub `schedule` às 01:48 UTC, com sucesso; não existe ainda uma série de execuções que comprove cadência de cinco minutos. O monitor gratuito continua best effort, sem SLA de dez minutos. Nenhum segredo/permissão adicional é necessário neste checkpoint.
+
+Prova detalhada desta retoma: [PHASE3B-OBSERVATION-2026-10-25T0600Z.json](PHASE3B-OBSERVATION-2026-10-25T0600Z.json). Não substituir a evidência histórica do primeiro release. Para continuar, ler também o checkpoint; se estiver saudável e o gate ainda não tiver sido atingido, aguardar sem iniciar os blocos seguintes.
+
+## Bloco 3B-2 — produtores, janela e integração
+
+O gate foi comprovado em produção às 12:26 UTC: **6h24m01s entre sucessos concluídos**, sem erro/ciclo incompleto, com a suite do código de entrada aprovada. A prova está em [PHASE3B-GATE-2026-10-25.json](PHASE3B-GATE-2026-10-25.json). O branch `feat/phase3b-real-proofs-20261025` retoma esse checkpoint; não recria o scanner nem o tracking.
+
+| Achado | Alteração | Limite real |
+|---|---|---|
+| A03 | Produtores tipados de criação/deployer e atividade, ligados aos filtros e às features arquivadas | Criação comprovada não demonstra histórico global de rugs/contratos, financiamento ou ausência de bundles privados; campos não demonstrados ficam nulos |
+| A04 histórico | Job de backfill ERC20 de 30 dias com fronteiras canónicas, páginas/cursor/fila de recibos, dedupe e fencing no batch existente | Cobertura do scan é separada de cobertura financeira/nativa/interna e equity inicial. O job precisa de correr; não se afirma histórico completo no lançamento |
+| A04 contabilidade | Janela declarada, vendas sem aquisição conciliada excluídas, replay obrigatório em mudança de escopo ou recibo não conciliado | Mantém checkpoint exato e PnL desconhecido até replay/provas; interfaces de histórico vitalício conservadas |
+| A04 ETH | Transação/trace nativo v4 e decomposição de fees conciliados; tenta provider read-only quando há orçamento | Trace indisponível, corte/timeout, L1 não conciliado ou preço histórico ausente mantêm INCOMPLETE |
+| A04 clusters | Union-find determinístico para financiamento comum, compras no bloco de criação e transferências diretas positivas; integrado no ledger | Relações reduzem independência. Exchange/router/EOA não classificados, cobertura ausente e risco desconhecido não se tornam seguros |
+| Robustez | Provas/recibos excessivos em digest limitado e deduplicado, limite de 16 KiB antes de emitir swaps e defer de cabeça futura | Digest não substitui evidência financeira. Erros do provider histórico não interrompem a ingestão principal |
+
+**716 testes sem falhas**, `validate`, `profiles:check` e build aprovados. Testes adicionais exercitam o collector real com backfill no batch existente, falha histórica isolada, persistência/replay, transição janela↔lifetime, ETH, grafos, limites e unknowns. O ensaio workerd faz parte da verificação anterior à publicação. Não confundir estes ensaios sintéticos com cobertura real de 30 dias.
+
+A migration **0013**, só aditiva, tem novo ponto Time Travel e hashes registados em [PHASE3B-2-BACKUP-2026-10-25.json](PHASE3B-2-BACKUP-2026-10-25.json), antes da aplicação. Os hashes de todos os SQL anteriormente aplicados foram novamente confirmados. A base tinha 87.261.184 bytes nessa leitura administrativa; não é uma garantia de retenção futura.
+
+Decisões: manter `wallet-manual-v2` já ativo, pesos 50/30/20 e mínimo de cinco realizações; incluir a configuração de evidência no hash da política para separar coortes. Começar com quatro pedidos de backfill, oito eventos e um recibo, partilhando os limites e a reserva do collector. Não comprar/indexar via provider pago nem assumir que uma janela declarada resolveu o PnL. O custo real e o tempo de cobertura serão medidos após publicação.
+
+Pendências: fontes completas de histórico de deployer/funding, provas negativas de manipulação, cobertura global dos movimentos nativos/internos, equity inicial e preços históricos USD. Privilégios indiretos do contrato, simulação em USD e proteção LP v3/v4 continuam a exigir as provas existentes; não foram contornados. Nenhum trade/envio Telegram, modo B, X ou backtest foi ativado.
+
+Preparação 3B-3: [pesquisa do registry](PHASE3B-REGISTRY-RESEARCH.md) localizou o factory e validou o lookup de UID; isto ainda não ativa cotações. A etapa seguinte continua obrigada a shadow sem score/alertas e pelo menos três dias reais de observação.
+
+Publicação 3B-2 confirmada: código `e81f639`, Cloudflare `7aaa6e1f-fadc-4945-832f-461389805fc4`, migration 0013 às 17:09 UTC após o backup. Primeiro ciclo natural observado às **17:10:30**, com 128 escritas no batch, cadência 180 s, gate ainda aprovado, quatro pedidos de backfill e um job em BOUNDARY. A janela real inicia em 25/09 às 17:10:23 e termina em 25/10 às 17:10:23; fronteira inicial, scan e cobertura financeira ainda pendentes. A base tinha 87.322.624 bytes após a migration. Nenhuma cotação nova ativada, shadow ainda não iniciado; Vercel Hobby mantém o mesmo deployment. [Prova da publicação](PHASE3B-2-RELEASE-2026-10-25.json).

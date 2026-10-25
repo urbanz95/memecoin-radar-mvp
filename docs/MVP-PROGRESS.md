@@ -1,12 +1,18 @@
 # Progresso do MVP
 
+## Atualização 25/10/2026 — Fase 3B em curso
+
+O estado operacional correto é **MVP parcial**, conforme a [auditoria](AUDIT-2026-10-24.md). A consolidação atual trata A01/A02/A05–A09; o [relatório 3B](PHASE3B-STATUS.md) distingue código, publicação e provas reais. A01 foi diagnosticado por logs e analytics: quota diária de escritas D1 esgotada, com o cron ainda ativo. O monitor externo já foi publicado isoladamente em `main` pelo [PR #1](https://github.com/urbanz95/memecoin-radar-mvp/pull/1) e abriu a [issue #2](https://github.com/urbanz95/memecoin-radar-mvp/issues/2).
+
+Provas reais (3B-2) e novos pares/cotações (3B-3) só começam depois de testes aprovados e seis horas de estabilidade observada. A janela de 30 dias, ETH nativo reconciliado, censo/registry e shadow de novos tiers ainda faltam. O [pedido completo](PHASE3B-SPEC.md) fica registado para continuidade. Fases 4–6 apenas com `AVANÇA FASE N`.
+
 Âmbito autorizado: concluir as fases **1, 2 e 3** e parar para apresentar o estado. O projeto mantém `dryRun: true`, sem carteira, ordens ou operações financeiras. Fases posteriores exigem nova confirmação.
 
 | Fase | Entrega | Estado |
 |---|---|---|
 | 1 | Auditoria, testes de compatibilidade e arquivo de dados/outcomes | Concluída: código, migration e gravação remota confirmados; mercado recuperado e verificado na fase 2 |
 | 2 | Filtros duros e alertas Telegram em dry-run, modo A <24h | Concluída e verificada em produção; outbox vazia, sem inventar score de wallets |
-| 3 | Score de wallets e relatório semanal por faixa de score | Código e execução automática verificados; PnL real permanece desconhecido sem provas completas. Execução parada aqui |
+| 3 | Score de wallets e relatório semanal por faixa de score | Implementação e publicação concluídas em 24/10: ponderação por realização, provas/replay e duas dimensões do relatório. PnL real ainda desconhecido sem as fontes necessárias |
 | 4 | Integração X | Fora desta execução; exige confirmação |
 | 5 | Novo modo B ≥2.880h, com ENTRY/EXIT | Fora desta execução; exige confirmação |
 | 6 | Backtest e modelo | Fora desta execução; exige confirmação e pelo menos 300 lançamentos completos elegíveis |
@@ -58,4 +64,22 @@ O relatório semanal é descritivo: bandas 0–49, 50–64, 65–74, 75–84 e 8
 
 A recolha limitada de pools e transfers não comprova o histórico integral, custos e taxas em USD, atribuição económica ou financiamento/clustering de cada wallet. Por isso, o adaptador de produção conserva PnL desconhecido e perfis inelegíveis até haver prova suficiente; não cria aliases de cluster ou métricas favoráveis para produzir alertas. O cron continua de **60 em 60 segundos**, não em segundos individuais, reutilizando os módulos de pool/holders existentes.
 
-Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. Esta execução terminou na fase 3: não construiu X, novo modo B, backtest/modelo ou operações. O push para um novo repositório está bloqueado pela permissão GitHub de criação; o branch local está preservado.
+Outcomes de sete dias não podem estar completos no primeiro dia de recolha. O gate de 300 exige lançamentos únicos com baseline positivo e os quatro outcomes completos, na mesma versão/perfil; não é a contagem de tokens vistos. X, novo modo B, backtest/modelo e operações continuam desativados. Em 24/10 o utilizador criou [memecoin-radar-mvp](https://github.com/urbanz95/memecoin-radar-mvp), e o primeiro push foi concluído.
+
+## Continuação — verificação de 24/10/2026
+
+Foi corrigida e validada a prioridade das capturas de outcomes, acrescentando arquivo imutável de observações e recuperação por timestamps originais. Passaram 480 testes; a base real confirmou 31 outcomes completos, incluindo três novos de +15m. Os horizontes +24h/+7d ainda não eram devidos. As alterações seguintes da fase 3 ficaram em espera até fechar esta verificação, conforme o pedido mais recente. Estado detalhado, pendências e riscos: [relatório da verificação](MVP-VERIFICATION-2026-10-24.md).
+
+## Fase 3 — continuação concluída em 24/10/2026
+
+No branch `feat/phase3-wallet-scoring`, o commit `3f6a199` conclui a contabilidade/runtime com provas tipadas, realizações exatas, score por realização e preservação da compra original. A frescura do sinal usa a última compra canónica, não a hora de reingerir o recibo. A meia-vida continua em 30 dias, com pelo menos cinco realizações, wallet score ≥70, dois grupos independentes e score global ≥75 nos pesos 50/30/20. Interfaces anteriores e outbox dry-run preservadas.
+
+O relatório semanal ganhou faixas de wallet score à data da primeira decisão, além das faixas de token score, preservando versões, cutoff e desconhecidos. O painel apresenta os quatro horizontes e a cobertura. Passaram **511 testes**, cinco cenários DOM, três ciclos workerd com **15/14/14 RPC** e um ensaio com RPC real usando **28 pedidos**.
+
+As migrations incrementais `0007`/`0008` foram aplicadas após novo ponto integral D1 Time Travel. Cloudflare `a38fe3b8-143b-4838-bf81-13295a4242a3` e Vercel Hobby `dpl_93GrwTCGXChKNNJoFnAaYXwXBY5Z` publicados. Duas recolhas naturais verificaram 3.432 → 3.434 tokens, 400 → 401 decisões e 194 outcomes; contadores, relatório e bloqueados coincidiram entre API e painel, sem reload ou clique.
+
+A consulta D1 confirmou 130 tokens distintos avaliados, incluindo 108 com primeira decisão rejeitada/bloqueada; zero classificações explícitas `DEAD` não prova ausência de mortos. Os 194 outcomes repartiam-se por 111 de +15m e 83 de +1h. +24h/+7d ainda não tinham chegado à primeira data devida. A extensão semanal tem uma linha e conserva a coorte histórica ainda vazia.
+
+Continuam **111 carteiras acompanhadas e zero elegíveis/PnL comprovado**. As lacunas reais guardadas incluem 107 liquidações em moeda nativa por reconciliar e quatro casos sem fluxos económicos opostos comprovados. O collector atual não fornece histórico integral, todos os preços/taxas históricos e provas de funding/clusters; o adaptador aceita essas provas sem as assumir. As tabelas de realizações reconciliadas e resumos temporais continuam vazias em produção, conforme esperado na ausência desses dados. Não se fabricaram perfis para gerar alertas.
+
+Parâmetros, interfaces, limites de replay e riscos: [WALLET-SCORING.md](WALLET-SCORING.md). Esta entrega para na fase 3; fases 4–6 não foram iniciadas.

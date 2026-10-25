@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { QUOTE_ASSETS } from '../src/network.mjs';
 import { prepareDecisionRecords, decisionKey, getMvpStats } from '../src/mvp/records.mjs';
-import { queryDueOutcomes, prepareOutcomeUpdates, outcomeEligibility, OUTCOME_HORIZONS } from '../src/mvp/outcomes.mjs';
+import { queryDueOutcomes, prepareOutcomeUpdates, prepareMarketObservations, queryArchivedOutcomePoints,
+  outcomeEligibility, OUTCOME_HORIZONS } from '../src/mvp/outcomes.mjs';
 import { setup, decision, TOKEN, time, version, profile, policyHash } from './helpers/mvp-sqlite.mjs';
 
 async function seed(DB, address = TOKEN(1), changes = {}) {
@@ -19,10 +22,133 @@ test('outcome queue uses first-decision horizons and never exposes not-yet-due j
   assert.equal(jobs.length, 1); assert.equal(jobs[0].horizon, '15m'); assert.equal(jobs[0].dueAt, time + 900000);
   assert.equal(jobs[0].baselinePriceUsd, 2);
   const allDue = await queryDueOutcomes(DB, { now: time + 604800000, limit: 100 });
-  assert.deepEqual(allDue.map(job => job.horizon), ['15m', '1h', '24h', '7d']);
+  assert.deepEqual(allDue.map(job => job.horizon), ['7d', '15m', '1h', '24h']);
   await assert.rejects(queryDueOutcomes(DB, { now: time, limit: 101 }), /MVP_INVALID_OUTCOME_LIMIT/);
   const before = prepareOutcomeUpdates(DB, [{ job: jobs[0], observation: point(time + 900000) }], { runId: 'early', now: time + 899999 });
   assert.equal(before.commands.length, 0); assert.equal(before.diagnostics[0].result, 'NOT_DUE');
+});
+
+test('live capture windows cannot be starved by expired jobs or repeated score versions of one token', async t => {
+  const DB = setup(t);
+  for (let i = 0; i < 8; i++) await seed(DB, TOKEN(1), { scoreVersion: `version-${i}` });
+  for (let i = 2; i <= 5; i++) await seed(DB, TOKEN(i));
+  const jobs = await queryDueOutcomes(DB, { now: time + 3720000, limit: 4, maxJobs: 24 });
+  assert.equal(new Set(jobs.map(job => job.address)).size, 4);
+  assert.ok(jobs.length <= 24);
+  assert.ok(jobs.slice(0, 4).every(job => job.horizon === '1h' && job.captureState === 'LIVE'));
+  assert.ok(jobs.filter(job => job.horizon === '15m').every(job => job.captureState === 'EXPIRED'));
+  assert.equal(jobs.filter(job => job.address === TOKEN(1) && job.horizon === '1h').length, 8,
+    'one fetched point fans out to compatible versions instead of consuming extra provider addresses');
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_outcome_attempts').get().n, 0);
+});
+
+test('outcome retries preserve every job and reach a real 24-hour backoff cap', async t => {
+  const DB = setup(t); const key = await seed(DB);
+  const [job] = await queryDueOutcomes(DB, { now: time + 900000 });
+  for (let i = 0; i < 14; i++) await DB.batch(prepareOutcomeUpdates(DB, [{ job, observation: null }],
+    { runId: `backoff-${i}`, now: time + 900000 + i * 86400000 }).commands);
+  const row = jobState(DB, key);
+  assert.equal(row.next_attempt_at - row.last_attempt_at, 86400000);
+  assert.equal(row.attempt_count, 14); assert.equal(row.state, 'RETRY');
+});
+
+test('retries cannot skip an open five-minute capture window and resume backoff after its deadline', async t => {
+  const DB = setup(t); await seed(DB);
+  const [job] = await queryDueOutcomes(DB, { now: time + 900000 });
+  for (let i = 0; i < 4; i++) {
+    const at = job.dueAt + i * 60000;
+    await DB.batch(prepareOutcomeUpdates(DB, [{ job, observation: null }], { runId: `live-${i}`, now: at }).commands);
+    assert.equal(jobState(DB, job.decisionKey).next_attempt_at, at + 60000);
+  }
+  await DB.batch(prepareOutcomeUpdates(DB, [{ job, observation: null }],
+    { runId: 'near-deadline', now: job.dueAt + job.allowedLagMs - 10000 }).commands);
+  assert.equal(jobState(DB, job.decisionKey).next_attempt_at, job.dueAt + job.allowedLagMs);
+  await DB.batch(prepareOutcomeUpdates(DB, [{ job, observation: null }],
+    { runId: 'at-deadline', now: job.dueAt + job.allowedLagMs }).commands);
+  assert.ok(jobState(DB, job.decisionKey).next_attempt_at > job.dueAt + job.allowedLagMs);
+});
+
+function archiveSetup(t) {
+  const DB = setup(t);
+  DB.sqlite.exec(readFileSync(new URL('../cloudflare/migrations/0006_mvp_outcome_capture.sql', import.meta.url), 'utf8'));
+  return DB;
+}
+const marketEntry = (address, fetchedAt, changes = {}) => ({ address, externalMarket: {
+  source: 'dexscreener', trust: 'provider-reported', chain: 'robinhood', chainId: 4663,
+  baseTokenAddress: address, pairAddress: TOKEN(900), pairKind: 'address',
+  quoteTokenAddress: QUOTE_ASSETS.WETH, quoteAsset: 'WETH',
+  fetchedAt: new Date(fetchedAt).toISOString(), priceUsd: 3, liquidityUsd: 120, ...changes,
+} });
+
+test('fresh provider observations are immutable, idempotent and share the collector transaction fence', async t => {
+  const DB = archiveSetup(t);
+  const entries = [marketEntry(TOKEN(1), time + 910000), marketEntry(TOKEN(2), time + 910000, { priceUsd: 0, liquidityUsd: 0 })];
+  const prepared = prepareMarketObservations(DB, entries, { runId: 'fresh', observedAt: time + 920000 });
+  assert.equal(prepared.commands.length, 2);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_market_observations').get().n, 0, 'prepare must not write');
+  await assert.rejects(DB.batch([...prepared.commands, DB.prepare('INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,0)')]), /CHECK constraint failed/);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_market_observations').get().n, 0);
+  await DB.batch(prepared.commands);
+  await DB.batch(prepareMarketObservations(DB, entries, { runId: 'same-source', observedAt: time + 930000 }).commands);
+  assert.equal(DB.sqlite.prepare('SELECT count(*) AS n FROM mvp_market_observations').get().n, 2);
+  assert.equal(DB.sqlite.prepare('SELECT price_usd FROM mvp_market_observations WHERE address=?').get(TOKEN(2)).price_usd, 0);
+  assert.throws(() => DB.sqlite.exec('UPDATE mvp_market_observations SET price_usd=99'), /MVP_MARKET_OBSERVATION_IMMUTABLE/);
+  assert.throws(() => DB.sqlite.exec('DELETE FROM mvp_market_observations'), /MVP_MARKET_OBSERVATION_APPEND_ONLY/);
+  await assert.rejects(DB.batch(prepareMarketObservations(DB, [marketEntry(TOKEN(1), time + 910000, { priceUsd: 99 })],
+    { runId: 'conflict', observedAt: time + 940000 }).commands), /MVP_MARKET_OBSERVATION_CONFLICT/);
+});
+
+test('market archive rejects cached refreshes, unknown metrics, wrong identity, stale and future source times', t => {
+  const DB = archiveSetup(t); const address = TOKEN(1); const at = time + 920000;
+  const invalid = [
+    marketEntry(address, at, { priceUsd: undefined }), marketEntry(address, at, { liquidityUsd: null }),
+    marketEntry(address, at, { chainId: 1 }), marketEntry(address, at, { baseTokenAddress: TOKEN(2) }),
+    marketEntry(address, at, { quoteTokenAddress: TOKEN(3) }), marketEntry(address, at, { pairAddress: 'invalid' }),
+    marketEntry(address, at + 1), marketEntry(address, at - 120001),
+  ];
+  assert.equal(prepareMarketObservations(DB, invalid, { runId: 'invalid', observedAt: at }).commands.length, 0);
+  assert.equal(prepareMarketObservations(DB, [marketEntry(address, at)],
+    { runId: 'cached', observedAt: at, refreshed: false }).commands.length, 0);
+});
+
+test('archive recovers missed windows from actual fresh points without future leakage or invented historical prices', async t => {
+  const DB = archiveSetup(t); await seed(DB, TOKEN(1)); await seed(DB, TOKEN(2));
+  const jobs = await queryDueOutcomes(DB, { now: time + 900000 });
+  await DB.batch(prepareMarketObservations(DB, [marketEntry(TOKEN(1), time + 910000)],
+    { runId: 'source-run', observedAt: time + 920000 }).commands);
+  assert.ok((await queryArchivedOutcomePoints(DB, jobs, { now: time + 915000 })).every(item => item.observation === null),
+    'a future collection cannot appear in an earlier historical evaluation');
+  const recovered = await queryArchivedOutcomePoints(DB, jobs, { now: time + 86400000 });
+  const found = recovered.find(item => item.job.address === TOKEN(1));
+  assert.equal(found.observation.sourceTimestamp, time + 910000);
+  assert.equal(found.observation.priceUsd, 3);
+  assert.equal(found.observation.source.archive.runId, 'source-run');
+  assert.equal(recovered.find(item => item.job.address === TOKEN(2)).observation, null, 'another token cannot supply missing data');
+  await DB.batch(prepareOutcomeUpdates(DB, recovered, { runId: 'late-recovery', now: time + 86400000 }).commands);
+  assert.equal(jobState(DB, found.job.decisionKey).state, 'COMPLETE');
+  assert.equal(DB.sqlite.prepare('SELECT source_timestamp FROM mvp_outcomes').get().source_timestamp, time + 910000);
+  const laterJobs = await queryDueOutcomes(DB, { now: time + 86400000 });
+  const later = await queryArchivedOutcomePoints(DB, laterJobs, { now: time + 86400000 });
+  assert.ok(later.filter(item => item.job.horizon !== '15m').every(item => item.observation === null));
+});
+
+test('legacy immutable outcomes can repair another score version only inside the exact original source window', async t => {
+  const DB = archiveSetup(t); await seed(DB);
+  const [original] = await queryDueOutcomes(DB, { now: time + 900000 });
+  await DB.batch(prepareOutcomeUpdates(DB, [{ job: original, observation: point(time + 910000,
+    { source: { provider: 'dexscreener', notes: 'e'.repeat(7600) } }) }],
+    { runId: 'legacy-source', now: time + 920000 }).commands);
+  await seed(DB, TOKEN(1), { scoreVersion: 'next-version' });
+  const jobs = await queryDueOutcomes(DB, { now: time + 86400000, limit: 4 });
+  const recovered = await queryArchivedOutcomePoints(DB, jobs, { now: time + 86400000 });
+  const sameWindow = recovered.find(item => item.job.scoreVersion === 'next-version' && item.job.horizon === '15m');
+  assert.equal(sameWindow.observation.priceUsd, 3);
+  assert.equal(sameWindow.observation.sourceTimestamp, time + 910000);
+  assert.equal(sameWindow.observation.source.archive.table, 'mvp_outcomes');
+  assert.ok(recovered.filter(item => item.job.horizon !== '15m').every(item => item.observation === null));
+  await DB.batch(prepareOutcomeUpdates(DB, [sameWindow], { runId: 'reuse-large-provenance', now: time + 86400000 }).commands);
+  assert.equal(jobState(DB, sameWindow.job.decisionKey).state, 'COMPLETE',
+    'an archive pointer preserves provenance without recursively exceeding the source payload limit');
 });
 
 test('real due observation stores price, liquidity, original source timestamp and both lags idempotently', async t => {

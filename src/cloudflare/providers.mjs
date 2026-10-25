@@ -379,6 +379,13 @@ export async function refreshMarketData(entries, state, { fetchImpl = fetch, now
       entries: input.map(({ externalMarket, ...entry }) => ({ ...entry, marketData: { status: 'INVALID_CLOCK' } })),
       providerState: trimState(nextState), diagnostics: { ...diagnostics, status: 'INVALID_CLOCK' },
     };
+    if (response.fetchedAt) {
+      const age = time - Date.parse(response.fetchedAt);
+      diagnostics.sourceTimestamp = response.fetchedAt;
+      diagnostics.receivedAt = new Date(time).toISOString();
+      diagnostics.sourceAgeMs = age;
+      diagnostics.sourceTimeStatus = age < 0 ? 'FUTURE' : age > MARKET_TTL ? 'EXPIRED' : 'FRESH';
+    }
     if (response.error || bodyRateLimited(response.body)) {
       diagnostics.status = response.status === 429 || bodyRateLimited(response.body) ? 'RATE_LIMITED' : response.error;
       failProvider(nextState, 'dexscreener', diagnostics.status, time, response.retryAfter);

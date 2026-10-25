@@ -3,12 +3,14 @@ import { PROFILES_CONFIG, configProfileFingerprint } from './config.mjs';
 import { createHash } from 'node:crypto';
 import { policyHash } from '../engine.mjs';
 import legacyPolicy from '../../config/policies.json' with { type: 'json' };
+import WALLET_EVIDENCE_CONFIG from './wallet-evidence-config.mjs';
 import { scoreWalletProfile, aggregateWalletSignal, scoreLaunchMomentum, scoreNewProfile } from './wallet-scoring.mjs';
 
 export const MVP_POLICY_HASH = createHash('sha256').update(JSON.stringify({
   profiles: configProfileFingerprint(PROFILES_CONFIG), hardFilters: policyHash(legacyPolicy),
-  method: 'mvp-new-v2-wallet-fifo-momentum' })).digest('hex');
-export const MVP_SCORE_VERSION = `mvp-new-v2:${MVP_POLICY_HASH.slice(0, 16)}`;
+  walletEvidence: WALLET_EVIDENCE_CONFIG,
+  method: 'mvp-new-v3-wallet-realization-decay-momentum' })).digest('hex');
+export const MVP_SCORE_VERSION = `mvp-new-v3:${MVP_POLICY_HASH.slice(0, 16)}`;
 
 function chartUrl(entry) {
   const external = entry.externalMarket?.pairAddress;
@@ -27,7 +29,14 @@ export function evaluateNewToken(snapshot, entry = {}, { now = Date.now(),
   const security = evaluateHardFilters(snapshot, entry, { now });
   const scoredWallets = walletProfiles.map(value => scoreWalletProfile(value, { now }));
   const aggregated = aggregateWalletSignal(scoredWallets, { tokenAddress: snapshot.address, entries: walletEntries, now });
-  const wallets = { ...aggregated, realizedPnlUsd: null, wallets: (aggregated.wallets ?? []).slice(0, 8).map(value => ({
+  // Bounded alert previews retain one representative of each independent group
+  // before extra members. A large cluster cannot hide a later independent one.
+  const representatives = new Map();
+  for (const wallet of aggregated.wallets ?? []) if (!representatives.has(wallet.clusterId)) representatives.set(wallet.clusterId, wallet);
+  const representativeAddresses = new Set([...representatives.values()].map(wallet => wallet.address ?? wallet.walletAddress));
+  const previewWallets = [...representatives.values(), ...(aggregated.wallets ?? []).filter(wallet =>
+    !representativeAddresses.has(wallet.address ?? wallet.walletAddress))].slice(0, 8);
+  const wallets = { ...aggregated, realizedPnlUsd: null, wallets: previewWallets.map(value => ({
     address: value.address ?? value.walletAddress, score: value.score, clusterId: value.clusterId,
     realizedTrades: value.realizedTrades ?? value.realizedTradeCount ?? value.features?.realizedTradeCount,
     eligible: value.status === 'ELIGIBLE' || value.eligible === true })) };

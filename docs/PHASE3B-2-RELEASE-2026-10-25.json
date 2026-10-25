@@ -1,0 +1,218 @@
+{
+  "recordedAt": "2026-10-25T17:15:10.496365Z",
+  "block": "3B-2",
+  "state": "PUBLISHED",
+  "sourceCommit": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+  "workerVersion": "7aaa6e1f-fadc-4945-832f-461389805fc4",
+  "validation": {
+    "tests": 716,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true,
+    "cloudflareBuild": true,
+    "workerdFixturePhases": 3,
+    "ci": [
+      {
+        "conclusion": "success",
+        "databaseId": 40215058141,
+        "headBranch": "fix/phase3b-consolidation-20261025",
+        "headSha": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 40215054486,
+        "headBranch": "fix/phase3b-consolidation-20261025",
+        "headSha": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 40215051879,
+        "headBranch": "feat/phase3b-real-proofs-20261025",
+        "headSha": "e81f639020e3e855b1c052feffaab1ef35bd3e91",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 40212581511,
+        "headBranch": "main",
+        "headSha": "8a4b2863e20132d15fe447655597ac34faab7fba",
+        "status": "completed"
+      }
+    ]
+  },
+  "backup": "PHASE3B-2-BACKUP-2026-10-25.json",
+  "migration": [
+    {
+      "name": "0013_mvp_wallet_backfill.sql",
+      "applied_at": "2026-10-25 17:09:04"
+    }
+  ],
+  "health": {
+    "status": "COMPLETED",
+    "stale": false,
+    "lastError": null,
+    "lastSuccessAt": "2026-10-25T17:10:30.169Z",
+    "operations": {
+      "schemaVersion": 1,
+      "lastSuccessAt": "2026-10-25T17:10:30.780Z",
+      "lastError": null,
+      "completedCycles": 253,
+      "stableSince": 1792908148544,
+      "nextEligibleAt": 1792948410780,
+      "failures": 0,
+      "lastCycleStartedAt": "2026-10-25T17:10:22.669Z",
+      "budget": {
+        "dayUtc": "2026-10-25",
+        "estimatedRowsWritten": 34786,
+        "limit": 80000,
+        "circuitUntil": null,
+        "scope": "collector-estimate-plus-overhead; excludes administrative writes and weekly job; 20000-row account reserve"
+      },
+      "lastCycleCompletedAt": "2026-10-25T17:10:30.780Z",
+      "lastCycleRowsWritten": 128,
+      "cadenceSeconds": 180,
+      "circuitUntil": 0,
+      "writePacing": {
+        "dayUtc": "2026-10-25",
+        "samples": [
+          107,
+          190,
+          97,
+          105,
+          106,
+          128,
+          126,
+          138
+        ],
+        "meanRowsPerCycle": 124.625,
+        "windowSize": 8
+      },
+      "stability": {
+        "stableSince": "2026-10-25T06:02:28.544Z",
+        "requiredHours": 6,
+        "completedCycles": 253,
+        "qualified": true
+      }
+    },
+    "heartbeat": {
+      "event": "COLLECTOR_HEARTBEAT",
+      "checkedAt": "2026-10-25T17:11:43.545Z",
+      "lastSuccessAt": "2026-10-25T17:10:30.780Z",
+      "ageSeconds": 72.765,
+      "alert": false,
+      "thresholdSeconds": 600,
+      "cause": null,
+      "notificationChannel": "GITHUB_ISSUE",
+      "telegramDelivery": false
+    },
+    "currentSignalsAvailable": false,
+    "marketSignalsAvailable": false
+  },
+  "firstObservedWalletCollection": {
+    "events": 0,
+    "ranges": 1,
+    "receipts": 0,
+    "profilesUpdated": 0,
+    "realizedDisposals": 0,
+    "rejectedRealizations": 0,
+    "temporalProfilesUpdated": 0,
+    "scoreMethod": "wallet-manual-v2",
+    "evidence": {
+      "receipts": 0,
+      "attributed": 0,
+      "executionFeeKnown": 0,
+      "totalFeesComplete": 0,
+      "valued": 0
+    },
+    "nativeSettlement": {
+      "attempted": 0,
+      "reconciled": 0
+    },
+    "backfill": {
+      "requests": 4,
+      "events": 0,
+      "receipts": 0,
+      "pages": 0,
+      "scanComplete": false,
+      "financialComplete": false
+    },
+    "coordination": {
+      "wallets": 0,
+      "observedGroups": 0,
+      "coordinatedGroups": 0,
+      "completeGroups": 0
+    },
+    "historyWindows": [
+      {
+        "schemaVersion": 1,
+        "scope": "declared-window",
+        "chainId": 4663,
+        "walletAddress": "0x35dbf67d3e85731a54022102c7dd9324287d19b2",
+        "days": 30,
+        "startAt": "2026-09-25T17:10:23.000Z",
+        "endAt": "2026-10-25T17:10:23.000Z",
+        "fromBlock": null,
+        "fromBlockHash": null,
+        "toBlock": 97748497,
+        "toBlockHash": "0x9b466e8c9f6d7daa0e19a2febef3eef4783ba18c9db9f2b56271f64510c7c4d2",
+        "boundaryResolved": false,
+        "complete": false,
+        "contiguous": false,
+        "canonical": true,
+        "openingBalanceKnown": false,
+        "openingBalanceProof": null,
+        "source": "canonical-erc20-wallet-backfill/v1",
+        "evidence": [
+          "onchain:block:4663:97748497:0x9b466e8c9f6d7daa0e19a2febef3eef4783ba18c9db9f2b56271f64510c7c4d2",
+          "d1:mvp_wallet_backfill_jobs:00413f4c7014c732d9318b14272614f4469039fec37e9375894940b63d6671a4"
+        ],
+        "scanComplete": false,
+        "scanCoverage": {
+          "scope": "erc20-transfer-from-to",
+          "complete": false
+        },
+        "financialCoverage": {
+          "complete": false,
+          "nativeHistoryComplete": false,
+          "internalHistoryComplete": false,
+          "openingEquityKnown": false,
+          "feesComplete": false
+        }
+      }
+    ],
+    "diagnostics": []
+  },
+  "runId": "94d68561-5b7b-4e50-a612-2401e07a9966",
+  "capturedAt": "2026-10-25T17:10:30.169Z",
+  "archive": {
+    "schemaVersion": 1,
+    "tokensSeen": 4649,
+    "seenEvents": 8711,
+    "decisions": 540,
+    "decisionEvents": 5091,
+    "outcomeJobs": {
+      "pending": 632,
+      "retry": 1243,
+      "complete": 285
+    },
+    "outcomeAttempts": 8518,
+    "outcomesComplete": 285,
+    "updatedAt": "2026-10-25T17:10:30.169Z"
+  },
+  "backfillJobs": [
+    {
+      "state": "BOUNDARY",
+      "jobs": 1
+    }
+  ],
+  "databaseBytesAfter": 87322624,
+  "dryRun": true,
+  "telegramDelivery": false,
+  "trades": false,
+  "newQuotesActivated": [],
+  "shadowStarted": false,
+  "financialCoverageComplete": false,
+  "vercelDeploymentChanged": false
+}

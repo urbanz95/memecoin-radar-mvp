@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "stateMaxBytes": 16384,
+  "realizationMaxBytes": 16384,
+  "openLots": 128,
+  "exactPositionComponents": 128,
+  "exactIntegerBits": 4096
+}

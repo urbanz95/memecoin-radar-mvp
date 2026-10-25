@@ -12,14 +12,24 @@ import { evaluateMarketSignals, mergeIncrementalEvaluationState } from './market
 import marketSignalPolicy from '../../config/market-signals.json' with { type: 'json' };
 import { publicReport } from './public-report.mjs';
 import { providerFetch } from '../mvp/provider-fetch.mjs';
-import { prepareDecisionRecords } from '../mvp/records.mjs';
-import { queryDueOutcomes, prepareOutcomeUpdates } from '../mvp/outcomes.mjs';
+import { prepareDecisionRecords, prepareDecisionCanonicality, queryDecisionCanonicalBlocks, readDecisionCanonicality } from '../mvp/records.mjs';
+import { queryDueOutcomes, prepareOutcomeUpdates, prepareMarketObservations, queryArchivedOutcomePoints } from '../mvp/outcomes.mjs';
 import { evaluateNewToken, MVP_SCORE_VERSION, MVP_POLICY_HASH } from '../mvp/pipeline.mjs';
 import { prepareDryRunAlerts } from '../mvp/alerts.mjs';
 import { decisionKey } from '../mvp/records.mjs';
 import { prepareWalletLedger, enrichWalletTransactions, readWalletProfiles } from '../mvp/wallet-ledger.mjs';
 import { projectObservedWallets } from '../mvp/wallet-runtime.mjs';
-import { prepareWeeklyReport } from '../mvp/weekly-report.mjs';
+import { operationError, limitOutcomeRetries, OPERATIONS_CONFIG } from './operations.mjs';
+import { createWriteBatch } from './write-cost.mjs';
+import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
+import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
+import PROFILES_CONFIG from '../mvp/config.mjs';
+import WALLET_EVIDENCE_CONFIG from '../mvp/wallet-evidence-config.mjs';
+import { collectLaunchProofs } from '../mvp/launch-proofs.mjs';
+import { prepareReceiptEvidence } from '../mvp/wallet-evidence.mjs';
+import { prepareWalletBackfillStep } from '../mvp/wallet-backfill.mjs';
+import { collectNativeReceiptProofs } from '../mvp/wallet-native-provider.mjs';
+import { attachObservedWalletClusters } from '../mvp/wallet-cluster-runtime.mjs';
 
 const TOPICS = { v2: '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
   v3: '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118',
@@ -88,11 +98,12 @@ function appendMomentumHistory(previous, snapshot, entry, observedAt, runId) {
   }
   return history.slice(0, 40);
 }
-export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc: supplied } = {}) {
+export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc: supplied, walletProofs = {} } = {}) {
   const owner = crypto.randomUUID(); const start = now(); const leaseUntil = start + 300000;
   const held = await env.DB.prepare("UPDATE control SET state_json=CASE WHEN status='COMPLETED' THEN state_json ELSE json_set(state_json,'$.evaluationState',json('{}')) END,lease_owner=?,lease_until=?,status='RUNNING' WHERE id=1 AND lease_until<=? RETURNING state_json,last_success")
     .bind(owner, leaseUntil, start).first();
   if (!held) return { status: 'SKIPPED' };
+  let stage = 'rpc-head';
   try {
     const rpc = supplied ?? new FreeRpc({ url: env.ROBINHOOD_RPC_URL || NETWORK.rpcUrl, fetchImpl, signal: AbortSignal.timeout(60000) });
     const chunk = integer(env.LOG_CHUNK, 2048, 1, 2048); const maxLogs = integer(env.MAX_LOGS, 4, 1, 4);
@@ -105,10 +116,36 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     if (quantity(await rpc.request('eth_chainId')) !== NETWORK.chainId) throw new Error('WRONG_CHAIN');
     const head = await rpc.block();
     if (head.timestamp * 1000 > now() + 30000 || now() - head.timestamp * 1000 > 60000) throw new Error('STALE_HEAD');
+    const priorHead = saved.head ?? null;
+    let canonicalPriorHead = null;
     if (saved.head) {
-      const prior = saved.head.number <= head.number ? await rpc.block(saved.head.number) : null;
-      if (!prior || prior.hash !== saved.head.hash) { saved = {}; reorg = true; }
+      canonicalPriorHead = saved.head.number <= head.number ? await rpc.block(saved.head.number) : null;
+      if (!canonicalPriorHead || canonicalPriorHead.hash !== saved.head.hash) { saved = {}; reorg = true; }
     }
+    const canonicalEpoch = recordingEnabled ? await readDecisionCanonicality(env.DB) : null;
+    const pendingCanonicalBlocks = recordingEnabled && !reorg && !canonicalEpoch.revalidationComplete
+      ? await queryDecisionCanonicalBlocks(env.DB, { limit: 2 }) : [];
+    const canonicalBlocks = [];
+    const canonicalDiagnostics = [];
+    for (const item of pendingCanonicalBlocks) {
+      try {
+        if (item.blockNumber > head.number) throw Error('INVALID_CANONICAL_BLOCK_ABOVE_HEAD');
+        const checked = await rpc.block(item.blockNumber);
+        if (!checked || checked.number !== item.blockNumber || !hash(checked.hash)
+          || !Number.isSafeInteger(checked.timestamp) || checked.timestamp < 0 || checked.timestamp * 1000 > now())
+          throw Error('INVALID_CANONICAL_BLOCK');
+        canonicalBlocks.push(checked);
+      } catch (error) {
+        canonicalDiagnostics.push({ reason: 'CANONICAL_BASELINE_BLOCK_UNAVAILABLE', blockNumber: item.blockNumber,
+          cause: operationError(error, { stage: 'canonical-revalidation', at: now() }) });
+      }
+    }
+    const canonicality = recordingEnabled ? prepareDecisionCanonicality(env.DB, { runId: owner,
+      observedAt: now(), reorgDetected: reorg, priorHead, canonicalPriorHead,
+      canonicalBlocks, revalidationComplete: !reorg && !canonicalEpoch.revalidationComplete && pendingCanonicalBlocks.length === 0,
+      expectedGeneration: canonicalEpoch.generation }) : { commands: [], diagnostics: [] };
+    canonicality.diagnostics.push(...canonicalDiagnostics);
+    stage = 'discovery';
     const sequence = (saved.sequence ?? 0) + 1;
     const initialFrom = Math.max(0, head.number - chunk + 1);
     const from = Math.min(head.number, saved.recentNext ?? initialFrom);
@@ -231,7 +268,16 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             safetyStates = saveSafetyState(safetyStates, { address, poolId: pool.id, pool, codeHash,
               updatedAt: new Date(now()).toISOString(), ...analysis.safetyState }, now());
             tokenFacts.push({ address, analysis: analysis.evidence });
-          } catch { errors.push('TOKEN_ANALYSIS_FAILED'); }
+            if (mvpPhase >= 3) {
+              const launchProofs = await collectLaunchProofs({ rpc, tokenAddress: address, pool, head, now,
+                creation: analysis.entry?.age,
+                deployerHistory: walletProofs.deployerHistory?.find?.(proof => proof.address?.toLowerCase() === address),
+                launchActivity: walletProofs.launchActivity?.find?.(proof => proof.address?.toLowerCase() === address) });
+              analysis.entry.hardFilterEvidence = launchProofs.hardFilterEvidence;
+              tokenFacts.push({ address, launchProofs: launchProofs.diagnostics });
+            }
+          } catch (error) { errors.push('TOKEN_ANALYSIS_FAILED');
+            console.warn(JSON.stringify({ event: 'TOKEN_ANALYSIS_FAILED', ...operationError(error, { stage: 'token-analysis', at: now() }) })); }
         }
         snapshots.push(snapshot);
         // The calls are already retained in the bounded RPC audit. Duplicating
@@ -239,12 +285,39 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         // when a malformed token returns a very large decimals/supply value.
         tokenFacts.push({ address, metadataEvidence: 'rpc.audit:eth_call:0x313ce567,0x18160ddd',
           blockNumber: head.number, bytecodeBytes: (bytecode.length - 2) / 2 });
-      } catch { errors.push('TOKEN_ENRICHMENT_FAILED'); }
+      } catch (error) { errors.push('TOKEN_ENRICHMENT_FAILED');
+        console.warn(JSON.stringify({ event: 'TOKEN_ENRICHMENT_FAILED', ...operationError(error, { stage: 'token-enrichment', at: now() }) })); }
     }
+    stage = 'wallet-enrichment';
     if (walletCaptureError) throw new Error('WALLET_CAPTURE_LIMIT');
     const walletEnrichment = mvpPhase >= 3 ? await enrichWalletTransactions(env.DB, rpc,
       { events: walletCapture.events, head, now, maxTransactions: 2, maxRequests: 30 })
       : { receipts: [], attempts: [], diagnostics: [] };
+    const nativeProofs = mvpPhase >= 3 && WALLET_EVIDENCE_CONFIG.native.enabled
+      ? await collectNativeReceiptProofs(rpc, walletEnrichment.receipts, { now: now(), maxRequests: 28 })
+      : { diagnostics: [], counts: {} };
+    let walletBackfill = { commands: [], events: [], receipts: [], historyWindows: [], diagnostics: [], counts: {} };
+    if (mvpPhase >= 3 && WALLET_EVIDENCE_CONFIG.enabled && env.WALLET_BACKFILL_ENABLED === '1'
+      && Number.isSafeInteger(rpc.requests) && rpc.requests < 27 && walletCapture.events.length < 128) {
+      // Work shares the existing RPC budget, lease and D1 write reservation.
+      // Canonical final-head checks retain their two requests below.
+      walletBackfill = await prepareWalletBackfillStep(env.DB, rpc, { runId: owner, observedAt: now(), head,
+        ...WALLET_EVIDENCE_CONFIG.backfill,
+        maxStepRequests: Math.min(WALLET_EVIDENCE_CONFIG.backfill.maxStepRequests, 30 - rpc.requests),
+        maxEvents: Math.min(WALLET_EVIDENCE_CONFIG.backfill.maxEvents, 128 - walletCapture.events.length),
+        maxRequests: 30, targetForPool: item => {
+          const targetAddress = target(item);
+          return targetAddress ? { targetAddress,
+            quoteAddress: item.token0 === targetAddress ? item.token1 : item.token0,
+            quoteDecimals: item.quoteDecimals ?? null } : null;
+        } });
+      walletCapture.events.push(...walletBackfill.events);
+      for (const captured of walletBackfill.receipts) if (!walletEnrichment.receipts.some(item =>
+        item.receipt.transactionHash === captured.receipt.transactionHash && item.tokenAddress === captured.tokenAddress
+        && item.receipt.blockHash === captured.receipt.blockHash)) walletEnrichment.receipts.push(captured);
+    }
+    const receiptProofs = mvpPhase >= 3 ? prepareReceiptEvidence(walletEnrichment.receipts,
+      { now: now(), supplied: walletProofs.receiptEvidence ?? [] }) : { receiptEvidence: [], diagnostics: [], counts: {} };
     const pinned = await rpc.block(head.number); const final = await rpc.block();
     if (pinned.hash !== head.hash) throw new Error('REORG_DURING_COLLECTION');
     if (final.number > head.number && final.timestamp >= head.timestamp && now() - final.timestamp * 1000 <= 60000 && final.timestamp * 1000 <= now() + 30000)
@@ -252,13 +325,20 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const scan = runScan(snapshots, policy, { now: now(), state: reorg ? {} : saved.evaluationState ?? {} });
     let screeningEntries = analysisEnabled ? screeningHistory(reorg ? [] : saved.screeningEntries, analysis?.entry, scan.results, now()) : undefined;
     let marketData; let marketSignals;
-    const outcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4 }) : [];
+    stage = 'outcomes';
+    const selectedOutcomeJobs = recordingEnabled ? await queryDueOutcomes(env.DB, { now, limit: 4, maxJobs: 24 }) : [];
+    const outcomeJobs = limitOutcomeRetries(selectedOutcomeJobs);
     let outcomeUpdates = { commands: [], diagnostics: [] };
+    let marketObservations = { commands: [], counts: {}, diagnostics: [] };
     if (analysisEnabled) {
       const visibleAddresses = new Set(screeningEntries.map(entry => entry.address));
-      const outcomeAddresses = new Set(outcomeJobs.map(job => job.address));
+      // Expired jobs need a historical point; fetching their current price
+      // consumes the free-provider quota without recovering the missed label.
+      const outcomeAddresses = new Set(outcomeJobs.filter(job => job.captureState === 'LIVE').map(job => job.address));
       const outcomeTargets = [...outcomeAddresses].map(address => screeningEntries.find(entry => entry.address === address) ?? { address });
-      const refreshed = await refreshMarketData([...outcomeTargets, ...screeningEntries.filter(entry => !outcomeAddresses.has(entry.address))],
+      const marketTargets = [...outcomeTargets, ...screeningEntries.filter(entry => !outcomeAddresses.has(entry.address))];
+      const requestedAddresses = new Set([...new Set(marketTargets.map(entry => entry.address))].slice(0, 20));
+      const refreshed = await refreshMarketData(marketTargets,
         providerState, { fetchImpl: fetchMarket, now });
       providerState = refreshed.providerState;
       marketData = refreshed.diagnostics;
@@ -266,34 +346,61 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
       // archives its full evaluated signal while confirmation state stays small.
       screeningEntries = screeningHistory(refreshed.entries.filter(entry => visibleAddresses.has(entry.address)), null, [], now());
       marketSignals = evaluateMarketSignals(screeningEntries, reorg ? {} : saved.marketSignalState, { now: now() });
-      if (recordingEnabled) outcomeUpdates = prepareOutcomeUpdates(env.DB, outcomeJobs.map(job => {
-        const market = refreshed.entries.find(entry => entry.address === job.address)?.externalMarket;
-        return { job, observation: market ? { priceUsd: market.priceUsd, liquidityUsd: market.liquidityUsd,
-          sourceTimestamp: market.fetchedAt, source: { provider: market.source, pairAddress: market.pairAddress,
-            chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : null };
-      }), { runId: owner, now });
+      if (recordingEnabled) {
+        marketObservations = prepareMarketObservations(env.DB,
+          refreshed.entries.filter(entry => requestedAddresses.has(entry.address)),
+          { runId: owner, observedAt: now(), refreshed: refreshed.diagnostics.status === 'REFRESHED' });
+        const archived = await queryArchivedOutcomePoints(env.DB, outcomeJobs, { now });
+        outcomeUpdates = prepareOutcomeUpdates(env.DB, outcomeJobs.map((job, index) => {
+          const market = job.captureState === 'LIVE'
+            ? refreshed.entries.find(entry => entry.address === job.address)?.externalMarket : null;
+          const sourceAt = Date.parse(market?.fetchedAt);
+          const inWindow = Number.isFinite(sourceAt) && sourceAt >= job.dueAt && sourceAt <= job.dueAt + job.allowedLagMs;
+          return { job, observation: market && inWindow ? { priceUsd: market.priceUsd, liquidityUsd: market.liquidityUsd,
+            sourceTimestamp: market.fetchedAt, source: { provider: market.source, pairAddress: market.pairAddress,
+              chainId: market.chainId, baseTokenAddress: market.baseTokenAddress } } : archived[index]?.observation ?? null };
+        }), { runId: owner, now });
+      }
     }
+    stage = 'wallet-accounting';
     const projectedWallets = mvpPhase >= 3 ? await projectObservedWallets(env.DB, walletEnrichment.receipts,
-      { now: now(), reorgDetected: reorg }) : { profiles: [], diagnostics: [] };
+      { now: now(), reorgDetected: reorg, receiptEvidence: receiptProofs.receiptEvidence,
+        walletEvidence: walletProofs.walletEvidence, replayEvidence: walletProofs.replayEvidence,
+        historyWindows: walletBackfill.historyWindows })
+      : { profiles: [], diagnostics: [], realizedEvents: [] };
+    const coordination = mvpPhase >= 3 ? attachObservedWalletClusters(projectedWallets.profiles,
+      { events: walletCapture.events, receipts: walletEnrichment.receipts, pool, now: now(),
+        proofs: walletProofs.clustering ?? {} }) : { profiles: [], diagnostics: [], counts: {} };
+    projectedWallets.profiles = coordination.profiles;
+    const temporal = mvpPhase >= 3 ? await prepareWalletTemporalUpdates(env.DB, { runId: owner,
+      observedAt: now(), profiles: projectedWallets.profiles, realizedEvents: projectedWallets.realizedEvents,
+      config: PROFILES_CONFIG, reorgDetected: reorg }) : { profiles: [], realizationUpdates: [], realizedEvents: [], diagnostics: [] };
+    projectedWallets.profiles = temporal.profiles.map(profile => ({ ...profile,
+      eligible: scoreWalletProfile(profile, { now: now(), config: PROFILES_CONFIG }).eligible }));
     let mvpMomentum = reorg ? [] : saved.mvpMomentum ?? [];
     const mvpDecisions = [];
     if (mvpPhase >= 2) for (const snapshot of snapshots) {
       const existingProfiles = mvpPhase >= 3 && !reorg ? await readWalletProfiles(env.DB, { tokenAddress: snapshot.address }) : [];
       const mergedProfiles = new Map(existingProfiles.map(profile => [profile.walletAddress, profile]));
       for (const profile of projectedWallets.profiles) if (walletEnrichment.receipts.some(value =>
-        value.tokenAddress === snapshot.address && value.receipt.from?.toLowerCase() === profile.walletAddress))
+        value.tokenAddress === snapshot.address && value.receipt.from?.toLowerCase() === profile.walletAddress)
+        || profile.tokenEntries?.some(value => value.tokenAddress === snapshot.address))
         mergedProfiles.set(profile.walletAddress, profile);
+      const scoringProfiles = mvpPhase >= 3
+        ? await attachWalletTemporalEvidence(env.DB, [...mergedProfiles.values()],
+          { now: now(), config: PROFILES_CONFIG, reorgDetected: reorg })
+        : [...mergedProfiles.values()];
       const entry = screeningEntries?.find(value => value.address === snapshot.address) ?? {};
       if (mvpPhase >= 3) mvpMomentum = appendMomentumHistory(mvpMomentum, snapshot, entry, now(), owner);
       mvpDecisions.push(evaluateNewToken(snapshot, entry,
-        { now: now(), walletProfiles: [...mergedProfiles.values()],
-          walletEntries: [...mergedProfiles.values()].flatMap(profile => profile.tokenEntries ?? []),
+        { now: now(), walletProfiles: scoringProfiles,
+          walletEntries: scoringProfiles.flatMap(profile => profile.tokenEntries ?? []),
           momentumObservations: mvpMomentum.filter(point => point.address === snapshot.address) }));
     }
     const dryRunAlerts = mvpPhase >= 2 ? prepareDryRunAlerts(env.DB, mvpDecisions.map(decision => ({
       ...decision, decisionId: decisionKey(NETWORK.chainId, decision.address, decision.scoreVersion, decision.profile),
       wallets: decision.wallets.wallets })), { runId: owner, observedAt: now() }) : null;
-    const weekly = mvpPhase >= 3 ? await prepareWeeklyReport(env.DB, { now }) : null;
+    stage = 'records';
     const report = { runId: owner, completedAt: new Date(now()).toISOString(), chainId: NETWORK.chainId,
       operationalStatus: errors.length ? 'DEGRADED' : 'PARTIAL', observedHead: head, snapshots,
       results: scan.results, alerts: scan.alerts, errors,
@@ -303,7 +410,15 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
         scope: 'Alertas de mercado avaliados separadamente da aprovação estrita para trade.' },
         marketData, signals: { policy: marketSignalPolicy } } : {}),
       ...(recordingEnabled ? { mvp: { phase: mvpPhase, dryRun: true, recording: true,
+        canonicality: { ...canonicalEpoch, reorgDetected: reorg, diagnostics: canonicality.diagnostics,
+          asOf: 'PRE_COMMIT', plannedGeneration: canonicalEpoch.generation + (reorg ? 1 : 0) },
         scoreVersion: mvpPhase >= 2 ? MVP_SCORE_VERSION : policy.version, outcomeWindows: ['15m', '1h', '24h', '7d'],
+        outcomeCollection: { jobs: outcomeJobs.length, selectedJobs: selectedOutcomeJobs.length,
+          expiredDeferred: selectedOutcomeJobs.length-outcomeJobs.length,
+          maxExpiredPerCycle: OPERATIONS_CONFIG.collector.maximumExpiredOutcomeJobs,
+          liveJobs: outcomeJobs.filter(job => job.captureState === 'LIVE').length,
+          expiredJobs: outcomeJobs.filter(job => job.captureState === 'EXPIRED').length,
+          marketObservations: marketObservations.counts, diagnostics: outcomeUpdates.diagnostics },
         ...(mvpPhase >= 2 ? { profile: 'profile_new',
           filters: { evaluated: mvpDecisions.length, rejected: mvpDecisions.filter(d => d.status === 'REJECTED').length,
             incomplete: mvpDecisions.filter(d => d.status === 'INCOMPLETE').length,
@@ -312,9 +427,17 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             diagnostics: dryRunAlerts.diagnostics },
           ...(mvpPhase >= 3 ? { walletCollection: { events: walletCapture.events.length, ranges: walletCapture.ranges.length,
             receipts: walletEnrichment.receipts.length, profilesUpdated: projectedWallets.profiles.length,
-            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics] },
-            weekly: { due: weekly.due, reportKey: weekly.report?.reportKey ?? null,
-              generatedAt: weekly.report?.generatedAt ?? null } } : {}),
+            realizedDisposals: temporal.realizedEvents.length,
+            rejectedRealizations: temporal.rejectedRealizations ?? 0,
+            temporalProfilesUpdated: temporal.realizationUpdates.length,
+            scoreMethod: PROFILES_CONFIG.profiles.profile_new.walletScoring.version,
+            evidence: receiptProofs.counts, nativeSettlement: nativeProofs.counts, backfill: walletBackfill.counts,
+            coordination: coordination.counts,
+            historyWindows: walletBackfill.historyWindows,
+            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics, ...temporal.diagnostics,
+              ...receiptProofs.diagnostics, ...walletBackfill.diagnostics, ...nativeProofs.diagnostics,
+              ...coordination.diagnostics] },
+            weekly: { status: 'INDEPENDENT_JOB', due: null, reportKey: null, generatedAt: null } } : {}),
           decisions: mvpDecisions.filter(d => !['REJECTED', 'OUT_OF_SCOPE'].includes(d.status)).map(d => ({
             address: d.address, symbol: d.symbol, status: d.status, score: d.score,
             scoreComplete: d.scoreComplete, securityComplete: d.securityComplete,
@@ -354,10 +477,15 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             Math.max(0, ...published.signals.marketAlerts.map(value => Date.parse(value.expiresAt)))) },
         safetyFocus: analysis?.entry ? nextSafetyFocus(pool, safetyPhase, resumedFocus?.startedAt, now()) : null } : {}) };
     // D1 batch é uma transação. CHECK aborta toda a transação se o lease foi perdido.
-    const commands = [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)];
-    if (mvpPhase >= 3) commands.push(...prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
-      ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles, reorgDetected: reorg }).commands,
-      ...weekly.commands);
+    const writeBatch = createWriteBatch();
+    const { commands, append } = writeBatch;
+    append('fencing', [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)]);
+    append('canonicality', canonicality.commands);
+    append('walletBackfill', walletBackfill.commands);
+    if (mvpPhase >= 3) append('wallets', prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
+      ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles,
+      realizedEvents: temporal.realizedEvents, realizationUpdates: temporal.realizationUpdates,
+      reorgDetected: reorg }).commands);
     if (recordingEnabled) {
       const observedAt = now();
       const source = { collector: 'cloudflare-readonly-rpc', runId: owner,
@@ -375,10 +503,13 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             : entry?.age?.lowerBoundMinutes >= 0 && entry.age.upperBoundMinutes < 1440);
           return { address: result.address, profile: `legacy_${result.pipeline}`, status: result.status,
             isLaunch: Boolean(isLaunch), features: { snapshot, externalMarket: entry?.externalMarket ?? null,
+              hardFilterEvidence: entry?.hardFilterEvidence ?? null,
               score: result.score, reasons: result.reasons, age: entry?.age ?? null,
               riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
         }) });
-      commands.push(...records.commands, ...outcomeUpdates.commands);
+      append('records', records.commands);
+      append('marketObservations', marketObservations.commands);
+      append('outcomes', outcomeUpdates.commands);
       if (mvpPhase >= 2) {
         const mvpRecords = prepareDecisionRecords(env.DB, { runId: owner, observedAt, source,
           eventFeaturesEncoding: 'gzip-base64/v1',
@@ -389,37 +520,46 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               isLaunch: decision.security.age?.lowerBoundMinutes >= 0
                 && decision.security.age?.upperBoundMinutes < 1440,
               features: { snapshot: snapshots.find(item => item.address === decision.address),
+                hardFilterEvidence: entry?.hardFilterEvidence ?? null,
                 externalMarket: entry?.externalMarket ?? null, decision } };
           }) });
-        commands.push(...mvpRecords.commands, ...dryRunAlerts.commands);
+        append('mvpRecords', mvpRecords.commands);
+        append('outbox', dryRunAlerts.commands);
       }
     }
-    if (reorg) commands.push(env.DB.prepare('DELETE FROM pools'));
-    for (const p of discovered) commands.push(env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p)));
-    if (pool) commands.push(env.DB.prepare('UPDATE pools SET last_enriched=? WHERE id=?').bind(now(), pool.id));
+    append('catalog', []);
+    if (reorg) append('catalog', [env.DB.prepare('DELETE FROM pools')]);
+    for (const p of discovered) append('catalog', [env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p))]);
+    if (pool) append('catalog', [env.DB.prepare('UPDATE pools SET last_enriched=? WHERE id=?').bind(now(), pool.id)]);
     // Poda seletiva amortizada: preservar enriquecimentos recentes, mesmo de
     // pools antigas. O índice pools_rotation também serve a ordem inversa.
-    if (sequence % RETENTION_CADENCE_CYCLES === 0) commands.push(env.DB.prepare('DELETE FROM pools WHERE id IN (SELECT id FROM pools ORDER BY last_enriched DESC,created_block DESC LIMIT -1 OFFSET ?)').bind(CATALOG_LIMIT));
-    commands.push(env.DB.prepare('INSERT INTO runs(id,completed_at,head_number,report_json,evidence_json) VALUES(?,?,?,?,?)').bind(owner, now(), head.number, JSON.stringify(report), evidence));
-    commands.push(env.DB.prepare('DELETE FROM runs WHERE completed_at<?').bind(now() - 3 * 3600000));
-    commands.push(env.DB.prepare("UPDATE control SET state_json=?,last_success=?,status='COMPLETED',last_error=NULL,lease_owner=NULL,lease_until=0 WHERE id=1").bind(JSON.stringify(state), now()));
+    if (sequence % RETENTION_CADENCE_CYCLES === 0) append('catalog', [env.DB.prepare('DELETE FROM pools WHERE id IN (SELECT id FROM pools ORDER BY last_enriched DESC,created_block DESC LIMIT -1 OFFSET ?)').bind(CATALOG_LIMIT)]);
+    append('runs', [env.DB.prepare('INSERT INTO runs(id,completed_at,head_number,report_json,evidence_json) VALUES(?,?,?,?,?)').bind(owner, now(), head.number, JSON.stringify(report), evidence),
+      env.DB.prepare('DELETE FROM runs WHERE completed_at<?').bind(now() - 3 * 3600000)]);
+    append('control', [env.DB.prepare("UPDATE control SET state_json=?,last_success=?,status='COMPLETED',last_error=NULL,lease_owner=NULL,lease_until=0 WHERE id=1").bind(JSON.stringify(state), now())]);
+    stage = 'commit';
     const committed = await env.DB.batch(commands);
+    const writeCost = writeBatch.measure(committed);
     return { status: 'COMPLETED', runId: owner, head: head.number, snapshots: snapshots.length, ...report.coverage,
       ...(mvpPhase >= 3 ? { event: 'COLLECTION_COMPLETED', phase: mvpPhase,
-        d1RowsWritten: committed.every(value => Number.isFinite(value.meta?.rows_written))
-          ? committed.reduce((total, value) => total + value.meta.rows_written, 0) : null,
+        d1RowsWritten: writeCost.totalRowsWritten,
+        d1WriteBreakdown: writeCost.rowsWrittenByGroup,
         walletEvents: walletCapture.events.length, walletReceipts: walletEnrichment.receipts.length } : {}) };
   } catch (error) {
     if (error.message === 'INVALID_RPC_ENVELOPE' && error.rpcDiagnostic)
       console.warn(JSON.stringify({ event: 'RPC_ENVELOPE_REJECTED', ...error.rpcDiagnostic }));
     // Nenhum cursor avança. Reiniciar confirmação, preservando o catálogo.
-    const safeCodes = new Set(['INVALID_CONFIG', 'WRONG_CHAIN', 'STALE_HEAD', 'INVALID_BLOCK_TIMING', 'INVALID_BLOCK',
-      'INVALID_LOG', 'INVALID_LOGS', 'RANGE_TOO_DENSE', 'RPC_RESPONSE_LIMIT', 'RPC_HTTP_ERROR', 'INVALID_RPC_ENVELOPE',
-      'RPC_TRANSPORT_FAILED', 'RPC_REMOTE_ERROR', 'RPC_BUDGET_EXCEEDED', 'REORG_DURING_COLLECTION', 'EVIDENCE_BUDGET_EXCEEDED']);
-    const code = safeCodes.has(error.message) || /^RPC_HTTP_[1-5]\d{2}$/.test(error.message) ? error.message : 'COLLECTION_FAILED';
+    const diagnostic = operationError(error, { stage, at: now() });
+    const code = diagnostic.code;
+    console.error(JSON.stringify({ event: 'COLLECTION_FAILED', ...diagnostic }));
     const previous = JSON.parse(held.state_json); previous.evaluationState = {};
-    await env.DB.prepare("UPDATE control SET status='ERROR',last_error=?,state_json=?,lease_owner=NULL,lease_until=0 WHERE id=1 AND lease_owner=?")
+    try { await env.DB.prepare("UPDATE control SET status='ERROR',last_error=?,state_json=?,lease_owner=NULL,lease_until=0 WHERE id=1 AND lease_owner=?")
       .bind(code, JSON.stringify(previous), owner).run();
-    return { status: 'ERROR', reason: code, ...(code === 'EVIDENCE_BUDGET_EXCEEDED' && error.diagnostics ? { diagnostics: error.diagnostics } : {}) };
+    } catch (persistError) {
+      const persistence = operationError(persistError, { stage: 'error-persistence', at: now() });
+      console.error(JSON.stringify({ event: 'ERROR_PERSISTENCE_FAILED', ...persistence, original: diagnostic }));
+      return { status: 'ERROR', reason: persistence.code, cause: diagnostic };
+    }
+    return { status: 'ERROR', reason: code, cause: diagnostic, ...(code === 'EVIDENCE_BUDGET_EXCEEDED' && error.diagnostics ? { diagnostics: error.diagnostics } : {}) };
   }
 }

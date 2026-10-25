@@ -1,5 +1,6 @@
 import { isEvmAddress } from '../network.mjs';
 import { recordLabel, recordTime } from './records.mjs';
+import PROFILES_CONFIG from './config.mjs';
 
 const MAX_TEXT = 4096;
 const MAX_ENVELOPE_BYTES = 16384;
@@ -53,6 +54,9 @@ export function formatDryRunAlert(decision, options = {}) {
   enforceDryRun(options);
   const minScore = options.minScore ?? 75;
   if (!completeScore(minScore) || minScore < 75) throw new Error('MVP_ALERT_INVALID_MIN_SCORE');
+  const minIndependentGroups = options.minIndependentGroups ?? PROFILES_CONFIG.profiles.profile_new.walletScoring.minIndependentGroups;
+  if (!Number.isSafeInteger(minIndependentGroups) || minIndependentGroups < 2 || minIndependentGroups > 128)
+    throw new Error('MVP_ALERT_INVALID_MIN_GROUPS');
   if (!decision || typeof decision !== 'object' || decision.status !== 'PASS' || decision.profile !== 'profile_new'
     || decision.direction !== 'ENTRY' || decision.chainId !== 4663 || decision.scoreComplete !== true
     || decision.walletsComplete !== true || decision.securityComplete !== true || decision.eligible === false)
@@ -74,11 +78,14 @@ export function formatDryRunAlert(decision, options = {}) {
       || wallet.realizedTrades < 5) throw new Error('MVP_ALERT_INCOMPLETE_WALLETS');
     if (wallet.synthetic === true && decision.synthetic !== true) throw new Error('MVP_ALERT_SYNTHETIC_WALLET');
     const walletAddress = address(wallet.address);
-    const clusterId = identifier(wallet.clusterId, 'ALERT_CLUSTER_ID', 80);
+    const clusterId = identifier(wallet.clusterId, 'ALERT_CLUSTER_ID', 128);
     return { address: walletAddress, score: wallet.score, clusterId, realizedTrades: wallet.realizedTrades, eligible: true };
   });
   if (new Set(wallets.map(wallet => wallet.address)).size !== wallets.length) throw new Error('MVP_ALERT_DUPLICATE_WALLET');
-  if (new Set(wallets.map(wallet => wallet.clusterId)).size !== wallets.length) throw new Error('MVP_ALERT_DEPENDENT_WALLET_GROUPS');
+  // Several members may share a coordinated group. Independence is the number
+  // of proven groups, matching aggregateWalletSignal; members never add votes.
+  if (new Set(wallets.map(wallet => wallet.clusterId)).size < minIndependentGroups)
+    throw new Error('MVP_ALERT_DEPENDENT_WALLET_GROUPS');
   const flags = riskFlags(decision.riskFlags);
   const chartUrl = chartLink(decision.chartUrl);
   const synthetic = decision.synthetic === true;

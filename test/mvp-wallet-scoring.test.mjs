@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scoreWalletProfile, aggregateWalletSignal, scoreLaunchMomentum, scoreNewProfile } from '../src/mvp/wallet-scoring.mjs';
 import profiles, { validateProfiles } from '../src/mvp/config.mjs';
+import { withSyntheticRealizations } from './helpers/wallet-temporal.mjs';
 
 const NOW = Date.parse('2026-10-23T15:00:00Z');
 const addr = number => '0x' + BigInt(number).toString(16).padStart(40, '0');
@@ -9,11 +10,11 @@ const hash = number => '0x' + BigInt(number).toString(16).padStart(64, '0');
 const iso = time => new Date(time).toISOString();
 const TOKEN = addr(100);
 function profile(wallet = addr(1), changes = {}) {
-  return { chainId: 4663, walletAddress: wallet, checkedAt: iso(NOW), source: 'synthetic-fifo-proof', evidence: ['fixture:full-accounting'],
+  return withSyntheticRealizations({ chainId: 4663, walletAddress: wallet, checkedAt: iso(NOW), source: 'synthetic-fifo-proof', evidence: ['fixture:full-accounting'],
     historyComplete: true, costsComplete: true, feesComplete: true, attributionComplete: true, clusteringComplete: true,
-    realizedTradeCount: 5, netRealizedPnlUsd: '1000', winRatePct: 70, avgHoldingSeconds: 300,
+    realizedTradeCount: 5, netRealizedPnlUsd: '1000', winRatePct: 100, avgHoldingSeconds: 300,
     earlyEntryPct: 70, maxDrawdownPct: 0, lastRealizedAt: iso(NOW),
-    riskFlags: { insider: false, bundler: false, washTrading: false }, ...changes };
+    riskFlags: { insider: false, bundler: false, washTrading: false }, ...changes }, { now: NOW });
 }
 const score = value => scoreWalletProfile(value, { now: NOW });
 function entry(wallet, cluster = 'group-a', changes = {}) {
@@ -101,6 +102,27 @@ test('unknown clusters, router-only attribution, stale entries and unrelated tok
     const result = aggregate(scored, [entry(addr(1), 'group-a', changes), entry(addr(2), 'group-b', changes)]);
     assert.equal(result.status, 'INCOMPLETE'); assert.equal(result.score, null);
   }
+});
+
+test('replaying an old buy receipt cannot renew buyer freshness through a new ingestion timestamp', () => {
+  const scored = [score(profile(addr(1))), score(profile(addr(2)))];
+  for (const changes of [
+    { firstEntryAt: iso(NOW - 3600000), lastEntryAt: iso(NOW - 3600000) },
+    { firstEntryAt: iso(NOW - 3600000) },
+    { lastEntryAt: iso(NOW + 1) },
+    { lastEntryAt: iso(NOW - 120000) },
+  ]) {
+    const result = aggregate(scored, [entry(addr(1), 'a', changes), entry(addr(2), 'b', changes)]);
+    assert.equal(result.status, 'INCOMPLETE'); assert.equal(result.score, null);
+  }
+});
+
+test('a fresh proven re-entry qualifies while preserving the first buy and its actual event expiry', () => {
+  const scored = [score(profile(addr(1))), score(profile(addr(2)))];
+  const changes = { firstEntryAt: iso(NOW - 24 * 3600000), lastEntryAt: iso(NOW - 30000) };
+  const result = aggregate(scored, [entry(addr(1), 'a', changes), entry(addr(2), 'b', changes)]);
+  assert.equal(result.status, 'READY'); assert.equal(result.independentGroups, 2);
+  assert.equal(result.evidenceExpiresAt, iso(NOW + 570000));
 });
 
 test('excluded or unknown wallets do not gain weight, while two separately proved eligible groups can qualify', () => {
