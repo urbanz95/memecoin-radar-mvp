@@ -49,6 +49,8 @@ O acumulador não tem teto de trades ao longo da vida; cada lote aceita até 128
 
 A migration `0007` acrescenta faixas de wallet score ao relatório semanal sem substituir o relatório original. Usa o score `READY` guardado na primeira decisão, com bandas 0–49, 50–64, 65–74, 75–84, 85–100 e `UNKNOWN`. Perfis atuais não alteram decisões históricas. O cutoff original é preservado; backfill que altera a coorte é assinalado como `COHORT_CHANGED`.
 
+Na 3B-1, o job semanal passou a correr fora da transação de ingestão, com checkpoint e uma coorte por invocação. Cada página imutável tem até 64 KiB e separa versão do score, perfil e tier da cotação; tiers antigos sem prova permanecem `UNKNOWN`. O arquivo e as interfaces anteriores são preservados. Ver [estado 3B](PHASE3B-STATUS.md).
+
 O painel permite escolher +15m, +1h, +24h ou +7d, mostrando retorno médio de preço e cobertura por token score e wallet score. Zero real e dado ausente são distintos. O relatório inclui rejeitados/mortos e é descritivo: não é PnL executado, backtest ou modelo.
 
 Alertas continuam `[NOVO]`, com contrato, score, três razões, carteiras, flags e gráfico. A outbox apenas guarda a mensagem; não envia Telegram nem executa ordens.
@@ -59,4 +61,4 @@ O collector atual observa pools, transfers e recibos limitados. Não comprova so
 
 Entrada precoce requer lançamento comprovado; drawdown requer património inicial comprovado; elegibilidade requer análise de insiders, wash trading e financiamento/clusters. Sem estas fontes, as métricas continuam `null` e não há qualificação artificial para produzir sinais.
 
-As quotas gratuitas são finitas. O relatório tem limite de 256 KiB e muitas coortes podem excedê-lo; esse limite e backfills maiores devem ser tratados antes de ampliar o universo. X, modo B, backtest/modelo continuam fora desta fase.
+As quotas gratuitas são finitas. A paginação por coorte da 3B-1 substitui a construção de um único relatório limitado a 256 KiB no caminho de ingestão; cada página mantém o seu limite de 64 KiB. Backfills maiores continuam a exigir paginação e provas de cobertura, com acompanhamento do consumo D1 antes de ampliar o universo. X, modo B, backtest/modelo continuam fora desta fase.

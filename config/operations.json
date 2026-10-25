@@ -8,10 +8,23 @@
     "unknownCycleWriteEstimate": 180,
     "unfinishedCycleWriteReservation": 2048,
     "maximumExpiredOutcomeJobs": 4,
-    "retryBackoffSeconds": [180, 360, 720, 900],
+    "retryBackoffSeconds": [
+      180,
+      360,
+      720,
+      900
+    ],
     "stabilityHours": 6,
-    "maximumContinuityGapSeconds": 360
+    "maximumContinuityGapSeconds": 360,
+    "cadenceCostWindow": 8
   },
-  "weekly": { "cron": "2-59/5 * * * *", "cohortsPerInvocation": 1 },
-  "heartbeat": { "cron": "4-59/5 * * * *", "staleAfterSeconds": 600, "notificationChannel": "GITHUB_ISSUE" }
+  "weekly": {
+    "cron": "2-59/5 * * * *",
+    "cohortsPerInvocation": 1
+  },
+  "heartbeat": {
+    "cron": "4-59/5 * * * *",
+    "staleAfterSeconds": 600,
+    "notificationChannel": "GITHUB_ISSUE"
+  }
 }

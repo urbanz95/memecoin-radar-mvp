@@ -6,7 +6,7 @@ Branch: `fix/phase3b-consolidation-20261025`, criado a partir de `b888ae5` e atu
 
 **Bloco 3B-1 publicado e em observação. Os blocos 3B-2 e 3B-3 ainda não começaram.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
 
-`/health.operations.stability` publica início, número de ciclos concluídos e `qualified`. O contador reinicia após falha ou intervalo superior a seis minutos. A qualificação exige um intervalo real de seis horas entre o primeiro e o último ciclo concluídos, dados recentes e ausência de ciclo interrompido.
+`/health.operations.stability` publica início, número cumulativo de ciclos concluídos e `qualified`. O início da continuidade (`stableSince`) reinicia após falha ou intervalo superior a seis minutos; o total `completedCycles` preserva-se. A qualificação exige um intervalo real de seis horas entre o primeiro e o último ciclo concluídos, dados recentes e ausência de ciclo interrompido.
 
 As Fases 4, 5 e 6 continuam desativadas. Só começam com a instrução explícita `AVANÇA FASE N`. Sem trades nem envio Telegram; a outbox mantém pré-visualizações.
 
@@ -37,6 +37,8 @@ O ajuste final dos lotes de outcomes elevou a suite a **593 testes aprovados**, 
 Fonte validada: [`config/operations.json`](../config/operations.json). Cadência inicial de 180 s, adaptável ao custo medido do ciclo; máximo 900 s. O cron de um minuto só delega: ciclos antes da data permitida saltam sem RPC nem escrita D1. Isto reduz a frequência de enriquecimento; não é ingestão em segundos.
 
 O collector dispõe de um orçamento preventivo de **80.000 escritas estimadas/dia UTC**, deixando 20.000 linhas de margem perante as 100.000 do D1 Free. O custo usa `meta.rows_written` do batch mais dez linhas de overhead; antes da execução reserva pelo menos 2.048 linhas no journal do DO. Uma invocação interrompida ou sem medição conserva a reserva. Um ciclo medido reconcilia-a. Ao esgotar orçamento/quota, espera pelo próximo dia UTC. Retém cursores e dados; não apaga tokens nem baixa filtros.
+
+A correção de pacing de 25/10 usa a média das últimas oito cobranças reais do journal (`cadenceCostWindow`), incluindo a reserva conservadora quando falta medição. Não presume que um pico isolado se repete durante todo o dia. `writePacing` publica as amostras e a média; começa apenas com custos observados após a atualização e reinicia no dia UTC. Cada cobrança continua integralmente no orçamento diário, com a mesma reserva preventiva. Custos elevados sustentados continuam a aumentar a cadência e podem impedir o gate; os seis minutos e os TTLs financeiros não mudam. O log de conclusão acrescenta `d1WriteBreakdown`, atribuído aos resultados do mesmo batch, sem queries ou escritas adicionais.
 
 O orçamento é uma proteção deste collector, **não uma medição global da conta**. Escritas administrativas, migrations, outros clientes e job semanal usam a margem; custos atípicos e quotas de leitura/DO/Workers também precisam de observação. Uma cadência adaptada acima de seis minutos impede qualificar o gate de estabilidade; nesse caso é necessário reduzir lotes ou rever prioridades, não declarar o gate concluído.
 

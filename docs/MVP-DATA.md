@@ -59,7 +59,7 @@ O benchmark local observou cerca de 46–54% de poupança nos dados ensaiados; a
 
 **Atualização 3B-1:** a geração saiu da transação de ingestão. O job próprio, agendado a cada cinco minutos, verifica o vencimento semanal das 00:15 UTC e produz uma coorte por invocação. As páginas imutáveis de até 64 KiB separam versão, perfil e tier, sem relatório global misturado. Tiers antigos sem prova são `UNKNOWN`. O painel consulta `/weekly?reportKey=...&page=N`; `/latest` inclui uma página. As tabelas antigas permanecem como arquivo compatível. Ver [estado 3B](PHASE3B-STATUS.md).
 
-A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescenta índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. O cron existente gera o relatório na segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se o cron regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
+A migration [`0005_mvp_weekly.sql`](../cloudflare/migrations/0005_mvp_weekly.sql) acrescentou índices e `mvp_weekly_reports`, com relatórios imutáveis e idempotentes. Essa implementação anterior gerava o relatório dentro do cron de ingestão. O job independente da 3B-1 conserva o vencimento à segunda-feira às **00:15 UTC**, para a semana que começou duas semanas antes, permitindo maturação do último horizonte de 7d. Se regressar mais tarde na mesma semana, pode fazer catch-up; não cria outcomes ausentes.
 
 A fonte é a primeira decisão/score congelados, com outcomes armazenados até ao cutoff. As bandas são 0–49, 50–64, 65–74, 75–84 e 85–100, mais `UNKNOWN`. Cada versão/perfil mantém a sua coorte. Sintéticos e proveniência desconhecida ficam excluídos e contabilizados separadamente; decisões reais rejeitadas, mortas e incompletas permanecem no denominador. Somar coortes pode repetir um token, pelo que membros de coorte não são apresentados como tokens únicos globais.
 
@@ -67,7 +67,7 @@ Por horizonte, publica amostras, outcomes desconhecidos, cobertura e retorno mé
 
 ## Outcomes
 
-Cada primeira decisão cria jobs **15m, 1h, 24h e 7d**, vencidos relativamente à sua hora inicial. O collector consulta até quatro jobs devidos por ciclo e pode pedir mercado para tokens que já saíram da lista visível.
+Cada primeira decisão cria jobs **15m, 1h, 24h e 7d**, vencidos relativamente à sua hora inicial. O collector seleciona até quatro tokens distintos e até 24 jobs devidos por ciclo, incluindo as suas versões/perfis. As janelas ainda abertas (`LIVE`) têm prioridade e todos os jobs LIVE selecionados são preservados. O limite de quatro em `collector.maximumExpiredOutcomeJobs` aplica-se apenas aos retries históricos com janela expirada (`EXPIRED`); os restantes ficam adiados sem alterar os jobs guardados. Pode pedir mercado para tokens que já saíram da lista visível; para jobs expirados procura pontos históricos arquivados, sem usar o preço atual como substituto.
 
 Um ponto completo exige preço, liquidez, fonte e timestamp efetivo entre o vencimento e **cinco minutos depois**. A captura pode chegar mais tarde apenas se a fonte histórica comprovar um ponto dentro dessa janela. O timestamp original do gateway é preservado através de `x-radar-fetched-at`; servir cache não cria uma observação nova.
 

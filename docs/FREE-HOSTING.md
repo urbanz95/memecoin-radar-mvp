@@ -53,7 +53,7 @@ A recolha direta no Worker mediu cerca de **23–55 ms de CPU**, acima do limite
 
 ## Arquivo MVP
 
-A migration aditiva `0002_mvp_records.sql` cria um arquivo durável de avistamentos, primeiras decisões, eventos e outcomes. Não usa a retenção de três horas dos relatórios nem implica armazenamento ilimitado. Há limites por feature/fonte, lotes de quatro jobs de outcomes por ciclo e contadores por triggers; ainda falta política de arquivo externo/retenção de longo prazo. O ponto de recuperação anterior é D1 Time Travel com janela Free de sete dias; a exportação SQL falhou e não existe cópia SQL offline. Ver [auditoria](MVP-AUDIT.md), [dados](MVP-DATA.md) e [progresso](MVP-PROGRESS.md).
+A migration aditiva `0002_mvp_records.sql` cria um arquivo durável de avistamentos, primeiras decisões, eventos e outcomes. Não usa a retenção de três horas dos relatórios nem implica armazenamento ilimitado. Há limites por feature/fonte e contadores por triggers. Na 3B-1, a seleção de outcomes abrange até quatro tokens e 24 jobs por ciclo: preserva todos os jobs selecionados com janela aberta e limita a quatro apenas os retries de janelas expiradas, mantendo os restantes no backlog. O relatório semanal corre num job separado, uma coorte por invocação e páginas de até 64 KiB. Ainda falta política de arquivo externo/retenção de longo prazo. O ponto de recuperação anterior é D1 Time Travel com janela Free de sete dias; a exportação SQL falhou e não existe cópia SQL offline. Ver [auditoria](MVP-AUDIT.md), [dados](MVP-DATA.md) e [estado 3B](PHASE3B-STATUS.md).
 
 ## Preparar e ativar numa conta Free
 

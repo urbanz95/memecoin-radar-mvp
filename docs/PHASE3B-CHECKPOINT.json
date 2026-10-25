@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-25T06:06:04.041716Z",
+  "phase": "3B-1",
+  "state": "VALIDATED_NOT_DEPLOYED",
+  "continuationBranch": "fix/phase3b-consolidation-20261025",
+  "changeBranch": "fix/phase3b-write-pacing-20261025",
+  "lock": {
+    "state": "IN_PROGRESS",
+    "owner": "phase3b-write-pacing-20261025",
+    "startedAt": "2026-10-25T06:05:41.344240Z",
+    "instruction": "Resume this checkpoint; do not start duplicate implementation. Verify branch, commits and active work before taking over."
+  },
+  "production": {
+    "workerVersion": "b6359d30-08e3-48d4-926e-127bb0216498",
+    "codeCommit": "93484a4c5bfe08b6521ce845fbc418fbda32c64f"
+  },
+  "gate": {
+    "qualified": false,
+    "stableSince": "2026-10-25T06:02:28.544Z",
+    "reason": "Measured 354-write burst projected every cycle; 394s cadence produced a 418.639s completion gap, restarting actual continuity.",
+    "priorCompletedAt": "2026-10-25T05:55:29.905Z",
+    "nextCompletedAt": "2026-10-25T06:02:28.544Z",
+    "actualCompletionGapSeconds": 418.639,
+    "requiredHours": 6,
+    "maximumGapSeconds": 360,
+    "earliestPossibleQualification": "2026-10-25T12:02:28.544Z",
+    "instruction": "Require current /health.operations.stability.qualified plus complete tests, validate and profiles:check. Clock time alone never opens the gate."
+  },
+  "blocks": {
+    "3B-1": "IN_PROGRESS",
+    "3B-2": "NOT_STARTED_GATE_BLOCKED",
+    "3B-3": "NOT_STARTED_GATE_BLOCKED"
+  },
+  "shadow": {
+    "startedAt": null,
+    "minimumDays": 3,
+    "stage2Enabled": false
+  },
+  "restrictions": {
+    "dryRun": true,
+    "telegramDelivery": false,
+    "trades": false,
+    "paidPlans": false,
+    "phases4To6": "REQUIRE_EXPLICIT_AVANÇA_FASE_N"
+  },
+  "databaseMigrations": [],
+  "nextAction": "Finish validation, publish only the 3B-1 cost-pacing correction, record production proof and release this lock. Then await genuine six-hour stability before 3B-2/3.",
+  "validation": {
+    "tests": 605,
+    "failures": 0,
+    "validate": true,
+    "profilesCheck": true,
+    "cloudflareBuild": true,
+    "workerdFixtureCycles": 3,
+    "fixtureRpcPerPhase": [
+      15,
+      14,
+      14
+    ],
+    "productionSixHoursVerified": false
+  }
+}

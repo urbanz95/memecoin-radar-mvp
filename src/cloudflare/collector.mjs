@@ -20,6 +20,7 @@ import { decisionKey } from '../mvp/records.mjs';
 import { prepareWalletLedger, enrichWalletTransactions, readWalletProfiles } from '../mvp/wallet-ledger.mjs';
 import { projectObservedWallets } from '../mvp/wallet-runtime.mjs';
 import { operationError, limitOutcomeRetries, OPERATIONS_CONFIG } from './operations.mjs';
+import { createWriteBatch } from './write-cost.mjs';
 import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
 import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
 import PROFILES_CONFIG from '../mvp/config.mjs';
@@ -427,9 +428,11 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             Math.max(0, ...published.signals.marketAlerts.map(value => Date.parse(value.expiresAt)))) },
         safetyFocus: analysis?.entry ? nextSafetyFocus(pool, safetyPhase, resumedFocus?.startedAt, now()) : null } : {}) };
     // D1 batch é uma transação. CHECK aborta toda a transação se o lease foi perdido.
-    const commands = [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)];
-    commands.push(...canonicality.commands);
-    if (mvpPhase >= 3) commands.push(...prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
+    const writeBatch = createWriteBatch();
+    const { commands, append } = writeBatch;
+    append('fencing', [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)]);
+    append('canonicality', canonicality.commands);
+    if (mvpPhase >= 3) append('wallets', prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
       ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles,
       realizedEvents: temporal.realizedEvents, realizationUpdates: temporal.realizationUpdates,
       reorgDetected: reorg }).commands);
@@ -453,7 +456,9 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               score: result.score, reasons: result.reasons, age: entry?.age ?? null,
               riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
         }) });
-      commands.push(...records.commands, ...marketObservations.commands, ...outcomeUpdates.commands);
+      append('records', records.commands);
+      append('marketObservations', marketObservations.commands);
+      append('outcomes', outcomeUpdates.commands);
       if (mvpPhase >= 2) {
         const mvpRecords = prepareDecisionRecords(env.DB, { runId: owner, observedAt, source,
           eventFeaturesEncoding: 'gzip-base64/v1',
@@ -466,24 +471,27 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               features: { snapshot: snapshots.find(item => item.address === decision.address),
                 externalMarket: entry?.externalMarket ?? null, decision } };
           }) });
-        commands.push(...mvpRecords.commands, ...dryRunAlerts.commands);
+        append('mvpRecords', mvpRecords.commands);
+        append('outbox', dryRunAlerts.commands);
       }
     }
-    if (reorg) commands.push(env.DB.prepare('DELETE FROM pools'));
-    for (const p of discovered) commands.push(env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p)));
-    if (pool) commands.push(env.DB.prepare('UPDATE pools SET last_enriched=? WHERE id=?').bind(now(), pool.id));
+    append('catalog', []);
+    if (reorg) append('catalog', [env.DB.prepare('DELETE FROM pools')]);
+    for (const p of discovered) append('catalog', [env.DB.prepare('INSERT INTO pools(id,address,created_block,pool_json) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(p.id, target(p), p.createdBlock, JSON.stringify(p))]);
+    if (pool) append('catalog', [env.DB.prepare('UPDATE pools SET last_enriched=? WHERE id=?').bind(now(), pool.id)]);
     // Poda seletiva amortizada: preservar enriquecimentos recentes, mesmo de
     // pools antigas. O índice pools_rotation também serve a ordem inversa.
-    if (sequence % RETENTION_CADENCE_CYCLES === 0) commands.push(env.DB.prepare('DELETE FROM pools WHERE id IN (SELECT id FROM pools ORDER BY last_enriched DESC,created_block DESC LIMIT -1 OFFSET ?)').bind(CATALOG_LIMIT));
-    commands.push(env.DB.prepare('INSERT INTO runs(id,completed_at,head_number,report_json,evidence_json) VALUES(?,?,?,?,?)').bind(owner, now(), head.number, JSON.stringify(report), evidence));
-    commands.push(env.DB.prepare('DELETE FROM runs WHERE completed_at<?').bind(now() - 3 * 3600000));
-    commands.push(env.DB.prepare("UPDATE control SET state_json=?,last_success=?,status='COMPLETED',last_error=NULL,lease_owner=NULL,lease_until=0 WHERE id=1").bind(JSON.stringify(state), now()));
+    if (sequence % RETENTION_CADENCE_CYCLES === 0) append('catalog', [env.DB.prepare('DELETE FROM pools WHERE id IN (SELECT id FROM pools ORDER BY last_enriched DESC,created_block DESC LIMIT -1 OFFSET ?)').bind(CATALOG_LIMIT)]);
+    append('runs', [env.DB.prepare('INSERT INTO runs(id,completed_at,head_number,report_json,evidence_json) VALUES(?,?,?,?,?)').bind(owner, now(), head.number, JSON.stringify(report), evidence),
+      env.DB.prepare('DELETE FROM runs WHERE completed_at<?').bind(now() - 3 * 3600000)]);
+    append('control', [env.DB.prepare("UPDATE control SET state_json=?,last_success=?,status='COMPLETED',last_error=NULL,lease_owner=NULL,lease_until=0 WHERE id=1").bind(JSON.stringify(state), now())]);
     stage = 'commit';
     const committed = await env.DB.batch(commands);
+    const writeCost = writeBatch.measure(committed);
     return { status: 'COMPLETED', runId: owner, head: head.number, snapshots: snapshots.length, ...report.coverage,
       ...(mvpPhase >= 3 ? { event: 'COLLECTION_COMPLETED', phase: mvpPhase,
-        d1RowsWritten: committed.every(value => Number.isFinite(value.meta?.rows_written))
-          ? committed.reduce((total, value) => total + value.meta.rows_written, 0) : null,
+        d1RowsWritten: writeCost.totalRowsWritten,
+        d1WriteBreakdown: writeCost.rowsWrittenByGroup,
         walletEvents: walletCapture.events.length, walletReceipts: walletEnrichment.receipts.length } : {}) };
   } catch (error) {
     if (error.message === 'INVALID_RPC_ENVELOPE' && error.rpcDiagnostic)
