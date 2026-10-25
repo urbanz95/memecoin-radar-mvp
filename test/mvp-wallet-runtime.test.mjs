@@ -175,6 +175,46 @@ test('incomplete initial state upgrades only through an atomic verified full rep
   assert.equal(valid.realizedEvents.length, 1);
 });
 
+test('an unsettled receipt keeps a complete checkpoint replay-required until a verified replay accounts for the gap', async t => {
+  const DB = setup(t); DB.sqlite.exec(schema);
+  const firstValues = [receiptValue('BUY', 100), receiptValue('SELL', 101)];
+  const firstOptions = optionsFor(firstValues);
+  const first = await projectObservedWallets(DB, firstValues, firstOptions);
+  assert.equal(first.profiles[0].historyComplete, true);
+  await persist(DB, first.profiles, firstOptions.now, 'fixture:complete-before-gap');
+
+  const missing = receiptValue('BUY', 102); const unsettled = structuredClone(missing);
+  unsettled.receipt.logs = unsettled.receipt.logs.filter(log => log.address !== QUOTE);
+  const gapOptions = optionsFor([unsettled], firstOptions.now + 1);
+  const gap = await projectObservedWallets(DB, [unsettled], gapOptions);
+  assert.equal(gap.profiles[0].requiresReplay, true);
+  assert.equal(gap.profiles[0].historyComplete, false);
+  assert.deepEqual(gap.profiles[0].accountingState, first.profiles[0].accountingState);
+  await persist(DB, gap.profiles, gapOptions.now, 'fixture:unsettled-gap');
+
+  const nextValues = [receiptValue('BUY', 103), receiptValue('SELL', 104)];
+  const nextOptions = optionsFor(nextValues, firstOptions.now + 2);
+  const noReplay = await projectObservedWallets(DB, nextValues, nextOptions);
+  assert.equal(noReplay.profiles[0].requiresReplay, true);
+  assert.equal(noReplay.profiles[0].historyComplete, false);
+  assert.equal(noReplay.profiles[0].netRealizedPnlUsd, null);
+  assert.equal(noReplay.profiles[0].realizedTradeCount, null);
+  assert.deepEqual(noReplay.profiles[0].accountingState, first.profiles[0].accountingState);
+  assert.deepEqual(noReplay.realizedEvents, []);
+  assert.ok(noReplay.profiles[0].gaps.includes('WALLET_VERIFIED_REPLAY_REQUIRED'));
+  await persist(DB, noReplay.profiles, nextOptions.now, 'fixture:unsettled-gap-stays-required');
+
+  const allValues = [...firstValues, missing, ...nextValues];
+  const replayOptions = optionsFor(allValues, firstOptions.now + 3);
+  const recovered = await projectObservedWallets(DB, nextValues,
+    { ...replayOptions, replayEvidence: [replayFor(allValues, replayOptions)] });
+  assert.equal(recovered.profiles[0].requiresReplay, false);
+  assert.equal(recovered.profiles[0].historyComplete, true);
+  assert.equal(recovered.profiles[0].observedCounts.buys, 3);
+  assert.equal(recovered.profiles[0].realizedTradeCount, 2);
+  assert.equal(recovered.profiles[0].netRealizedPnlUsd, '39.832');
+});
+
 test('a full replay larger than the realization delta budget preserves the previous committed state', async t => {
   const DB = setup(t); DB.sqlite.exec(schema); const firstValue = receiptValue();
   const first = await projectObservedWallets(DB, [firstValue], { now: time + 1000 });

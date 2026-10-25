@@ -4,7 +4,7 @@ Branch: `fix/phase3b-consolidation-20261025`, criado a partir de `b888ae5` e atu
 
 ## Estado e gates
 
-**Bloco 3B-1 publicado e em observação. Os blocos 3B-2 e 3B-3 ainda não começaram.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
+**Gate 3B-1 comprovado; 3B-2 implementado e validado para publicação. O bloco 3B-3 ainda não foi ativado.** A autorização para os iniciar está condicionada a testes aprovados e pelo menos seis horas de ciclos concluídos em produção, com continuidade comprovada. Tempo de relógio ou um endpoint HTTP 200 não substituem essa prova.
 
 `/health.operations.stability` publica início, número cumulativo de ciclos concluídos e `qualified`. O início da continuidade (`stableSince`) reinicia após falha ou intervalo superior a seis minutos; o total `completedCycles` preserva-se. A qualificação exige um intervalo real de seis horas entre o primeiro e o último ciclo concluídos, dados recentes e ausência de ciclo interrompido.
 
@@ -24,7 +24,7 @@ Checkpoint de retoma: [PHASE3B-CHECKPOINT.json](PHASE3B-CHECKPOINT.json). Conté
 | A08 | Componentes racionais por posição persistidos no JSON existente, com adaptação de checkpoints antigos; limites aritméticos separados da memória | 24 posições com denominadores primos, reinício e resumo temporal exatos. Orçamentos: 4.096 bits, 128 componentes/lotes, estado 16 KiB |
 | A09 | Backend e painel apresentam uma coorte por versão/perfil/tier, com paginação | Sem média global misturada. Tier antigo não comprovado fica `UNKNOWN`, sem inventar T0 |
 
-Os achados A03 e A04 continuam em aberto até ao bloco 3B-2. Não foram construídos produtores de prova, backfill de 30 dias, nova reconciliação de ETH nativo ou clustering de financiamento nesta entrega de estabilidade.
+Os achados A03/A04 têm os módulos 3B-2 implementados; a cobertura financeira real continua dependente de histórico e providers comprovados. A entrega original de estabilidade não os incluía; ver a atualização 3B-2 abaixo.
 
 Validação anterior à publicação inicial: baseline de 511 testes; suite de **583 testes sem falhas**, `validate`, `profiles:check`, build Cloudflare e três fases consecutivas em workerd com **15/14/14 pedidos RPC**. O ensaio também verifica separadamente o ator gerido, um ciclo saltado sem RPC e os jobs semanal/heartbeat. As fases consecutivas usam cadência desativada apenas no ambiente local de ensaio, sem alterar produção; não comprovam seis horas de continuidade ou limites de CPU em produção. A verificação no Chromium encontrou ainda duas promessas incorretas de recolha por minuto; foram corrigidas para intervalo variável, com regressão própria.
 
@@ -114,3 +114,26 @@ O gate permanece **`qualified:false`**. A primeira possibilidade é um ciclo con
 Foi finalmente observada uma execução GitHub `schedule` às 01:48 UTC, com sucesso; não existe ainda uma série de execuções que comprove cadência de cinco minutos. O monitor gratuito continua best effort, sem SLA de dez minutos. Nenhum segredo/permissão adicional é necessário neste checkpoint.
 
 Prova detalhada desta retoma: [PHASE3B-OBSERVATION-2026-10-25T0600Z.json](PHASE3B-OBSERVATION-2026-10-25T0600Z.json). Não substituir a evidência histórica do primeiro release. Para continuar, ler também o checkpoint; se estiver saudável e o gate ainda não tiver sido atingido, aguardar sem iniciar os blocos seguintes.
+
+## Bloco 3B-2 — produtores, janela e integração
+
+O gate foi comprovado em produção às 12:26 UTC: **6h24m01s entre sucessos concluídos**, sem erro/ciclo incompleto, com a suite do código de entrada aprovada. A prova está em [PHASE3B-GATE-2026-10-25.json](PHASE3B-GATE-2026-10-25.json). O branch `feat/phase3b-real-proofs-20261025` retoma esse checkpoint; não recria o scanner nem o tracking.
+
+| Achado | Alteração | Limite real |
+|---|---|---|
+| A03 | Produtores tipados de criação/deployer e atividade, ligados aos filtros e às features arquivadas | Criação comprovada não demonstra histórico global de rugs/contratos, financiamento ou ausência de bundles privados; campos não demonstrados ficam nulos |
+| A04 histórico | Job de backfill ERC20 de 30 dias com fronteiras canónicas, páginas/cursor/fila de recibos, dedupe e fencing no batch existente | Cobertura do scan é separada de cobertura financeira/nativa/interna e equity inicial. O job precisa de correr; não se afirma histórico completo no lançamento |
+| A04 contabilidade | Janela declarada, vendas sem aquisição conciliada excluídas, replay obrigatório em mudança de escopo ou recibo não conciliado | Mantém checkpoint exato e PnL desconhecido até replay/provas; interfaces de histórico vitalício conservadas |
+| A04 ETH | Transação/trace nativo v4 e decomposição de fees conciliados; tenta provider read-only quando há orçamento | Trace indisponível, corte/timeout, L1 não conciliado ou preço histórico ausente mantêm INCOMPLETE |
+| A04 clusters | Union-find determinístico para financiamento comum, compras no bloco de criação e transferências diretas positivas; integrado no ledger | Relações reduzem independência. Exchange/router/EOA não classificados, cobertura ausente e risco desconhecido não se tornam seguros |
+| Robustez | Provas/recibos excessivos em digest limitado e deduplicado, limite de 16 KiB antes de emitir swaps e defer de cabeça futura | Digest não substitui evidência financeira. Erros do provider histórico não interrompem a ingestão principal |
+
+**716 testes sem falhas**, `validate`, `profiles:check` e build aprovados. Testes adicionais exercitam o collector real com backfill no batch existente, falha histórica isolada, persistência/replay, transição janela↔lifetime, ETH, grafos, limites e unknowns. O ensaio workerd faz parte da verificação anterior à publicação. Não confundir estes ensaios sintéticos com cobertura real de 30 dias.
+
+A migration **0013**, só aditiva, tem novo ponto Time Travel e hashes registados em [PHASE3B-2-BACKUP-2026-10-25.json](PHASE3B-2-BACKUP-2026-10-25.json), antes da aplicação. Os hashes de todos os SQL anteriormente aplicados foram novamente confirmados. A base tinha 87.261.184 bytes nessa leitura administrativa; não é uma garantia de retenção futura.
+
+Decisões: manter `wallet-manual-v2` já ativo, pesos 50/30/20 e mínimo de cinco realizações; incluir a configuração de evidência no hash da política para separar coortes. Começar com quatro pedidos de backfill, oito eventos e um recibo, partilhando os limites e a reserva do collector. Não comprar/indexar via provider pago nem assumir que uma janela declarada resolveu o PnL. O custo real e o tempo de cobertura serão medidos após publicação.
+
+Pendências: fontes completas de histórico de deployer/funding, provas negativas de manipulação, cobertura global dos movimentos nativos/internos, equity inicial e preços históricos USD. Privilégios indiretos do contrato, simulação em USD e proteção LP v3/v4 continuam a exigir as provas existentes; não foram contornados. Nenhum trade/envio Telegram, modo B, X ou backtest foi ativado.
+
+Preparação 3B-3: [pesquisa do registry](PHASE3B-REGISTRY-RESEARCH.md) localizou o factory e validou o lookup de UID; isto ainda não ativa cotações. A etapa seguinte continua obrigada a shadow sem score/alertas e pelo menos três dias reais de observação.

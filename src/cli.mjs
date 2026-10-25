@@ -51,6 +51,7 @@ export async function main(args = process.argv.slice(2)) {
   if (values['validate-config']) {
     await import('./cloudflare/operations.mjs');
     await import('./mvp/wallet-accounting-config.mjs');
+    await import('./mvp/wallet-evidence-config.mjs');
     console.log(`Configuração válida: ${config.version}`); return;
   }
   const pipelines = values.pipeline === 'all' ? Object.keys(config.pipelines) : [values.pipeline];

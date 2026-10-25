@@ -3,10 +3,12 @@ import { PROFILES_CONFIG, configProfileFingerprint } from './config.mjs';
 import { createHash } from 'node:crypto';
 import { policyHash } from '../engine.mjs';
 import legacyPolicy from '../../config/policies.json' with { type: 'json' };
+import WALLET_EVIDENCE_CONFIG from './wallet-evidence-config.mjs';
 import { scoreWalletProfile, aggregateWalletSignal, scoreLaunchMomentum, scoreNewProfile } from './wallet-scoring.mjs';
 
 export const MVP_POLICY_HASH = createHash('sha256').update(JSON.stringify({
   profiles: configProfileFingerprint(PROFILES_CONFIG), hardFilters: policyHash(legacyPolicy),
+  walletEvidence: WALLET_EVIDENCE_CONFIG,
   method: 'mvp-new-v3-wallet-realization-decay-momentum' })).digest('hex');
 export const MVP_SCORE_VERSION = `mvp-new-v3:${MVP_POLICY_HASH.slice(0, 16)}`;
 

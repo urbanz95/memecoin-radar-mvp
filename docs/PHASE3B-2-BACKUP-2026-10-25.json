@@ -1,0 +1,130 @@
+{
+  "recordedAt": "2026-10-25T17:01:14.876498Z",
+  "database": "memecoin-radar",
+  "databaseId": "ccd7316b-521b-4c2a-9bc9-8e2eff648c54",
+  "mechanism": "D1_TIME_TRAVEL",
+  "bookmark": "00000156-00000002-0000510f-d70ad9d6f7b336c6e63391cb3adc3b00",
+  "retentionDays": 7,
+  "offlineExport": false,
+  "databaseBytesBefore": 87261184,
+  "appliedBefore": [
+    {
+      "name": "0001_collector.sql",
+      "applied_at": "2026-10-21 20:09:15"
+    },
+    {
+      "name": "0002_mvp_records.sql",
+      "applied_at": "2026-10-23 13:44:37"
+    },
+    {
+      "name": "0003_mvp_outbox.sql",
+      "applied_at": "2026-10-23 14:05:47"
+    },
+    {
+      "name": "0004_mvp_wallets.sql",
+      "applied_at": "2026-10-23 23:26:26"
+    },
+    {
+      "name": "0005_mvp_weekly.sql",
+      "applied_at": "2026-10-23 23:26:27"
+    },
+    {
+      "name": "0006_mvp_outcome_capture.sql",
+      "applied_at": "2026-10-24 00:19:05"
+    },
+    {
+      "name": "0007_mvp_wallet_score_bands.sql",
+      "applied_at": "2026-10-24 11:39:50"
+    },
+    {
+      "name": "0008_mvp_wallet_realizations.sql",
+      "applied_at": "2026-10-24 11:39:50"
+    },
+    {
+      "name": "0009_mvp_decision_canonicality.sql",
+      "applied_at": "2026-10-25 00:00:04"
+    },
+    {
+      "name": "0010_mvp_weekly_jobs.sql",
+      "applied_at": "2026-10-25 00:00:05"
+    },
+    {
+      "name": "0012_mvp_wallet_eligibility_ttl.sql",
+      "applied_at": "2026-10-25 00:00:05"
+    }
+  ],
+  "migrations": [
+    {
+      "file": "0001_collector.sql",
+      "sha256": "207e5eb59627b1c554a461df4a6f25925a222d8386d04c86a85e67d3357be9a0",
+      "bytes": 993,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0002_mvp_records.sql",
+      "sha256": "3b62fec82c4eb2e797f837e9ca6930fcaca03d479e29c206a2141d646825c76c",
+      "bytes": 9681,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0003_mvp_outbox.sql",
+      "sha256": "16940a7b5f6edfbb1db5d2e4bc4b7dd01495ea1382476c8b5ad9819d0a2fb28f",
+      "bytes": 2142,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0004_mvp_wallets.sql",
+      "sha256": "7fe63cf453668a8b3aa2e7482160833e14b95e76221283425cd15865de6e8841",
+      "bytes": 7911,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0005_mvp_weekly.sql",
+      "sha256": "33957b220158b7ae59ac097f33a3d75e3e21f5be6e9a05c7565f665191f6bf78",
+      "bytes": 1806,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0006_mvp_outcome_capture.sql",
+      "sha256": "d1e4ad743c92acc0e479b59cdc253a40623fafc20dc4b3dba9a13caac0349d14",
+      "bytes": 2423,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0007_mvp_wallet_score_bands.sql",
+      "sha256": "b1cef39361d2e153b792cd53247e22975b9956e8cb17ee873c2a68699c84a779",
+      "bytes": 1413,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0008_mvp_wallet_realizations.sql",
+      "sha256": "f3a79d08482c417c05da3e8e349658d6fce0d6dbcbc9661e65c392d60ce3ad10",
+      "bytes": 2410,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0009_mvp_decision_canonicality.sql",
+      "sha256": "70a400a8f6d5ee0ab36381a3b870243edb66b4fba6bd3cef3e13ac0a839d0aac",
+      "bytes": 6391,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0010_mvp_weekly_jobs.sql",
+      "sha256": "16926120679b91070b35207b8ca9eae1a9a567b7c7d15cc61a9c920ba59442b4",
+      "bytes": 3337,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0012_mvp_wallet_eligibility_ttl.sql",
+      "sha256": "f6098422da60a81116c5d803254ca260141b9baa247f6023732152ee193ccd23",
+      "bytes": 282,
+      "alreadyApplied": true
+    },
+    {
+      "file": "0013_mvp_wallet_backfill.sql",
+      "sha256": "94b2f955b139ca3c6ced096c38b7c8cbd5f6fe2a43442d29b52ccfae7433d1a2",
+      "bytes": 4687,
+      "alreadyApplied": false
+    }
+  ]
+}

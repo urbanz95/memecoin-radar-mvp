@@ -3,6 +3,8 @@ import { SWAPS, topic } from '../onchain/abi.mjs';
 import { exactFraction, exactRational, exactTotal, exactComponents, exactCashAdd, exactPositionAdd,
   EXACT_INTEGER_BITS, EXACT_POSITION_LIMIT } from './wallet-exact.mjs';
 import ACCOUNTING_LIMITS from './wallet-accounting-config.mjs';
+import { normalizeHistoryWindow, historyWindowComplete, historyWindowKey } from './wallet-history-window.mjs';
+import { reconcileNativeSettlement, reconcileReceiptFees } from './wallet-native-settlement.mjs';
 
 const VERSION = 'fifo-receipt-net-usd/v1';
 const ZERO = '0x' + '0'.repeat(40);
@@ -83,7 +85,8 @@ export function normalizeReceiptSettlement(receipt, swapEvents, context = {}) {
       || !hash(receipt?.transactionHash) || integer(receipt.blockNumber) !== block.number
       || receipt.blockHash?.toLowerCase() !== block.hash.toLowerCase()) return stop('INVALID', 'INVALID_RECEIPT_IDENTITY');
     if (integer(receipt.status) !== 1) return stop('NOT_TRADE', 'TRANSACTION_NOT_SUCCESSFUL');
-    if (!quote || quote === ZERO) return stop('AMBIGUOUS', 'NATIVE_OR_UNKNOWN_QUOTE_SETTLEMENT');
+    const nativeQuote = quote === ZERO && pool?.type === 'v4';
+    if (!quote || quote === ZERO && !nativeQuote) return stop('AMBIGUOUS', 'NATIVE_OR_UNKNOWN_QUOTE_SETTLEMENT');
     if (token === quote || !pool || !['v2', 'v3', 'v4'].includes(pool.type) || !address(pool.address) || !Array.isArray(receipt.logs) || receipt.logs.length > 512)
       return stop('INVALID', 'INVALID_RECEIPT_LOGS');
     const swaps = receipt.logs.filter(log => SWAP_TOPICS.has(log?.topics?.[0]?.toLowerCase()));
@@ -117,18 +120,35 @@ export function normalizeReceiptSettlement(receipt, swapEvents, context = {}) {
       const amount = BigInt(log.data);
       net.set(asset, net.get(asset) + (to === wallet ? amount : 0n) - (from === wallet ? amount : 0n));
     }
-    const targetDelta = net.get(token); const quoteDelta = net.get(quote);
+    const nativeProof = context.nativeSettlementProof;
+    const native = nativeQuote ? reconcileNativeSettlement(receipt, {
+      proof: nativeProof && nativeProof.fees === undefined && context.feeProof != null
+        ? { ...nativeProof, fees: context.feeProof } : nativeProof,
+      block, walletAddress: wallet, pool }) : null;
+    if (nativeQuote && !native.complete) return { ...result, status: 'INCOMPLETE', gaps: native.gaps };
+    const targetDelta = net.get(token); const quoteDelta = nativeQuote ? BigInt(native.netNativeRaw) : net.get(quote);
     if (!targetDelta || !quoteDelta || (targetDelta > 0n) === (quoteDelta > 0n)) return stop('AMBIGUOUS', 'OPPOSING_WALLET_NET_FLOWS_NOT_PROVEN');
     const tokenDecimals = integer(context.tokenDecimals ?? pool.tokenDecimals);
-    const quoteDecimals = integer(context.quoteDecimals ?? pool.quoteDecimals);
+    const quoteDecimals = nativeQuote ? 18 : integer(context.quoteDecimals ?? pool.quoteDecimals);
     const quoteUsdProof = priceProof(context.quoteUsd ?? context.valuation?.quoteUsd, quote, block);
     const feeAssetUsdProof = priceProof(context.feeAssetUsd ?? context.valuation?.feeAssetUsd, ZERO, block);
     const gas = raw(receipt.gasUsed); const gasPrice = raw(receipt.effectiveGasPrice);
-    const feeNative = gas !== null && gasPrice !== null ? gas * gasPrice : null;
+    const feeProof = context.feeProof != null ? reconcileReceiptFees(receipt, {
+      proof: context.feeProof, block, walletAddress: wallet }) : null;
+    if (nativeQuote && feeProof && (!feeProof.complete || feeProof.feeNativeRaw !== native.feeNativeRaw))
+      return { ...result, status: 'INCOMPLETE', gaps: feeProof.complete ? ['NATIVE_FEE_PROOF_CONFLICT'] : feeProof.gaps };
+    // Legacy ERC20 adapters retain their explicit complete-components contract.
+    // Native settlement always requires the typed full transaction fee proof.
+    const feeNative = nativeQuote ? BigInt(native.feeNativeRaw) : feeProof
+      ? feeProof.complete ? BigInt(feeProof.feeNativeRaw) : null
+      : gas !== null && gasPrice !== null ? gas * gasPrice : null;
     const quoteAmount = quoteDelta < 0n ? -quoteDelta : quoteDelta;
     const quoteUsd = valued(quoteAmount, quoteDecimals, quoteUsdProof);
-    const feeUsd = context.feeComponentsComplete === true ? valued(feeNative, 18, feeAssetUsdProof) : null;
+    const feesKnown = nativeQuote ? native.feeComponentsComplete : feeProof ? feeProof.complete : context.feeComponentsComplete === true;
+    const feeUsd = feesKnown ? valued(feeNative, 18, feeAssetUsdProof) : null;
     const evidence = refs(context.evidence) ? [...context.evidence] : [`receipt:${receipt.transactionHash.toLowerCase()}:${block.hash.toLowerCase()}`];
+    if (nativeQuote) evidence.push(...native.evidence.filter(value => !evidence.includes(value)));
+    else if (feeProof?.complete) evidence.push(...feeProof.evidence.filter(value => !evidence.includes(value)));
     const trade = { schemaVersion: 1, kind: 'TRADE',
       id: `4663:${block.hash.toLowerCase()}:${receipt.transactionHash.toLowerCase()}:${index}:${wallet}`,
       chainId: 4663, walletAddress: wallet, tokenAddress: token, quoteAddress: quote,
@@ -140,8 +160,9 @@ export function normalizeReceiptSettlement(receipt, swapEvents, context = {}) {
       quoteUsdProof, feeAssetUsdProof, timestamp: new Date(block.timestamp * 1000).toISOString(),
       blockNumber: block.number, blockHash: block.hash.toLowerCase(), transactionHash: receipt.transactionHash.toLowerCase(),
       logIndex: index, attributionComplete: true, feesComplete: feeUsd !== null,
+      ...(nativeQuote ? { nativeSettlementVerified: true } : {}),
       costsComplete: quoteUsd !== null && feeUsd !== null, deploymentAt: deploymentAt(context.deployment, token, block),
-      source: 'receipt-transfer-net/v1', evidence };
+      source: nativeQuote ? 'receipt-native-settlement-net/v1' : 'receipt-transfer-net/v1', evidence: evidence.slice(0, 64) };
     return { status: 'SETTLED', trades: [trade], attributionComplete: true,
       gaps: [...(!quoteUsd ? ['HISTORICAL_QUOTE_USD_UNKNOWN'] : []), ...(!feeUsd ? ['HISTORICAL_TOTAL_FEES_USD_UNKNOWN'] : [])], evidence };
   } catch { return stop('INVALID', 'INVALID_SETTLEMENT_INPUT'); }
@@ -149,12 +170,17 @@ export function normalizeReceiptSettlement(receipt, swapEvents, context = {}) {
 
 function newState(wallet, chainId, options) {
   const opening = decimal(options.initialEquityUsd);
-  return { schemaVersion: 1, accountingVersion: VERSION, chainId, walletAddress: wallet, lots: [], seen: [], lastApplied: null,
-    exactStorageVersion: 'position-components/v1', nextPositionId: 0, seenIdEncoding: 'sha256/v1',
+  const window = options.historyWindow;
+  const openingLots = window?.openingBalanceProof?.assets.filter(asset => BigInt(asset.quantityRaw) > 0n)
+    .map((asset, index) => ({ tokenAddress: asset.assetAddress, positionId: index + 1,
+      quantityRaw: asset.quantityRaw, cost: null, acquiredAt: null, early: null })) ?? [];
+  return { schemaVersion: 1, accountingVersion: VERSION, chainId, walletAddress: wallet, lots: openingLots, seen: [], lastApplied: null,
+    exactStorageVersion: 'position-components/v1', nextPositionId: openingLots.length, seenIdEncoding: 'sha256/v1',
     counts: { buys: 0, sells: 0, transfers: 0 }, disposals: 0, wins: 0,
+    ...(window ? { historyWindow: window, excludedSells: 0 } : {}),
     pnl: packed(frac()), pnlComponents: exactComponents(), holding: packed(frac()), early: packed(frac()),
     costsKnown: true, feesKnown: true, attributionKnown: true, holdingKnown: true, earlyKnown: true,
-    historyFromStart: completeHistory(options, { historyFromStart: true }), lastDisposalAt: null, firstApplied: null,
+    historyFromStart: completeHistory(options, { historyFromStart: true, ...(window ? { historyWindow: window } : {}) }), lastDisposalAt: null, firstApplied: null,
     opening: opening && opening.n > 0n ? packed(opening) : null, peak: opening && opening.n > 0n ? packed(opening) : null,
     drawdown: packed(frac()), equityKnown: true };
 }
@@ -166,6 +192,11 @@ function restore(value, wallet, chainId) {
     || !whole(value.disposals) || !whole(value.wins) || value.wins > value.disposals
     || !['costsKnown', 'feesKnown', 'attributionKnown', 'holdingKnown', 'earlyKnown', 'historyFromStart', 'equityKnown'].every(key => typeof value[key] === 'boolean'))
     throw Error('INVALID_ACCOUNTING_STATE');
+  if (value.historyWindow !== undefined) {
+    const window = normalizeHistoryWindow(value.historyWindow, { walletAddress: wallet, now: time(value.historyWindow?.endAt) });
+    if (!whole(value.excludedSells) || !window
+      || historyWindowComplete(value.historyWindow) !== historyWindowComplete(window)) throw Error('INVALID_ACCOUNTING_WINDOW_STATE');
+  }
   for (const key of ['pnl', 'holding', 'early', 'drawdown']) unpack(value[key]);
   if (value.opening) unpack(value.opening); if (value.peak) unpack(value.peak);
   if (value.lastApplied && (!whole(value.lastApplied.blockNumber) || !whole(value.lastApplied.logIndex)
@@ -220,6 +251,9 @@ function restore(value, wallet, chainId) {
   return restored;
 }
 function completeHistory(options, state) {
+  if (state.historyWindow || options.historyWindow) return state.historyFromStart && options.historyComplete === true
+    && historyWindowComplete(options.historyWindow) && historyWindowComplete(state.historyWindow)
+    && historyWindowKey(options.historyWindow) === historyWindowKey(state.historyWindow);
   const proof = options.historyProof;
   return state.historyFromStart && options.historyComplete === true && proof?.complete === true && proof.contiguous === true
     && proof.canonical === true && proof.openingBalanceKnown === true && refs(proof.evidence);
@@ -227,7 +261,10 @@ function completeHistory(options, state) {
 function openingProofValid(state, options) {
   const proof = options.openingEquityProof; const start = state.firstApplied;
   const value = decimal(proof?.value); const at = time(proof?.timestamp);
+  const window = state.historyWindow;
   return Boolean(state.opening && start && value && compare(value, unpack(state.opening)) === 0
+    && (!window || proof.blockNumber === window.openingBalanceProof?.blockNumber
+      && proof.blockHash?.toLowerCase() === window.openingBalanceProof?.blockHash && at <= time(window.startAt))
     && proof.chainId === state.chainId && address(proof.walletAddress) === state.walletAddress
     && proof.canonical === true && whole(proof.blockNumber) && proof.blockNumber <= start.blockNumber
     && hash(proof.blockHash) && (proof.blockNumber !== start.blockNumber || proof.blockHash.toLowerCase() === start.blockHash)
@@ -253,9 +290,12 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
     && ['insider', 'bundler', 'washTrading'].every(key => [true, false, null].includes(risk[key]))
     ? Object.fromEntries(['insider', 'bundler', 'washTrading'].map(key => [key, risk[key]])) : null;
   const evidence = [...new Set([...(refs(options.historyProof?.evidence) ? options.historyProof.evidence : []),
+    ...(refs(state.historyWindow?.evidence) ? state.historyWindow.evidence : []),
+    ...(refs(state.historyWindow?.openingBalanceProof?.evidence) ? state.historyWindow.openingBalanceProof.evidence : []),
     ...(refs(options.evidence) ? options.evidence : []), ...(state.lastApplied ? [`wallet-ledger:${state.lastApplied.blockHash}:${state.lastApplied.logIndex}`] : [])])];
   const resourceGap = gaps.find(gap => /(?:CAPACITY|PRECISION_BUDGET|POSITION_CAPACITY)/.test(gap));
   const result = { schemaVersion: 1, chainId: state.chainId, walletAddress: state.walletAddress,
+    ...(state.historyWindow ? { historyWindow: state.historyWindow } : {}),
     checkedAt: Number.isFinite(checked) ? new Date(checked).toISOString() : null,
     source: VERSION, evidence, historyComplete, costsComplete, feesComplete, attributionComplete,
     clusteringComplete: !requiresReplay && options.clusteringComplete === true, riskFlags,
@@ -266,7 +306,8 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
     earlyEntryPct: ready && count && state.earlyKnown ? numeric(mul(unpack(state.early), frac(100n, BigInt(count)))) : null,
     maxDrawdownPct: ready && count && drawdownValid ? observedDrawdown : null,
     lastRealizedAt: ready && count ? state.lastDisposalAt : null,
-    observedCounts: { ...state.counts, disposals: count }, observedLastDisposalAt: state.lastDisposalAt,
+    observedCounts: { ...state.counts, disposals: count,
+      ...(state.historyWindow ? { excludedSells: state.excludedSells } : {}) }, observedLastDisposalAt: state.lastDisposalAt,
     accountingMethod: { version: VERSION, costBasis: 'FIFO', realizedTrade: 'one attributed sell transaction and token',
       holding: 'mean of FIFO quantity-weighted holding seconds per disposal', earlyEntrySeconds: options.earlyEntrySeconds ?? 300,
       drawdown: 'verified opening equity plus cumulative net realized PnL; excludes unrealized token prices', moneyDecimals: 18 },
@@ -280,6 +321,7 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
         identicalReplayCanRecover: false, reason: resourceGap }
       : requiresReplay ? { kind: 'CANONICAL_HISTORY_REPLAY_REQUIRED', identicalReplayCanRecover: null } : null,
     gaps: [...new Set([...gaps,
+      ...(state.historyWindow && state.excludedSells ? ['WALLET_WINDOW_SALE_WITHOUT_KNOWN_COST'] : []),
       ...(ready && count && observedDrawdown !== null && !drawdownValid ? ['WALLET_EQUITY_PATH_UNRECONCILED'] : []),
       ...(ready && count && !temporalMetricsComplete ? ['WALLET_TEMPORAL_METRICS_INCOMPLETE'] : [])])],
     state: bounded ? state : null, accountingState: bounded ? state : null };
@@ -289,6 +331,10 @@ function profile(state, options, gaps = [], requiresReplay = false, realizedEven
 /** Incremental FIFO over normalized cash settlements. Never reads chain state or prices. */
 export function computeRealizedWalletMetrics(trades, options = {}) {
   const wallet = address(options.walletAddress ?? trades?.[0]?.walletAddress); const chainId = options.chainId ?? 4663;
+  const declaredWindow = options.historyWindow;
+  const window = declaredWindow === undefined ? null : normalizeHistoryWindow(declaredWindow,
+    { walletAddress: wallet, now: time(options.now ?? Date.now()) });
+  if (declaredWindow !== undefined) options = { ...options, historyWindow: window };
   let state = newState(wallet, chainId, options);
   let committed = structuredClone(state);
   const realizedEvents = [];
@@ -296,6 +342,12 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
     if (!wallet || wallet === ZERO || chainId !== 4663) throw Error('INVALID_ACCOUNTING_IDENTITY');
     if (options.previousState) state = restore(options.previousState, wallet, chainId);
     committed = structuredClone(state);
+    if (declaredWindow !== undefined && !window) throw Error('INVALID_WALLET_HISTORY_WINDOW');
+    if (historyWindowKey(state.historyWindow) !== historyWindowKey(window)) throw Error('WALLET_WINDOW_CHANGE_REQUIRES_REPLAY');
+    if (window && JSON.stringify(state.historyWindow.openingBalanceProof) !== JSON.stringify(window.openingBalanceProof))
+      throw Error('WALLET_WINDOW_OPENING_PROOF_REQUIRES_REPLAY');
+    if (state.lots.length > ACCOUNTING_LIMITS.openLots || bytes(state) > MAX_STATE_BYTES)
+      throw Error('ACCOUNTING_CAPACITY_REQUIRES_REPLAY');
     const eventLimit = options.maxRealizedEvents ?? 128;
     if (!whole(eventLimit) || eventLimit > 128 || !Array.isArray(trades) || trades.length > 512 || options.reorgDetected)
       throw Error('ACCOUNTING_REPLAY_REQUIRED');
@@ -306,6 +358,13 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
         || !token || token === ZERO || !quantity || !whole(trade.blockNumber) || !whole(trade.logIndex)
         || !hash(trade.blockHash) || !hash(trade.transactionHash) || !Number.isSafeInteger(at) || at < 0
         || at > time(options.now ?? Date.now())) throw Error('INVALID_ACCOUNTING_TRADE');
+      if (window) {
+        if (at < time(window.startAt) || at > time(window.endAt)
+          || trade.blockNumber > window.toBlock || window.fromBlock !== null && trade.blockNumber < window.fromBlock) continue;
+        if (trade.blockNumber === window.toBlock && trade.blockHash.toLowerCase() !== window.toBlockHash
+          || trade.blockNumber === window.fromBlock && trade.blockHash.toLowerCase() !== window.fromBlockHash)
+          throw Error('ACCOUNTING_WINDOW_BLOCK_MISMATCH');
+      }
       const fingerprint = createHash('sha256').update(JSON.stringify(trade)).digest('hex');
       const idDigest = createHash('sha256').update(trade.id).digest('hex');
       const prior = state.seen.find(item => item.id === idDigest);
@@ -315,7 +374,9 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
         && (trade.blockHash !== cursor.blockHash || trade.logIndex <= cursor.logIndex))) throw Error('ACCOUNTING_OUT_OF_ORDER');
       if (!cursor && !state.firstApplied) state.firstApplied = { blockNumber: trade.blockNumber, blockHash: trade.blockHash, timestamp: at };
       if (trade.kind !== 'TRANSFER' && trade.kind !== 'TRADE') throw Error('UNKNOWN_ACCOUNTING_EVENT');
-      if (trade.kind === 'TRADE' && (!address(trade.quoteAddress) || address(trade.quoteAddress) === ZERO))
+      if (trade.kind === 'TRADE' && (!address(trade.quoteAddress)
+        || address(trade.quoteAddress) === ZERO && (trade.nativeSettlementVerified !== true
+          || trade.source !== 'receipt-native-settlement-net/v1')))
         throw Error('AMBIGUOUS_ACCOUNTING_QUOTE');
       const block = { number: trade.blockNumber, hash: trade.blockHash, timestamp: Math.floor(at / 1000) };
       const quote = priceProof(trade.quoteUsdProof, address(trade.quoteAddress), block);
@@ -326,8 +387,11 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
       if (trade.kind === 'TRANSFER' && !['IN', 'OUT'].includes(trade.direction)
         || trade.kind === 'TRADE' && !['BUY', 'SELL'].includes(trade.side)) throw Error('INVALID_ACCOUNTING_DIRECTION');
       state.attributionKnown &&= trade.attributionComplete === true;
-      if (trade.kind === 'TRANSFER') { state.counts.transfers++; if (incoming) state.costsKnown = false; }
-      else { state.counts[incoming ? 'buys' : 'sells']++; state.feesKnown &&= fee !== null; state.costsKnown &&= gross !== null; }
+      if (trade.kind === 'TRANSFER') { state.counts.transfers++; if (incoming && !window) state.costsKnown = false; }
+      else {
+        state.counts[incoming ? 'buys' : 'sells']++;
+        if (!window) { state.feesKnown &&= fee !== null; state.costsKnown &&= gross !== null; }
+      }
       if (incoming) {
         const deployment = time(trade.deploymentAt); const earlySeconds = options.earlyEntrySeconds ?? 300;
         const cost = trade.kind === 'TRADE' && gross && fee ? add(gross, fee) : null;
@@ -354,7 +418,11 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
         }
         state.lots = state.lots.filter(lot => lot.quantityRaw !== '0');
         if (remaining) { known = false; holdingKnown = false; earlyKnown = false; }
-        if (trade.kind === 'TRADE') {
+        if (trade.kind === 'TRADE' && window && (!known || !gross || !fee)) {
+          // A declared window reports only sales with a fully known in-window
+          // FIFO basis. Consume the inventory, but never invent zero-cost PnL.
+          state.excludedSells++;
+        } else if (trade.kind === 'TRADE') {
           state.disposals++; state.lastDisposalAt = new Date(at).toISOString();
           state.costsKnown &&= known; state.holdingKnown &&= holdingKnown; state.earlyKnown &&= earlyKnown;
           if (holdingKnown) state.holding = packed(add(unpack(state.holding), holding));
@@ -381,6 +449,8 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
             }
             const proofRefs = [...new Set([...(refs(trade.evidence) ? trade.evidence : []),
               ...(refs(options.historyProof?.evidence) ? options.historyProof.evidence : []),
+              ...(refs(window?.evidence) ? window.evidence : []),
+              ...(refs(window?.openingBalanceProof?.evidence) ? window.openingBalanceProof.evidence : []),
               ...(refs(options.openingEquityProof?.evidence) ? options.openingEquityProof.evidence : []),
               ...(refs(trade.quoteUsdProof?.evidence) ? trade.quoteUsdProof.evidence : []),
               ...(refs(trade.feeAssetUsdProof?.evidence) ? trade.feeAssetUsdProof.evidence : [])])];
@@ -396,7 +466,7 @@ export function computeRealizedWalletMetrics(trades, options = {}) {
               throw Error('ACCOUNTING_REALIZATION_EVIDENCE_CAPACITY_REQUIRES_REPLAY');
             realizedEvents.push(realization);
           } else state.equityKnown = false;
-        } else if (!known) state.costsKnown = false;
+        } else if (!known && !window) state.costsKnown = false;
       }
       state.lastApplied = { blockNumber: trade.blockNumber, blockHash: trade.blockHash, logIndex: trade.logIndex, transactionHash: trade.transactionHash };
       state.seen.push({ id: idDigest, fingerprint }); if (state.seen.length > 32) state.seen.shift();

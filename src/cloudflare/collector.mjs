@@ -24,6 +24,12 @@ import { createWriteBatch } from './write-cost.mjs';
 import { prepareWalletTemporalUpdates, attachWalletTemporalEvidence } from '../mvp/wallet-temporal.mjs';
 import { scoreWalletProfile } from '../mvp/wallet-scoring.mjs';
 import PROFILES_CONFIG from '../mvp/config.mjs';
+import WALLET_EVIDENCE_CONFIG from '../mvp/wallet-evidence-config.mjs';
+import { collectLaunchProofs } from '../mvp/launch-proofs.mjs';
+import { prepareReceiptEvidence } from '../mvp/wallet-evidence.mjs';
+import { prepareWalletBackfillStep } from '../mvp/wallet-backfill.mjs';
+import { collectNativeReceiptProofs } from '../mvp/wallet-native-provider.mjs';
+import { attachObservedWalletClusters } from '../mvp/wallet-cluster-runtime.mjs';
 
 const TOPICS = { v2: '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9',
   v3: '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118',
@@ -262,6 +268,14 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             safetyStates = saveSafetyState(safetyStates, { address, poolId: pool.id, pool, codeHash,
               updatedAt: new Date(now()).toISOString(), ...analysis.safetyState }, now());
             tokenFacts.push({ address, analysis: analysis.evidence });
+            if (mvpPhase >= 3) {
+              const launchProofs = await collectLaunchProofs({ rpc, tokenAddress: address, pool, head, now,
+                creation: analysis.entry?.age,
+                deployerHistory: walletProofs.deployerHistory?.find?.(proof => proof.address?.toLowerCase() === address),
+                launchActivity: walletProofs.launchActivity?.find?.(proof => proof.address?.toLowerCase() === address) });
+              analysis.entry.hardFilterEvidence = launchProofs.hardFilterEvidence;
+              tokenFacts.push({ address, launchProofs: launchProofs.diagnostics });
+            }
           } catch (error) { errors.push('TOKEN_ANALYSIS_FAILED');
             console.warn(JSON.stringify({ event: 'TOKEN_ANALYSIS_FAILED', ...operationError(error, { stage: 'token-analysis', at: now() }) })); }
         }
@@ -279,6 +293,31 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const walletEnrichment = mvpPhase >= 3 ? await enrichWalletTransactions(env.DB, rpc,
       { events: walletCapture.events, head, now, maxTransactions: 2, maxRequests: 30 })
       : { receipts: [], attempts: [], diagnostics: [] };
+    const nativeProofs = mvpPhase >= 3 && WALLET_EVIDENCE_CONFIG.native.enabled
+      ? await collectNativeReceiptProofs(rpc, walletEnrichment.receipts, { now: now(), maxRequests: 28 })
+      : { diagnostics: [], counts: {} };
+    let walletBackfill = { commands: [], events: [], receipts: [], historyWindows: [], diagnostics: [], counts: {} };
+    if (mvpPhase >= 3 && WALLET_EVIDENCE_CONFIG.enabled && env.WALLET_BACKFILL_ENABLED === '1'
+      && Number.isSafeInteger(rpc.requests) && rpc.requests < 27 && walletCapture.events.length < 128) {
+      // Work shares the existing RPC budget, lease and D1 write reservation.
+      // Canonical final-head checks retain their two requests below.
+      walletBackfill = await prepareWalletBackfillStep(env.DB, rpc, { runId: owner, observedAt: now(), head,
+        ...WALLET_EVIDENCE_CONFIG.backfill,
+        maxStepRequests: Math.min(WALLET_EVIDENCE_CONFIG.backfill.maxStepRequests, 30 - rpc.requests),
+        maxEvents: Math.min(WALLET_EVIDENCE_CONFIG.backfill.maxEvents, 128 - walletCapture.events.length),
+        maxRequests: 30, targetForPool: item => {
+          const targetAddress = target(item);
+          return targetAddress ? { targetAddress,
+            quoteAddress: item.token0 === targetAddress ? item.token1 : item.token0,
+            quoteDecimals: item.quoteDecimals ?? null } : null;
+        } });
+      walletCapture.events.push(...walletBackfill.events);
+      for (const captured of walletBackfill.receipts) if (!walletEnrichment.receipts.some(item =>
+        item.receipt.transactionHash === captured.receipt.transactionHash && item.tokenAddress === captured.tokenAddress
+        && item.receipt.blockHash === captured.receipt.blockHash)) walletEnrichment.receipts.push(captured);
+    }
+    const receiptProofs = mvpPhase >= 3 ? prepareReceiptEvidence(walletEnrichment.receipts,
+      { now: now(), supplied: walletProofs.receiptEvidence ?? [] }) : { receiptEvidence: [], diagnostics: [], counts: {} };
     const pinned = await rpc.block(head.number); const final = await rpc.block();
     if (pinned.hash !== head.hash) throw new Error('REORG_DURING_COLLECTION');
     if (final.number > head.number && final.timestamp >= head.timestamp && now() - final.timestamp * 1000 <= 60000 && final.timestamp * 1000 <= now() + 30000)
@@ -325,9 +364,14 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     }
     stage = 'wallet-accounting';
     const projectedWallets = mvpPhase >= 3 ? await projectObservedWallets(env.DB, walletEnrichment.receipts,
-      { now: now(), reorgDetected: reorg, receiptEvidence: walletProofs.receiptEvidence,
-        walletEvidence: walletProofs.walletEvidence, replayEvidence: walletProofs.replayEvidence })
+      { now: now(), reorgDetected: reorg, receiptEvidence: receiptProofs.receiptEvidence,
+        walletEvidence: walletProofs.walletEvidence, replayEvidence: walletProofs.replayEvidence,
+        historyWindows: walletBackfill.historyWindows })
       : { profiles: [], diagnostics: [], realizedEvents: [] };
+    const coordination = mvpPhase >= 3 ? attachObservedWalletClusters(projectedWallets.profiles,
+      { events: walletCapture.events, receipts: walletEnrichment.receipts, pool, now: now(),
+        proofs: walletProofs.clustering ?? {} }) : { profiles: [], diagnostics: [], counts: {} };
+    projectedWallets.profiles = coordination.profiles;
     const temporal = mvpPhase >= 3 ? await prepareWalletTemporalUpdates(env.DB, { runId: owner,
       observedAt: now(), profiles: projectedWallets.profiles, realizedEvents: projectedWallets.realizedEvents,
       config: PROFILES_CONFIG, reorgDetected: reorg }) : { profiles: [], realizationUpdates: [], realizedEvents: [], diagnostics: [] };
@@ -387,7 +431,12 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             rejectedRealizations: temporal.rejectedRealizations ?? 0,
             temporalProfilesUpdated: temporal.realizationUpdates.length,
             scoreMethod: PROFILES_CONFIG.profiles.profile_new.walletScoring.version,
-            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics, ...temporal.diagnostics] },
+            evidence: receiptProofs.counts, nativeSettlement: nativeProofs.counts, backfill: walletBackfill.counts,
+            coordination: coordination.counts,
+            historyWindows: walletBackfill.historyWindows,
+            diagnostics: [...walletEnrichment.diagnostics, ...projectedWallets.diagnostics, ...temporal.diagnostics,
+              ...receiptProofs.diagnostics, ...walletBackfill.diagnostics, ...nativeProofs.diagnostics,
+              ...coordination.diagnostics] },
             weekly: { status: 'INDEPENDENT_JOB', due: null, reportKey: null, generatedAt: null } } : {}),
           decisions: mvpDecisions.filter(d => !['REJECTED', 'OUT_OF_SCOPE'].includes(d.status)).map(d => ({
             address: d.address, symbol: d.symbol, status: d.status, score: d.score,
@@ -432,6 +481,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
     const { commands, append } = writeBatch;
     append('fencing', [env.DB.prepare("INSERT OR REPLACE INTO commit_fence(id,ok) VALUES(1,(SELECT CASE WHEN lease_owner=? AND lease_until>CAST((julianday('now')-2440587.5)*86400000 AS INTEGER) THEN 1 ELSE 0 END FROM control WHERE id=1))").bind(owner)]);
     append('canonicality', canonicality.commands);
+    append('walletBackfill', walletBackfill.commands);
     if (mvpPhase >= 3) append('wallets', prepareWalletLedger(env.DB, { runId: owner, observedAt: now(),
       ...walletCapture, ...walletEnrichment, profiles: projectedWallets.profiles,
       realizedEvents: temporal.realizedEvents, realizationUpdates: temporal.realizationUpdates,
@@ -453,6 +503,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
             : entry?.age?.lowerBoundMinutes >= 0 && entry.age.upperBoundMinutes < 1440);
           return { address: result.address, profile: `legacy_${result.pipeline}`, status: result.status,
             isLaunch: Boolean(isLaunch), features: { snapshot, externalMarket: entry?.externalMarket ?? null,
+              hardFilterEvidence: entry?.hardFilterEvidence ?? null,
               score: result.score, reasons: result.reasons, age: entry?.age ?? null,
               riskCodes: entry?.risks?.map(risk => risk.code) ?? [], evaluatedAt: result.evaluatedAt } };
         }) });
@@ -469,6 +520,7 @@ export async function collectFree(env, { now = Date.now, fetchImpl = fetch, rpc:
               isLaunch: decision.security.age?.lowerBoundMinutes >= 0
                 && decision.security.age?.upperBoundMinutes < 1440,
               features: { snapshot: snapshots.find(item => item.address === decision.address),
+                hardFilterEvidence: entry?.hardFilterEvidence ?? null,
                 externalMarket: entry?.externalMarket ?? null, decision } };
           }) });
         append('mvpRecords', mvpRecords.commands);

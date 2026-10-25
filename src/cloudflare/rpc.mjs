@@ -2,7 +2,8 @@ import { NETWORK } from '../network.mjs';
 import { createHash } from 'node:crypto';
 import { keccak256 } from 'viem';
 
-const METHODS = new Set(['eth_chainId', 'eth_getBlockByNumber', 'eth_getLogs', 'eth_getCode', 'eth_call', 'eth_getStorageAt', 'eth_getTransactionReceipt']);
+const METHODS = new Set(['eth_chainId', 'eth_getBlockByNumber', 'eth_getLogs', 'eth_getCode', 'eth_call', 'eth_getStorageAt', 'eth_getTransactionReceipt',
+  'eth_getTransactionByHash', 'debug_traceTransaction']);
 export const hex = n => '0x' + BigInt(n).toString(16);
 export function quantity(value) {
   if (typeof value !== 'string' || !/^0x[0-9a-f]+$/i.test(value)) throw new Error('INVALID_QUANTITY');
