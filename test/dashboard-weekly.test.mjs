@@ -38,6 +38,15 @@ function report(cohorts) {
     walletScoreReport: { status: 'READY' }, cohorts };
 }
 
+test('dashboard copy keeps automatic collection cadence variable and view polling at thirty seconds', () => {
+  const header = html.match(/<header>[\s\S]*?<\/header>/)?.[0];
+  assert.ok(header, 'dashboard header exists');
+  assert.match(header, /Recolha automática com intervalo variável/);
+  assert.match(header, /Esta vista consulta os dados a cada 30 segundos/);
+  assert.doesNotMatch(header, /recolha automática a cada minuto/i);
+  assert.doesNotMatch(source, /O cron recolhe a cada minuto/);
+});
+
 test('weekly dashboard renders one version/profile/quote tier cohort and never pooled averages', () => {
   const ui = dashboard();
   ui.render(report([cohort('v1', 'T0', 1, 10), cohort('v2', 'T2', 2, 50, 'legacy_new')]));

@@ -845,7 +845,7 @@
       tone = 'error';
     } else if (latestFresh && healthFresh) {
       label = 'Recolha automática ativa';
-      detail = 'O serviço confirmou dados recentes. O cron recolhe a cada minuto; esta vista consulta a cada 30 segundos.';
+      detail = 'O serviço confirmou dados recentes. A recolha automática tem intervalo variável; esta vista consulta a cada 30 segundos.';
       tone = 'good';
     } else if (lastReport || health) {
       label = 'A aguardar uma recolha recente';
