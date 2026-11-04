@@ -1,0 +1,372 @@
+{
+  "dataMode": "REAL_MAINNET_LIVE_SQLITE_READ_ONLY_SNAPSHOT",
+  "checkedAt": "2026-11-04T07:23:01.348Z",
+  "security": [
+    {
+      "mint": "1NJMqVM4PadjuzYmeB7zV7q7DV8oB3ExaQCd9x6KsLz",
+      "checkedAt": "2026-11-04T07:20:33.215Z",
+      "data": {
+        "tokenMint": "1NJMqVM4PadjuzYmeB7zV7q7DV8oB3ExaQCd9x6KsLz",
+        "checkedAt": "2026-11-04T07:20:18.361Z",
+        "contextSlot": 465215828,
+        "status": "REJECTED",
+        "creator": null,
+        "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+        "securityConclusion": null,
+        "tradeApproved": false,
+        "creatorEvidence": "UNKNOWN",
+        "checks": {
+          "initialized": {
+            "status": "PASS",
+            "reason": "MINT_INITIALIZATION",
+            "value": true
+          },
+          "mintAuthority": {
+            "status": "REJECTED",
+            "reason": "ADDITIONAL_MINT_AUTHORITY",
+            "value": "5uVJjzgHV5a3o7cn9ynR2wXDA9i3dXwiBxBMRG5wYYKn"
+          },
+          "freezeAuthority": {
+            "status": "PASS",
+            "reason": "FREEZE_AUTHORITY",
+            "value": null
+          },
+          "extensions": {
+            "status": "PASS",
+            "reason": "EXTENSION_RESTRICTIONS",
+            "value": []
+          }
+        },
+        "holders": {
+          "status": "INCOMPLETE",
+          "ownerDistributionComplete": false
+        },
+        "liquidity": {
+          "status": "UNKNOWN"
+        },
+        "authorityHistory": {
+          "status": "INCOMPLETE",
+          "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+        },
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        },
+        "mint": {
+          "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "mintAuthority": "5uVJjzgHV5a3o7cn9ynR2wXDA9i3dXwiBxBMRG5wYYKn",
+          "freezeAuthority": null,
+          "supplyRaw": "181645661759615",
+          "decimals": 9,
+          "initialized": true,
+          "extensions": [],
+          "accountDataSha256": "020786f08327663b2c7bdec9a0e407c5ba28825bfdd0d6e11de8628e88267464",
+          "evidenceSource": {
+            "repository": "https://github.com/solana-program/token-2022",
+            "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+            "files": [
+              "interface/src/state.rs",
+              "interface/src/extension/mod.rs",
+              "interface/src/extension/transfer_fee/mod.rs",
+              "interface/src/extension/transfer_hook/mod.rs",
+              "interface/src/extension/pausable/mod.rs",
+              "interface/src/extension/permanent_delegate.rs",
+              "interface/src/extension/permissioned_burn/mod.rs"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mint": "7ymF66Z6VhgNiwadtVhjTtT6U7iQRpSxeiRrhfufhigh",
+      "checkedAt": "2026-11-04T07:16:13.886Z",
+      "data": {
+        "tokenMint": "7ymF66Z6VhgNiwadtVhjTtT6U7iQRpSxeiRrhfufhigh",
+        "checkedAt": "2026-11-04T07:15:49.263Z",
+        "contextSlot": 465214607,
+        "status": "INCOMPLETE",
+        "creator": null,
+        "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+        "securityConclusion": null,
+        "tradeApproved": false,
+        "creatorEvidence": "UNKNOWN",
+        "checks": {
+          "initialized": {
+            "status": "PASS",
+            "reason": "MINT_INITIALIZATION",
+            "value": true
+          },
+          "mintAuthority": {
+            "status": "PASS",
+            "reason": "ADDITIONAL_MINT_AUTHORITY",
+            "value": null
+          },
+          "freezeAuthority": {
+            "status": "PASS",
+            "reason": "FREEZE_AUTHORITY",
+            "value": null
+          },
+          "extensions": {
+            "status": "PASS",
+            "reason": "EXTENSION_RESTRICTIONS",
+            "value": []
+          }
+        },
+        "holders": {
+          "status": "INCOMPLETE",
+          "ownerDistributionComplete": false
+        },
+        "liquidity": {
+          "status": "UNKNOWN"
+        },
+        "authorityHistory": {
+          "status": "INCOMPLETE",
+          "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+        },
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        },
+        "mint": {
+          "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "mintAuthority": null,
+          "freezeAuthority": null,
+          "supplyRaw": "999982494123682",
+          "decimals": 6,
+          "initialized": true,
+          "extensions": [],
+          "accountDataSha256": "734992846e5580c4eaa1d54e9a07955d464e5100ffd03d3597a8b219f45b38fc",
+          "evidenceSource": {
+            "repository": "https://github.com/solana-program/token-2022",
+            "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+            "files": [
+              "interface/src/state.rs",
+              "interface/src/extension/mod.rs",
+              "interface/src/extension/transfer_fee/mod.rs",
+              "interface/src/extension/transfer_hook/mod.rs",
+              "interface/src/extension/pausable/mod.rs",
+              "interface/src/extension/permanent_delegate.rs",
+              "interface/src/extension/permissioned_burn/mod.rs"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "mint": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+      "checkedAt": "2026-11-04T07:12:17.892Z",
+      "data": {
+        "tokenMint": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+        "checkedAt": "2026-11-04T07:11:57.971Z",
+        "contextSlot": 465213500,
+        "status": "INCOMPLETE",
+        "creator": null,
+        "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+        "securityConclusion": null,
+        "tradeApproved": false,
+        "creatorEvidence": "UNKNOWN",
+        "checks": {
+          "initialized": {
+            "status": "PASS",
+            "reason": "MINT_INITIALIZATION",
+            "value": true
+          },
+          "mintAuthority": {
+            "status": "PASS",
+            "reason": "ADDITIONAL_MINT_AUTHORITY",
+            "value": null
+          },
+          "freezeAuthority": {
+            "status": "PASS",
+            "reason": "FREEZE_AUTHORITY",
+            "value": null
+          },
+          "extensions": {
+            "status": "PASS",
+            "reason": "EXTENSION_RESTRICTIONS",
+            "value": []
+          }
+        },
+        "holders": {
+          "status": "INCOMPLETE",
+          "ownerDistributionComplete": false
+        },
+        "liquidity": {
+          "status": "UNKNOWN"
+        },
+        "authorityHistory": {
+          "status": "INCOMPLETE",
+          "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+        },
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        },
+        "mint": {
+          "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "mintAuthority": null,
+          "freezeAuthority": null,
+          "supplyRaw": "999998805385756",
+          "decimals": 6,
+          "initialized": true,
+          "extensions": [],
+          "accountDataSha256": "a4b8307c54d3689ef4fe6762c0bdf7c5507d54048876108cc131e61e66fec077",
+          "evidenceSource": {
+            "repository": "https://github.com/solana-program/token-2022",
+            "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+            "files": [
+              "interface/src/state.rs",
+              "interface/src/extension/mod.rs",
+              "interface/src/extension/transfer_fee/mod.rs",
+              "interface/src/extension/transfer_hook/mod.rs",
+              "interface/src/extension/pausable/mod.rs",
+              "interface/src/extension/permanent_delegate.rs",
+              "interface/src/extension/permissioned_burn/mod.rs"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+      "signature": "342zhu47j86fh4fKLMfEm9mgULMCaTN5oWbCgBypAqmdQpq9j6X2raGC1gLeQSJZ2qkQPXxZq23G3dvTouzoAX9S",
+      "slot": 465212611,
+      "recoveredAt": "2026-11-04T07:09:07.323Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "signature": "68GsEnBD8CSafz3U94KhALZkaVTGG4kbruSGxLL1hG1wwxiqXyeMpiP9EJpkGrvBzq82uVV61y4KnbFtxD1DsiS",
+      "slot": 465212681,
+      "recoveredAt": "2026-11-04T07:09:57.350Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+      "signature": "2xnzQRk5PLRCAcNrwqL8SJse8JjZC7REA7j7bEH67N7hP4YEDCiFVttRpmNy8tF7JDVSbdBm5fWuyfXqnY7vttCJ",
+      "slot": 465212982,
+      "recoveredAt": "2026-11-04T07:11:02.597Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C",
+      "signature": "5XS22ZPTvj3JiWAZvy136etaEUZG7Y6G6bhdGEoMTKJewvRyDwQPteJcimWQ7aitwGVz4x2XHJafdA67qP1J5PWh",
+      "slot": 465213238,
+      "recoveredAt": "2026-11-04T07:11:57.967Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    }
+  ],
+  "retainedObservationCounts": [
+    {
+      "protocol": "pump_fun",
+      "eventType": "CURVE_PROGRESS_UPDATED",
+      "retainedCount": 1553
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_BOUGHT",
+      "retainedCount": 834
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_CREATED",
+      "retainedCount": 16
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_GRADUATED",
+      "retainedCount": 1
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_MIGRATED",
+      "retainedCount": 1
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_SOLD",
+      "retainedCount": 718
+    },
+    {
+      "protocol": "pump_swap",
+      "eventType": "POOL_CREATED",
+      "retainedCount": 3
+    },
+    {
+      "protocol": "pump_swap",
+      "eventType": "TOKEN_BOUGHT",
+      "retainedCount": 3600
+    },
+    {
+      "protocol": "pump_swap",
+      "eventType": "TOKEN_SOLD",
+      "retainedCount": 3180
+    },
+    {
+      "protocol": "raydium_cpmm",
+      "eventType": "TOKEN_BOUGHT",
+      "retainedCount": 35
+    },
+    {
+      "protocol": "raydium_cpmm",
+      "eventType": "TOKEN_SOLD",
+      "retainedCount": 35
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "CURVE_PROGRESS_UPDATED",
+      "retainedCount": 12
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "TOKEN_BOUGHT",
+      "retainedCount": 6
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "TOKEN_SOLD",
+      "retainedCount": 6
+    }
+  ]
+}

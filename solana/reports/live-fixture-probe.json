@@ -1,0 +1,309 @@
+{
+  "kind": "REAL_MAINNET_FIXTURE_PROBE",
+  "startedAt": "2026-11-04T07:20:04.709Z",
+  "sourceCommit": "54cd0dd12b5e61ac316a425135a219cc71b85064",
+  "source": "https://api.mainnet-beta.solana.com",
+  "readOnly": true,
+  "independentOfScannerBudget": true,
+  "budget": {
+    "requestsPerMinute": 4,
+    "retries": 0,
+    "maxRequests": 8
+  },
+  "attempts": [
+    {
+      "signature": "5YBKmZ3RF9K2Hnj6ZCPEpyjsfuJqdjqaphYH2uPXo7eLUofsuu7FN775Nxdvq2wZUqUXDxhpKgyt6Aqr6c78P6Lh",
+      "protocol": "raydium_cpmm",
+      "targetEventType": "TOKEN_BOUGHT",
+      "notificationReceivedAt": "2026-11-04T07:18:24.000Z",
+      "ageSecondsAtRequest": 100.712,
+      "method": "getTransaction",
+      "params": [
+        "5YBKmZ3RF9K2Hnj6ZCPEpyjsfuJqdjqaphYH2uPXo7eLUofsuu7FN775Nxdvq2wZUqUXDxhpKgyt6Aqr6c78P6Lh",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "startedAt": "2026-11-04T07:20:04.712Z",
+      "httpStatus": 200,
+      "responseReceivedAt": "2026-11-04T07:20:04.926Z",
+      "networkLatencyMs": 215,
+      "durationIncludingPacingMs": 216,
+      "status": "TARGET_EVENT_DECODED",
+      "decodedEventTypes": [
+        "raydium_cpmm/TOKEN_BOUGHT"
+      ],
+      "diagnostics": []
+    },
+    {
+      "signature": "k7T73r5bpfAdoCxS47kSP7DSNTtA1Mvbj7WLKEHZ4JV6Cw2zPmm9x4NTVUiv9RfjBFMmfK2wA6UmzjyWYHmUwdE",
+      "protocol": "pump_swap",
+      "targetEventType": "LIQUIDITY_REMOVED",
+      "notificationReceivedAt": "2026-11-04T07:18:24.856Z",
+      "ageSecondsAtRequest": 100.085,
+      "method": "getTransaction",
+      "params": [
+        "k7T73r5bpfAdoCxS47kSP7DSNTtA1Mvbj7WLKEHZ4JV6Cw2zPmm9x4NTVUiv9RfjBFMmfK2wA6UmzjyWYHmUwdE",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "startedAt": "2026-11-04T07:20:04.941Z",
+      "httpStatus": 200,
+      "responseReceivedAt": "2026-11-04T07:20:19.859Z",
+      "networkLatencyMs": 139,
+      "durationIncludingPacingMs": 14919,
+      "status": "TARGET_EVENT_DECODED",
+      "decodedEventTypes": [
+        "pump_swap/LIQUIDITY_REMOVED"
+      ],
+      "diagnostics": [
+        {
+          "code": "EVENT_TRAILING_BYTES",
+          "eventName": "WithdrawEvent",
+          "bytes": 8
+        }
+      ]
+    },
+    {
+      "signature": "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa",
+      "protocol": "raydium_launchlab",
+      "targetEventType": "TOKEN_SOLD",
+      "notificationReceivedAt": "2026-11-04T07:18:26.132Z",
+      "ageSecondsAtRequest": 113.733,
+      "method": "getTransaction",
+      "params": [
+        "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "startedAt": "2026-11-04T07:20:19.865Z",
+      "httpStatus": 200,
+      "responseReceivedAt": "2026-11-04T07:20:34.847Z",
+      "networkLatencyMs": 122,
+      "durationIncludingPacingMs": 14983,
+      "status": "TARGET_EVENT_DECODED",
+      "decodedEventTypes": [
+        "raydium_launchlab/TOKEN_SOLD",
+        "raydium_launchlab/CURVE_PROGRESS_UPDATED"
+      ],
+      "diagnostics": []
+    },
+    {
+      "signature": "3HsVr9zkSCAQAaxV5Afq6pdyuGCfRJxgvEV65JhoXMTBVam5NoHEmvnxhvw4FUTCbnKV5oGymdKieGx8RgLAvfdQ",
+      "protocol": "raydium_cpmm",
+      "targetEventType": "LIQUIDITY_ADDED",
+      "notificationReceivedAt": "2026-11-04T07:18:30.423Z",
+      "ageSecondsAtRequest": 124.429,
+      "method": "getTransaction",
+      "params": [
+        "3HsVr9zkSCAQAaxV5Afq6pdyuGCfRJxgvEV65JhoXMTBVam5NoHEmvnxhvw4FUTCbnKV5oGymdKieGx8RgLAvfdQ",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "startedAt": "2026-11-04T07:20:34.852Z",
+      "httpStatus": 200,
+      "responseReceivedAt": "2026-11-04T07:20:49.863Z",
+      "networkLatencyMs": 133,
+      "durationIncludingPacingMs": 15011,
+      "status": "TARGET_EVENT_DECODED",
+      "decodedEventTypes": [
+        "raydium_cpmm/LIQUIDITY_ADDED"
+      ],
+      "diagnostics": []
+    }
+  ],
+  "metrics": {
+    "startedAt": "2026-11-04T07:20:04.709Z",
+    "measuredAt": "2026-11-04T07:20:49.872Z",
+    "uptimeMs": 45163,
+    "counters": {
+      "rpc_requests": 4,
+      "rpc_method_getTransaction": 4,
+      "rpc_budget_waits": 3
+    },
+    "gauges": {},
+    "histograms": {
+      "rpc_latency_ms": {
+        "count": 4,
+        "retainedSamples": 4,
+        "p50": 134,
+        "p95": 216,
+        "p99": 216,
+        "max": 216,
+        "mean": 153.75,
+        "totalMaxMs": 216,
+        "cumulativeBuckets": [
+          {
+            "upperBoundMs": 1,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 5,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 10,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 25,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 50,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 100,
+            "count": 0
+          },
+          {
+            "upperBoundMs": 250,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 500,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 1000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 2000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 5000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 10000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 30000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 60000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 120000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 300000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 600000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": 3600000,
+            "count": 4
+          },
+          {
+            "upperBoundMs": "Infinity",
+            "count": 4
+          }
+        ],
+        "cumulativeQuantileUpperBounds": {
+          "p50": 250,
+          "p95": 250,
+          "p99": 250
+        },
+        "cumulativeQuantileOverflow": {
+          "p50": false,
+          "p95": false,
+          "p99": false
+        },
+        "percentileScope": "last 4096 observations",
+        "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+      }
+    },
+    "rpcRequestsPerMinute": 4,
+    "eventsPerSecond": 0,
+    "observationsPerSecond": 0,
+    "histogramWindow": "last 4096 observations per metric"
+  },
+  "finishedAt": "2026-11-04T07:20:49.872Z",
+  "summary": {
+    "totalHttpRpcRequests": 4,
+    "methodCounts": {
+      "getTransaction": 4
+    },
+    "successfulResponses": 4,
+    "decodedTargetTransactions": 4,
+    "nullTransactions": 0,
+    "errors": 0,
+    "retries": 0,
+    "rateLimitErrors": 0
+  },
+  "baselineFixtureManifestSha256": "2e9888af7a96ffb5e47de166c7afabd241a62f2152f27b27c73f5186d323fa5d",
+  "candidateSnapshots": [
+    {
+      "capturedAt": "2026-11-04T07:19:05.208Z",
+      "source": "runtime/final-mainnet-60m-guarded-20261104/scanner.sqlite",
+      "access": "READ_ONLY",
+      "candidatesExported": 4
+    },
+    {
+      "capturedAt": "2026-11-04T07:27:28.843Z",
+      "source": "runtime/final-mainnet-60m-guarded-20261104/scanner.sqlite",
+      "access": "READ_ONLY",
+      "targetGroups": [
+        "pump_swap/LIQUIDITY_ADDED",
+        "raydium_cpmm/LIQUIDITY_REMOVED",
+        "raydium_launchlab/TOKEN_GRADUATED",
+        "raydium_launchlab/TOKEN_MIGRATED"
+      ],
+      "rowsMatched": 0,
+      "candidatesExported": 0
+    }
+  ],
+  "limitations": [
+    "Additional getTransaction capture latencies are not scanner production latency.",
+    "Finalized public RPC responses validate only selected transactions, not protocol-wide coverage.",
+    "LaunchLab gross wallet debit differs from protocol net input; mint fee extension configuration was not requested.",
+    "PumpSwap WithdrawEvent contains eight unknown trailing bytes; canonical event remains INCOMPLETE.",
+    "The final snapshot had no remaining-target candidates among currently retained rows. This is not evidence those operations did not occur outside retention or coverage."
+  ],
+  "investigationFinishedAt": "2026-11-04T07:27:48.456Z",
+  "stoppedBecause": "Final non-polling read-only snapshot contained no remaining-target observations in the retained bounded ring; unused budget was not spent.",
+  "validation": {
+    "mode": "DETERMINISTIC_REPLAY_SEPARATE_FROM_REAL_RPC_CAPTURE",
+    "newFixtureTests": {
+      "passed": 6,
+      "failed": 0,
+      "nodeVersions": [
+        "24.19.0",
+        "22.13.0"
+      ]
+    },
+    "fullSuite": {
+      "passed": 168,
+      "failed": 0,
+      "nodeVersions": [
+        "24.19.0",
+        "22.13.0"
+      ]
+    },
+    "sourceCodeEdited": false,
+    "originalFixtureManifestEdited": false,
+    "activeDatabaseWriteAccessUsed": false
+  }
+}

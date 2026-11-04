@@ -21,7 +21,7 @@ Nos relatórios antigos, p50/p95/p99 são calculados sobre até às últimas 409
 | [Smoke de logs](../reports/mainnet-logpath-smoke-23s.json) | 22,849 s, encerrado por SIGTERM | Observações por logs | 1713, todas | 140 ms | 240 ms | 251 ms |
 | [Logs interrompidos](../reports/interrupted-logs.json) | 304,226 s | Observações por logs | 4096 recentes, de 21.863 amostras totais | 165 ms | 280 ms | 332 ms |
 | Mesmo ensaio de logs | 304,226 s | Eventos enriquecidos | 8, todas | 98.255 ms | 173.401 ms | 173.401 ms |
-| Nova versão, janela contínua de 3600 s | **IN_PROGRESS** | Observar separadamente logs, enriquecimento e buckets cumulativos | Sem resultado final aprovado | — | — | — |
+| Versão final `54cd0dd`, [relatório](../reports/mainnet-final-60m.json) | 3609.912 s, concluído | Observações por logs | 4096 recentes, de 712403 amostras | 226 ms | 910 ms | 934 ms |
 
 O primeiro ensaio inicial recebeu 5.494 notificações em cerca de 15 s antes de pausar a captura por sobrecarga. Ao fim de 60,438 s existiam 25 eventos enriquecidos e 5185 observações pendentes no inbox. Esta amostra inicial não demonstrou p95 <2 s sustentada; a medição integral de eventos desse ensaio falhou o objetivo.
 
@@ -52,3 +52,20 @@ Alternativas concretas para aumentar contexto/continuidade: reduzir o universo o
 Os ensaios usaram o RPC público oficial, uma máquina partilhada e versões/configurações sucessivas do código. Alguns testes e instalações correram no mesmo host; os dois ensaios longos sobrepuseram-se durante parte do tempo e partilharam quota/recursos. Não são benchmarks isolados de hardware de produção. Os relatórios não provam estabilidade de 24 h, cobertura integral, ausência de eventos perdidos ou desempenho após upgrades dos programas.
 
 O objetivo de 2 s deve ser avaliado por caminho e âmbito: observação de logs com contexto incompleto, evento enriquecido, ou atraso anterior na fonte. Uma medição favorável num destes caminhos não aprova automaticamente os restantes.
+
+## Resultado da versão final
+
+A janela contínua real completou 3609.912 s, com os quatro programas e segurança básica ativa, orçamento de 12 pedidos HTTP/minuto e retenção de 10.000 observações. Não houve alteração do código de execução durante a janela; hashes verificados contra o manifesto inicial. Consulte o [resumo verificável](../reports/mainnet-final-summary.json), o [relatório integral](../reports/mainnet-final-60m.json) e o [gráfico](../reports/mainnet-performance.png).
+
+| Métrica da janela final | p50 | p95 | p99 | Âmbito |
+|---|---:|---:|---:|---|
+| Observações por logs, percentis recentes | 226 ms | 910 ms | 934 ms | Últimas 4096 de 712.403 notificações suportadas medidas |
+| Observações por logs, limites superiores acumulados | 250 ms | 500 ms | 1.000 ms | Buckets de todas as amostras, não percentis exatos |
+| Eventos enriquecidos | 359.649 ms | 470.519 ms | 497.085 ms | 300 de 300 transações suportadas medidas |
+| On-chain → receção, subconjunto enriquecido | 2.275 ms | 21.465 ms | 25.735 ms | 365 transações com blockTime utilizável |
+
+O máximo de latência local de logs foi 9.488 ms. Houve 14 snapshots com p95 recente ≥2 s; as janelas sobrepõem-se e a contagem não equivale a intervalos independentes. A causa exata dos picos locais não foi isolada; event loop, SQLite/I/O e condições do host requerem instrumentação separada. Não atribuir esses picos automaticamente ao RPC. A p95 acumulada favorável de observações parciais não constitui um SLA nem resolve o contexto transacional ausente.
+
+O caminho enriquecido continuou limitado pelo orçamento/fila HTTP e falhou o objetivo de 2 s. Priorizar criação/migração e cache de pools/metadados, preparar statements SQLite e isolar o escritor/decoders em workers são incrementos concretos a medir separadamente. Não foram aplicadas otimizações não testadas durante o ensaio.
+
+Armazenamento final: 112.614.304 bytes; máximo entre snapshots: 117.970.304 bytes, incluindo SQLite/WAL/SHM. A retenção limitou os dados brutos/observações; o contador cumulativo de inserções não representa a quantidade ainda retida. Foram observadas 26 reconexões e 0 falhas de persistência. Cobertura permanece **PARTIAL**.

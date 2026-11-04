@@ -1,13 +1,13 @@
 # Protocol coverage and evidence
 
-Observed on Solana Mainnet, 2026-11-03. This is partial instruction coverage, not complete protocol support. Runtime subscriptions observe programme mentions; only successful actual invocations with recognised binary events/instructions produce canonical market events. Merely mentioning an address, token name, SPL transfer, or log word never proves a swap.
+Observed on Solana Mainnet, 2026-11-03 and 2026-11-04. This is partial instruction coverage, not complete protocol support. Runtime subscriptions observe programme mentions; only successful actual invocations with recognised binary events/instructions produce canonical market events. Merely mentioning an address, token name, SPL transfer, or log word never proves a swap.
 
 | Protocol | Official programme ID | Real Mainnet fixtures verified | Implemented but Mainnet UNVERIFIED | Not implemented |
 |---|---|---|---|---|
 | Pump.fun | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` | `create_v2` creation/creator/Token-2022, initial buy, v2 routed buy, v3 buy and routed sell, protocol-reported reserves, `CompleteEvent` graduation, `migrate_v2` / `CompletePumpAmmMigrationEvent` migration | `PostCompleteBuyEvent` | Authority-change instruction monitoring, exact progress denominator unless proven, arbitrary future layouts |
-| PumpSwap | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` | Routed buy/sell, SOL and non-SOL quotes, pool and user accounts, `CreatePoolEvent` during actual Pump migration | `DepositEvent`, `WithdrawEvent`, negative virtual quote extension semantics | Full multihop route economic attribution, future layouts |
-| Raydium LaunchLab | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` | `initialize_v2` creation/curve/creator/first buy, routed buy, curve reserve/sold-state fields | Sell, graduation status `Migrate`, successful migration to CPMM/AMMv4 | Liquidity locking proof, future layouts |
-| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | Routed sell `SwapEvent` exact binary amounts/mints/user; `initialize` pool creation; address-mention negative fixture | Buy, permissioned pool creation `initialize_with_permission`, `LpChangeEvent` | Ambiguous base/quote pairs without a unique recognised WSOL/USDC quote; general other Raydium programmes |
+| PumpSwap | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` | Routed buy/sell, SOL and non-SOL quotes, pool and user accounts, `CreatePoolEvent` during actual Pump migration; `WithdrawEvent` exact known prefix matched to transfers (`INCOMPLETE`, eight-byte unknown suffix) | `DepositEvent`, negative virtual quote extension semantics | Full multihop route economic attribution, future layouts |
+| Raydium LaunchLab | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` | `initialize_v2` creation/curve/creator/first buy, routed buy and routed Token-2022 sell, curve reserve/sold-state fields | Graduation status `Migrate`, successful migration to CPMM/AMMv4 | Liquidity locking proof, future layouts |
+| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` | Routed buy/sell `SwapEvent` exact binary amounts/mints/user; `initialize` pool creation; deposit `LpChangeEvent` matched to balances/transfers; address-mention negative fixture | Permissioned pool creation `initialize_with_permission`, withdrawal `LpChangeEvent` | Ambiguous base/quote pairs without a unique recognised WSOL/USDC quote; general other Raydium programmes |
 
 ## Sources and deployment drift
 
@@ -38,3 +38,9 @@ A bounded second investigation used 11 RPC calls with at least 2.1 seconds betwe
 - The mainnet `create_pool_fee_reveiver::ID` in the pinned official CPMM source is `DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8`; its signature history yielded an actual CPMM `initialize`. Programme ID, successful invocation, discriminator and instruction mint/pool accounts prove pool creation. Requested initial amounts are not silently represented as final reserves.
 
 No paid provider, transaction submission, wallet signing, or infrastructure change was used.
+
+## Additional finalized transaction proof, 2026-11-04
+
+Four further finalized transactions and their original observed logs are recorded in [LIVE-VALIDATION-MANIFEST.json](../fixtures/LIVE-VALIDATION-MANIFEST.json). They validate CPMM buy/deposit, LaunchLab sell and PumpSwap withdrawal with the frozen runtime source `54cd0dd`. The [capture notes](../fixtures/LIVE-VALIDATION.md) distinguish protocol-reported amounts from wallet balance changes. LaunchLab's net input is not relabelled as gross wallet debit; the observed difference does not prove any particular mint fee configuration. PumpSwap withdrawal has eight trailing bytes beyond the pinned IDL, so it remains incomplete.
+
+Instruction-derived PumpSwap mints are accepted only from accounts whose pool matches the binary event pool. Ambiguous nesting preserves null mint fields rather than borrowing an outer pool's assets. Deterministic adversarial tests cover this rule; no Mainnet corruption was asserted.

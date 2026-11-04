@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "sourceCodeCommit": "54cd0dd12b5e61ac316a425135a219cc71b85064",
+  "artifacts": {
+    "final-mainnet-60m-20261104-baseline.json": {
+      "bytes": 2905,
+      "sha256": "f13a372e7af8077bd19b50daeb1596db6df39d0fe5d2481f835e304b6e4992a2"
+    },
+    "final-mainnet-60m-guarded-20261104-baseline.json": {
+      "bytes": 2900,
+      "sha256": "9b2ab9d50fb1978d3f6c1c2bc6204d60a3a86dbe7e64890db05ba0a0537e74bd"
+    },
+    "interrupted-http.json": {
+      "bytes": 346370,
+      "sha256": "3291d923564cf57602a9e8a823ddfbcb088e3498039fe9d362b645158cf1249c"
+    },
+    "interrupted-logs.json": {
+      "bytes": 149775,
+      "sha256": "beafa8126aa11b18030d46c6e8c03106bf9905e57bdeff2911af7ad0a5fa0efe"
+    },
+    "live-fixture-probe.json": {
+      "bytes": 9336,
+      "sha256": "ce7ec14fb40a483b06406cb3a2751fb8e8d173e6c90269b41b4cb18e5b3cf959"
+    },
+    "mainnet-60m-baseline.json": {
+      "bytes": 2290,
+      "sha256": "7da16b1123d32af5b02650d59afede839c244f1ab95367130d2d6da944086ec5"
+    },
+    "mainnet-api-evidence-replay.json": {
+      "bytes": 336464,
+      "sha256": "b4b6ea236655e324414686b915df8a7cc47ba8d35a859c3b79489bdfa19f2e6a"
+    },
+    "mainnet-final-60m.json": {
+      "bytes": 7958421,
+      "sha256": "fac404495cc771308a3dab7de763f487fe5dfc42e5972a5533f7bd7f7ea22e81"
+    },
+    "mainnet-final-storage-check.json": {
+      "bytes": 61114,
+      "sha256": "a3a9b4e3164a998d3a0bba8af12b5634f88081270e8b4a96de96483220aa2e48"
+    },
+    "mainnet-final-summary.json": {
+      "bytes": 8735,
+      "sha256": "890bc21c5eb722cd5e69995c477c06508e5311ccc54c6ee3a80d84b04d653216"
+    },
+    "mainnet-initial-60s.json": {
+      "bytes": 45046,
+      "sha256": "993022d59df9933fbd3b99efbc7ffbddd10fe50e54306193c56be14ca26862c7"
+    },
+    "mainnet-latency-spike.json": {
+      "bytes": 22267,
+      "sha256": "942ec5adb115a913741a68b1584ee2d242a968b491bbaf7a842fe30a0529521c"
+    },
+    "mainnet-logpath-smoke-23s.json": {
+      "bytes": 35396,
+      "sha256": "40088f61af10e1f418b0be44d5fa215de066b16d53d093fb1be8980cc886eb71"
+    },
+    "mainnet-performance.png": {
+      "bytes": 236573,
+      "sha256": "63bff2e06d761d8e7b52a6918b055633288bf24dccb49d474fcad57c5c508e9d"
+    },
+    "mainnet-performance.svg": {
+      "bytes": 104542,
+      "sha256": "46571d0b45e6db748a34ad15c3998174629857f6c3388cea0876502a46f2fa82"
+    },
+    "mainnet-pre-attribution-fix-531s.json": {
+      "bytes": 1164314,
+      "sha256": "667356d82deb9102a72f8e64af1f27a67e41466235d8b68b7735c70ad51ca05b"
+    },
+    "mainnet-program-probe.json": {
+      "bytes": 3443,
+      "sha256": "b6d859aaece5f87312bad484ce814b10fd9ca7a7c7c38db360f89fef65006817"
+    },
+    "mainnet-retained-capacity-sample.json": {
+      "bytes": 652,
+      "sha256": "6859e666158807237abbc2619e562ac85380eb3f023cd9c258de922480027d3f"
+    },
+    "mainnet-security-checkpoint-snapshot.json": {
+      "bytes": 12378,
+      "sha256": "b8d4f981c1c4625c58c191aa543062691a11df06184141494c662fb06cdedf44"
+    },
+    "npm-audit.json": {
+      "bytes": 358,
+      "sha256": "b966435ec31b7d61483d849d853d936f86183d654661604e532f1be934735a79"
+    },
+    "test-summary.json": {
+      "bytes": 359,
+      "sha256": "6ca69b611304223cfb2645e14b7807f2be923e71281c73442334e40e8fdb1a19"
+    },
+    "tests-node22.tap": {
+      "bytes": 37754,
+      "sha256": "c60f9236215cda0ebe86a7dfa980d4400ede4294843ace3e635a986c03a11bbe"
+    },
+    "tests-node24.tap": {
+      "bytes": 39078,
+      "sha256": "91a3a9c6b289bfe2925ab1fa87bbf122225b6cc6630367fa6e02fac0ef72236f"
+    }
+  }
+}

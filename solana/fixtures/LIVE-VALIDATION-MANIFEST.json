@@ -1,0 +1,227 @@
+{
+  "kind": "REAL_MAINNET_TRANSACTION_FIXTURES",
+  "sourceCommit": "54cd0dd12b5e61ac316a425135a219cc71b85064",
+  "description": "Additional finalized transaction evidence selected from observed mainnet RPC logs during the guarded soak. Raw getTransaction response bodies are unmodified. Notifications and observations are serialized snapshots of persisted scanner payloads; log array hashes match scanner evidence.",
+  "fixtures": [
+    {
+      "file": "raydium-cpmm-buy-live-mainnet.json",
+      "source": "https://api.mainnet-beta.solana.com",
+      "capturedAt": "2026-11-04T07:20:04.926Z",
+      "method": "getTransaction",
+      "params": [
+        "5YBKmZ3RF9K2Hnj6ZCPEpyjsfuJqdjqaphYH2uPXo7eLUofsuu7FN775Nxdvq2wZUqUXDxhpKgyt6Aqr6c78P6Lh",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "signature": "5YBKmZ3RF9K2Hnj6ZCPEpyjsfuJqdjqaphYH2uPXo7eLUofsuu7FN775Nxdvq2wZUqUXDxhpKgyt6Aqr6c78P6Lh",
+      "slot": 465215221,
+      "version": 0,
+      "confirmationStatus": "finalized",
+      "sha256": "482a87a02f750cd507636e1f3252c4dd2e384441dafe30ed73c4206f0e2929b6",
+      "synthetic": false,
+      "representation": "UNMODIFIED_HTTP_JSON_RPC_RESPONSE_BODY",
+      "notificationFile": "raydium-cpmm-buy-live-mainnet-notification.json",
+      "notificationSha256": "73764009556c291c8a458b8a1f2be72531fe1365429209d29507ee89a91dac44",
+      "observationFile": "raydium-cpmm-buy-live-mainnet-observation.json",
+      "observationSha256": "46acd60195ec46582d86676c0bad8193ea888128eb46a69f165ee05481f30e28",
+      "sourceMessageSha256": "7f763b2dba264ccbcab2fc649b457dbe794b6332ef12d988cb37afba5f950096",
+      "targetEventType": "TOKEN_BOUGHT",
+      "protocol": "raydium_cpmm",
+      "diagnostics": [],
+      "decodedEvents": [
+        {
+          "eventType": "TOKEN_BOUGHT",
+          "protocol": "raydium_cpmm",
+          "tokenMint": "9NiHcbT8EohKJid1RdU3232tATmM1CvYemTeCP5iwro",
+          "quoteMint": "So11111111111111111111111111111111111111112",
+          "poolAddress": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+          "wallet": "DE2QJA9pMeCQtpXARPnMaTPKhFaScxuQQeGbamWjwmNY",
+          "amountTokenRaw": "3787710841",
+          "amountQuoteRaw": "5000000",
+          "completeness": "COMPLETE",
+          "missingFields": [],
+          "evidenceSource": {
+            "kind": "anchor_program_data",
+            "eventName": "SwapEvent",
+            "idlSha256": "1202f6dc8e1c3216598f2ad5c620b9aa8c64ac584563fafed68125c27fb6df81",
+            "transactionSignature": "5YBKmZ3RF9K2Hnj6ZCPEpyjsfuJqdjqaphYH2uPXo7eLUofsuu7FN775Nxdvq2wZUqUXDxhpKgyt6Aqr6c78P6Lh"
+          }
+        }
+      ]
+    },
+    {
+      "file": "pumpswap-withdraw-live-mainnet.json",
+      "source": "https://api.mainnet-beta.solana.com",
+      "capturedAt": "2026-11-04T07:20:19.859Z",
+      "method": "getTransaction",
+      "params": [
+        "k7T73r5bpfAdoCxS47kSP7DSNTtA1Mvbj7WLKEHZ4JV6Cw2zPmm9x4NTVUiv9RfjBFMmfK2wA6UmzjyWYHmUwdE",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "signature": "k7T73r5bpfAdoCxS47kSP7DSNTtA1Mvbj7WLKEHZ4JV6Cw2zPmm9x4NTVUiv9RfjBFMmfK2wA6UmzjyWYHmUwdE",
+      "slot": 465215224,
+      "version": 0,
+      "confirmationStatus": "finalized",
+      "sha256": "bf6860fa1bfd4927ba7c9fe23f985d5ff088724bf8194333f0d8430dcd930633",
+      "synthetic": false,
+      "representation": "UNMODIFIED_HTTP_JSON_RPC_RESPONSE_BODY",
+      "notificationFile": "pumpswap-withdraw-live-mainnet-notification.json",
+      "notificationSha256": "e8a5b6b97e000d597d92a767196d0473f2769245e4849f8fdb44bab9a1485b25",
+      "observationFile": "pumpswap-withdraw-live-mainnet-observation.json",
+      "observationSha256": "ad792235a3d177cee81ee82aee25b258d4388413543fcf98b9ba76a9d26a0ae7",
+      "sourceMessageSha256": "4cd9fd2f117495abeb53bbba7b9cab757d90db31ebbd5f20fdc4840f226c9d18",
+      "targetEventType": "LIQUIDITY_REMOVED",
+      "protocol": "pump_swap",
+      "diagnostics": [
+        {
+          "code": "EVENT_TRAILING_BYTES",
+          "eventName": "WithdrawEvent",
+          "bytes": 8
+        }
+      ],
+      "decodedEvents": [
+        {
+          "eventType": "LIQUIDITY_REMOVED",
+          "protocol": "pump_swap",
+          "tokenMint": "So11111111111111111111111111111111111111112",
+          "quoteMint": "63D1CM1w82so55yRNYciyez79RtzAmCXiekraEDL5UeQ",
+          "poolAddress": "2ooHNGh1QGQzLM1VvVUXkfRDEk7yVhvi8tPS3YJC9ZQJ",
+          "wallet": "7ZX39RMAxqcESVamv2jWVj8GuYryj9g1snDPUmFAowjd",
+          "amountTokenRaw": "393487206758",
+          "amountQuoteRaw": "6438956338798",
+          "completeness": "INCOMPLETE",
+          "missingFields": [],
+          "evidenceSource": {
+            "kind": "anchor_emit_cpi",
+            "eventName": "WithdrawEvent",
+            "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+            "transactionSignature": "k7T73r5bpfAdoCxS47kSP7DSNTtA1Mvbj7WLKEHZ4JV6Cw2zPmm9x4NTVUiv9RfjBFMmfK2wA6UmzjyWYHmUwdE"
+          }
+        }
+      ]
+    },
+    {
+      "file": "raydium-launchlab-sell-live-mainnet.json",
+      "source": "https://api.mainnet-beta.solana.com",
+      "capturedAt": "2026-11-04T07:20:34.847Z",
+      "method": "getTransaction",
+      "params": [
+        "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "signature": "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa",
+      "slot": 465215229,
+      "version": 1,
+      "confirmationStatus": "finalized",
+      "sha256": "06bf1bfb28c7c4c2cf31b76dfbc46ae6f8acb28e115b96788f25069c6e9c939e",
+      "synthetic": false,
+      "representation": "UNMODIFIED_HTTP_JSON_RPC_RESPONSE_BODY",
+      "notificationFile": "raydium-launchlab-sell-live-mainnet-notification.json",
+      "notificationSha256": "34ea1bce29f94602967ae1e083c1d9014439089dfbaa64dc868e10b778e3a249",
+      "observationFile": "raydium-launchlab-sell-live-mainnet-observation.json",
+      "observationSha256": "ea794a94390c5b8a7a7507ea179d3726844d852b5760b39633fdcb21a63f20c5",
+      "sourceMessageSha256": "f009bf2d91ba56af13ab92760beda50b3fd85c991dae93157aaa317a7568c410",
+      "targetEventType": "TOKEN_SOLD",
+      "protocol": "raydium_launchlab",
+      "diagnostics": [],
+      "decodedEvents": [
+        {
+          "eventType": "TOKEN_SOLD",
+          "protocol": "raydium_launchlab",
+          "tokenMint": "BHNMLnhoboeNhxkVP3EYWWm78gp3oQyA4ZumjXE6PuXG",
+          "quoteMint": "So11111111111111111111111111111111111111112",
+          "poolAddress": "DxdPD3TiLjmQPXGfkPeHUeaxUCtyNwqKw3nvYHqKjiC2",
+          "wallet": "CZHo6oDBnrd5eftKnrFiWF7JYcFPVB7CkwnCsMtophA9",
+          "amountTokenRaw": "1461251792189",
+          "amountQuoteRaw": "112716209",
+          "completeness": "COMPLETE",
+          "missingFields": [],
+          "evidenceSource": {
+            "kind": "anchor_emit_cpi",
+            "eventName": "TradeEvent",
+            "idlSha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb",
+            "transactionSignature": "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa"
+          }
+        },
+        {
+          "eventType": "CURVE_PROGRESS_UPDATED",
+          "protocol": "raydium_launchlab",
+          "tokenMint": "BHNMLnhoboeNhxkVP3EYWWm78gp3oQyA4ZumjXE6PuXG",
+          "quoteMint": "So11111111111111111111111111111111111111112",
+          "poolAddress": "DxdPD3TiLjmQPXGfkPeHUeaxUCtyNwqKw3nvYHqKjiC2",
+          "wallet": "CZHo6oDBnrd5eftKnrFiWF7JYcFPVB7CkwnCsMtophA9",
+          "amountTokenRaw": null,
+          "amountQuoteRaw": null,
+          "completeness": "COMPLETE",
+          "missingFields": [],
+          "evidenceSource": {
+            "kind": "anchor_emit_cpi",
+            "eventName": "TradeEvent",
+            "idlSha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb",
+            "transactionSignature": "5zxj2nBxmoJNw5Tm9A8MuBTU4tFRHrnpP27s1iAs9sjPB7Ug9no7JYgZqnb5sVNeUycaXJ65rCALPiJrU8m17YJa"
+          }
+        }
+      ]
+    },
+    {
+      "file": "raydium-cpmm-deposit-live-mainnet.json",
+      "source": "https://api.mainnet-beta.solana.com",
+      "capturedAt": "2026-11-04T07:20:49.863Z",
+      "method": "getTransaction",
+      "params": [
+        "3HsVr9zkSCAQAaxV5Afq6pdyuGCfRJxgvEV65JhoXMTBVam5NoHEmvnxhvw4FUTCbnKV5oGymdKieGx8RgLAvfdQ",
+        {
+          "encoding": "json",
+          "commitment": "finalized",
+          "maxSupportedTransactionVersion": 1
+        }
+      ],
+      "signature": "3HsVr9zkSCAQAaxV5Afq6pdyuGCfRJxgvEV65JhoXMTBVam5NoHEmvnxhvw4FUTCbnKV5oGymdKieGx8RgLAvfdQ",
+      "slot": 465215251,
+      "version": 0,
+      "confirmationStatus": "finalized",
+      "sha256": "84a1c59a1f1f7e67647049ca22c86020207851b5780bef63b5912ea61f578c38",
+      "synthetic": false,
+      "representation": "UNMODIFIED_HTTP_JSON_RPC_RESPONSE_BODY",
+      "notificationFile": "raydium-cpmm-deposit-live-mainnet-notification.json",
+      "notificationSha256": "d0cfc35b9d579f202251099cd66d2d5083e354093d4dd98232e05a9de7e3791a",
+      "observationFile": "raydium-cpmm-deposit-live-mainnet-observation.json",
+      "observationSha256": "d8d82bc2db2a591ea10e77d36999164234b100ebfd35431ffdd10afbe65820d2",
+      "sourceMessageSha256": "5d4c31fc170cbd1bb6bb46bac1953840e0fa6f69b052670a31199024267456cb",
+      "targetEventType": "LIQUIDITY_ADDED",
+      "protocol": "raydium_cpmm",
+      "diagnostics": [],
+      "decodedEvents": [
+        {
+          "eventType": "LIQUIDITY_ADDED",
+          "protocol": "raydium_cpmm",
+          "tokenMint": "5uY4RXyTkkHBkhatNzCmTphAhBS3LU6yaLd9b9uAhQAb",
+          "quoteMint": "So11111111111111111111111111111111111111112",
+          "poolAddress": "2wd4LcroE8D93c8y92J22ewiu2VVGFZwDv1rLbByndoU",
+          "wallet": "6vbGpTsZqdToRB9EbtsbrYyxGuEyZ2iSZJ3HCX98tnsj",
+          "amountTokenRaw": "8844415386",
+          "amountQuoteRaw": "6697359",
+          "completeness": "COMPLETE",
+          "missingFields": [],
+          "evidenceSource": {
+            "kind": "anchor_program_data",
+            "eventName": "LpChangeEvent",
+            "idlSha256": "1202f6dc8e1c3216598f2ad5c620b9aa8c64ac584563fafed68125c27fb6df81",
+            "transactionSignature": "3HsVr9zkSCAQAaxV5Afq6pdyuGCfRJxgvEV65JhoXMTBVam5NoHEmvnxhvw4FUTCbnKV5oGymdKieGx8RgLAvfdQ"
+          }
+        }
+      ]
+    }
+  ]
+}

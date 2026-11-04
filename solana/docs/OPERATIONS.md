@@ -17,7 +17,7 @@ Não existe daemon instalado nem servidor provisionado: o processo Node funciona
 
 ## Configuração
 
-[.env.example](../.env.example) lista todas as variáveis; exportar no ambiente do processo. O scanner não carrega automaticamente `.env`. Nunca inserir private keys. Os endpoints podem conter segredos privados: não devem ser publicados em relatórios. O RPC HTTP é verificado por `getGenesisHash` Mainnet antes de subscrever; o resultado WS é cruzado com a assinatura e slot da transação no RPC Mainnet. `maxSupportedTransactionVersion: 1` é necessário para as transações atuais observadas.
+[.env.example](../.env.example) lista todas as variáveis; exportar no ambiente do processo. O scanner não carrega automaticamente `.env`. Nunca inserir private keys. Os endpoints podem conter segredos privados: não devem ser publicados em relatórios. O RPC HTTP é verificado por `getGenesisHash` Mainnet antes de subscrever; os eventos enriquecidos cruzam assinatura e slot com a transação no RPC Mainnet. As observações por logs dependem do endpoint WS Mainnet corretamente configurado e não recebem uma consulta HTTP individual por observação. `maxSupportedTransactionVersion: 1` é necessário para as transações atuais observadas.
 
 - `SOLANA_RPC_HTTP_URL` / `SOLANA_RPC_WS_URL`: fontes configuráveis, defaults públicos oficiais.
 - `SOLANA_PROGRAMS`: CSV dos slugs `pump_fun,pump_swap,raydium_launchlab,raydium_cpmm`; restringir o universo reduz carga, mas **não garante** capacidade suficiente.
@@ -53,10 +53,16 @@ Conservar a base e respetivo WAL em backup SQLite consistente (backup API ou par
 
 ```sh
 SOLANA_SOAK_SECONDS=3600 \
-SOLANA_DB_PATH=runtime/soak/scanner.sqlite \
-SOLANA_QUEUE_CAPACITY=32 \
-SOLANA_RECOVERY_PAGE_SIZE=5 \
+SOLANA_REPORT_DIR=runtime/soak-validation \
+SOLANA_DB_PATH=runtime/soak-validation/scanner.sqlite \
+SOLANA_RPC_REQUESTS_PER_MINUTE=12 \
+SOLANA_QUEUE_CAPACITY=8 \
+SOLANA_MAX_DURABLE_BACKLOG=64 \
+SOLANA_MAX_OBSERVATION_ROWS=10000 \
+SOLANA_RECOVERY_PAGE_SIZE=2 \
 SOLANA_RECOVERY_MAX_PAGES=1 \
+SOLANA_RECOVERY_BACKLOG_THRESHOLD=100 \
+SOLANA_SECURITY_ENABLED=true \
 npm run soak
 ```
 
@@ -71,3 +77,5 @@ Neste modo o limite de backlog preserva o WebSocket e limita apenas a admissão 
 `SOLANA_MAX_OBSERVATION_ROWS=25000` limita o fluxo de logs a uma janela móvel por quantidade, além da retenção temporal dos dados brutos. Em carga alta isto pode representar apenas alguns minutos. Os contadores acumulados de deteção não significam que todas as observações continuam armazenadas. O contexto das transações selecionadas tem retenção própria. `logObservationLatencyMs` mede as notificações suportadas até ao COMMIT, separado da latência de eventos enriquecidos; consultar o âmbito da janela e os buckets acumulados nas métricas.
 
 Para ensaios concorrentes usar tanto `SOLANA_DB_PATH` como `SOLANA_HEALTH_PORT` e `SOLANA_REPORT_DIR` distintos. O limite RPC configurado aplica-se a cada processo; a quota do fornecedor pode ser partilhada entre ambos. Os ensaios desta entrega registam essa contenção explicitamente.
+
+Depois de um ensaio concluído, o utilitário opcional de relatório `python3 scripts/plot-report.py runtime/soak.json reports/mainnet-performance` exporta PNG e SVG com dados reais. Requer Python e matplotlib apenas para o gráfico; o scanner e os testes Node não dependem deles. O utilitário rejeita relatórios que não sejam `REAL_MAINNET_LIVE` e `DURATION_COMPLETED`.

@@ -1,0 +1,1782 @@
+{
+  "dataMode": "REAL_MAINNET_POST_RUN_STORAGE_VALIDATION",
+  "checkedAt": "2026-11-04T08:14:45.741Z",
+  "integrity": [
+    {
+      "integrity_check": "ok"
+    }
+  ],
+  "journalMode": {
+    "journal_mode": "wal"
+  },
+  "inboxStates": [
+    {
+      "status": "DONE",
+      "count": 462
+    },
+    {
+      "status": "FAILED",
+      "count": 303
+    },
+    {
+      "status": "PENDING",
+      "count": 65
+    }
+  ],
+  "transactionStates": [
+    {
+      "confirmation": "confirmed",
+      "reconciliation": "ACTIVE",
+      "count": 5
+    },
+    {
+      "confirmation": "confirmed",
+      "reconciliation": "FAILED",
+      "count": 2
+    },
+    {
+      "confirmation": "finalized",
+      "reconciliation": "ACTIVE",
+      "count": 457
+    },
+    {
+      "confirmation": "finalized",
+      "reconciliation": "FAILED",
+      "count": 41
+    },
+    {
+      "confirmation": "finalized",
+      "reconciliation": "REVERTED",
+      "count": 260
+    }
+  ],
+  "invalidRawAmountTypes": {
+    "count": 0
+  },
+  "checkpoints": [
+    {
+      "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+      "signature": "342zhu47j86fh4fKLMfEm9mgULMCaTN5oWbCgBypAqmdQpq9j6X2raGC1gLeQSJZ2qkQPXxZq23G3dvTouzoAX9S",
+      "slot": 465212611,
+      "recoveredAt": "2026-11-04T07:09:07.323Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "signature": "68GsEnBD8CSafz3U94KhALZkaVTGG4kbruSGxLL1hG1wwxiqXyeMpiP9EJpkGrvBzq82uVV61y4KnbFtxD1DsiS",
+      "slot": 465212681,
+      "recoveredAt": "2026-11-04T07:09:57.350Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+      "signature": "2xnzQRk5PLRCAcNrwqL8SJse8JjZC7REA7j7bEH67N7hP4YEDCiFVttRpmNy8tF7JDVSbdBm5fWuyfXqnY7vttCJ",
+      "slot": 465212982,
+      "recoveredAt": "2026-11-04T07:11:02.597Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    },
+    {
+      "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C",
+      "signature": "5XS22ZPTvj3JiWAZvy136etaEUZG7Y6G6bhdGEoMTKJewvRyDwQPteJcimWQ7aitwGVz4x2XHJafdA67qP1J5PWh",
+      "slot": 465213238,
+      "recoveredAt": "2026-11-04T07:11:57.967Z",
+      "continuity": "PARTIAL",
+      "transactionHoles": false,
+      "anchorReached": false,
+      "priorAnchor": null
+    }
+  ],
+  "securityReports": [
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999998805385756",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "a4b8307c54d3689ef4fe6762c0bdf7c5507d54048876108cc131e61e66fec077",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+      "checkedAt": "2026-11-04T07:11:57.971Z",
+      "contextSlot": 465213500,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999982494123682",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "734992846e5580c4eaa1d54e9a07955d464e5100ffd03d3597a8b219f45b38fc",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "7ymF66Z6VhgNiwadtVhjTtT6U7iQRpSxeiRrhfufhigh",
+      "checkedAt": "2026-11-04T07:15:49.263Z",
+      "contextSlot": 465214607,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": "5uVJjzgHV5a3o7cn9ynR2wXDA9i3dXwiBxBMRG5wYYKn",
+        "freezeAuthority": null,
+        "supplyRaw": "181645661759615",
+        "decimals": 9,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "020786f08327663b2c7bdec9a0e407c5ba28825bfdd0d6e11de8628e88267464",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "1NJMqVM4PadjuzYmeB7zV7q7DV8oB3ExaQCd9x6KsLz",
+      "checkedAt": "2026-11-04T07:20:18.361Z",
+      "contextSlot": 465215828,
+      "status": "REJECTED",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "REJECTED",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": "5uVJjzgHV5a3o7cn9ynR2wXDA9i3dXwiBxBMRG5wYYKn"
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999976846729885",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "91f56472a696bbbc4bf9cb034db6d3598c0f61acb7f74f94437bac39b4b2d363",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "5uY4RXyTkkHBkhatNzCmTphAhBS3LU6yaLd9b9uAhQAb",
+      "checkedAt": "2026-11-04T07:24:01.877Z",
+      "contextSlot": 465216889,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "97544732357583",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "734ae564a61f30db761b5faf1f4ee6f6880d4aae5ac312da21190d03547fd6dc",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "9JK2U7aEkp3tWaFNuaJowWRgNys5DVaKGxWk73VT5ray",
+      "checkedAt": "2026-11-04T07:27:17.204Z",
+      "contextSlot": 465217783,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "9997348437536795",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "932c5513c51d562ca19c8534a7759a436a07b63357403f504983d0d1233e16aa",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "4ytizhz37BwwzSDgvRLrwaEUPbpA1Vmv1eAsFR3WCray",
+      "checkedAt": "2026-11-04T07:30:41.892Z",
+      "contextSlot": 465218756,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999999999999998",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "ea15dcea77efcc58d7d99411dd08cc427ba6522e69f3b0d7113fa0b1f85939d7",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "6KphvjhrxCUyQAtcAYg4HDoSwsj4qfn1uP2KDEg8qPrJ",
+      "checkedAt": "2026-11-04T07:33:40.586Z",
+      "contextSlot": 465219581,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "1000000000000000000",
+        "decimals": 9,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 1,
+            "name": "TransferFeeConfig",
+            "byteLength": 108,
+            "sha256": "88e9ada9f8f2e9c11790322d8b57a05c97cebb095e76fee837a41dcf20510e47",
+            "status": "PASS",
+            "configAuthority": null,
+            "withdrawAuthority": "HdpVCMQBrRcUUSPJAXGp7azasVFszZZ5dcQiBwf3MMeE",
+            "withheldAmountRaw": "0",
+            "olderTransferFee": {
+              "epoch": "1063",
+              "maximumFeeRaw": "1000000000000000000",
+              "basisPoints": 0
+            },
+            "newerTransferFee": {
+              "epoch": "1063",
+              "maximumFeeRaw": "1000000000000000000",
+              "basisPoints": 0
+            }
+          },
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "abfbb98d01e3e836a2e57b19e1bdb319a2d5ccbf5bc3a03f406ccf356dd611f5",
+            "status": "PASS",
+            "authority": null,
+            "address": "5MVP56Cys6D2SmC7iXXWj9U3sxMWU9Sqquz2XY8JLosL"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 182,
+            "sha256": "16beb30762c8aa866fd4a1cd3a4a81afe0b79b0cc86b20cfdcc9c5f23ac81f3b",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "6f52f34bdbf072451bfab3b1c5a5d1e5da898b8f8b0ef9215b3c38747dd314e6",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "5MVP56Cys6D2SmC7iXXWj9U3sxMWU9Sqquz2XY8JLosL",
+      "checkedAt": "2026-11-04T07:36:38.504Z",
+      "contextSlot": 465220415,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 1,
+              "name": "TransferFeeConfig",
+              "byteLength": 108,
+              "sha256": "88e9ada9f8f2e9c11790322d8b57a05c97cebb095e76fee837a41dcf20510e47",
+              "status": "PASS",
+              "configAuthority": null,
+              "withdrawAuthority": "HdpVCMQBrRcUUSPJAXGp7azasVFszZZ5dcQiBwf3MMeE",
+              "withheldAmountRaw": "0",
+              "olderTransferFee": {
+                "epoch": "1063",
+                "maximumFeeRaw": "1000000000000000000",
+                "basisPoints": 0
+              },
+              "newerTransferFee": {
+                "epoch": "1063",
+                "maximumFeeRaw": "1000000000000000000",
+                "basisPoints": 0
+              }
+            },
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "abfbb98d01e3e836a2e57b19e1bdb319a2d5ccbf5bc3a03f406ccf356dd611f5",
+              "status": "PASS",
+              "authority": null,
+              "address": "5MVP56Cys6D2SmC7iXXWj9U3sxMWU9Sqquz2XY8JLosL"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 182,
+              "sha256": "16beb30762c8aa866fd4a1cd3a4a81afe0b79b0cc86b20cfdcc9c5f23ac81f3b",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999077884847323",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "198ea2d7c7bc395d5785727578a53b17df4b38be4dab45c6a2c5b2635ab6a067",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk",
+      "checkedAt": "2026-11-04T07:40:34.656Z",
+      "contextSlot": 465221520,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "999990092754471",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "0258a79920815696dfcc036d0eaaca53f1ad2b3d4d2d2e99f6cf76e31c6e57b4",
+            "status": "PASS",
+            "authority": null,
+            "address": "XCRhRTXg1SWcPSYE5p7jBrQd576ZL3hVSz7q3yUpump"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 159,
+            "sha256": "fee5aecfef1e0166e5a75a8d9196e875c93a6766a4c0df1ea67112510fd6df38",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "e37a1c5ba63cd67061c0cc8446d2c9a3b6d3d086070888019aaf55fa1caa9f2b",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "XCRhRTXg1SWcPSYE5p7jBrQd576ZL3hVSz7q3yUpump",
+      "checkedAt": "2026-11-04T07:43:25.773Z",
+      "contextSlot": 465222341,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "0258a79920815696dfcc036d0eaaca53f1ad2b3d4d2d2e99f6cf76e31c6e57b4",
+              "status": "PASS",
+              "authority": null,
+              "address": "XCRhRTXg1SWcPSYE5p7jBrQd576ZL3hVSz7q3yUpump"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 159,
+              "sha256": "fee5aecfef1e0166e5a75a8d9196e875c93a6766a4c0df1ea67112510fd6df38",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "1000000000000000",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "502d5eea1db79c1728160d8ad585494d0e97ba254783bf5bd3aea115249e3120",
+            "status": "PASS",
+            "authority": null,
+            "address": "hWgWqL4uzBSdji8EAvw3Kg33jShUS6UjxEZB9YBpump"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 188,
+            "sha256": "ce9b7906b0664f8aecff0fa2fe6ca78b07add98866254e7ce710bdc8833c8010",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "c2762904e6c26933f2863ec77110483947ab7cd3a120cc35a25b1007168354b6",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "hWgWqL4uzBSdji8EAvw3Kg33jShUS6UjxEZB9YBpump",
+      "checkedAt": "2026-11-04T07:45:57.228Z",
+      "contextSlot": 465223005,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "502d5eea1db79c1728160d8ad585494d0e97ba254783bf5bd3aea115249e3120",
+              "status": "PASS",
+              "authority": null,
+              "address": "hWgWqL4uzBSdji8EAvw3Kg33jShUS6UjxEZB9YBpump"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 188,
+              "sha256": "ce9b7906b0664f8aecff0fa2fe6ca78b07add98866254e7ce710bdc8833c8010",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "2000000000000000",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "0493a16bba48073ecc048f061e86ea99c221af0e5e3806e81c0abbbdab7e974c",
+            "status": "PASS",
+            "authority": null,
+            "address": "4z8HHecVPu2q1CuampT1Nh6huBB9gUzru6N2GDSXs3zS"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 160,
+            "sha256": "dced61abee53f71194b83192abc4cd23da179c429f9ede945f683d115ebc5663",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "daea61a740e8e7ce27b3e317fd6177953c574f9ece54f10a8bc88e784ed684f3",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "4z8HHecVPu2q1CuampT1Nh6huBB9gUzru6N2GDSXs3zS",
+      "checkedAt": "2026-11-04T07:48:38.662Z",
+      "contextSlot": 465223831,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "0493a16bba48073ecc048f061e86ea99c221af0e5e3806e81c0abbbdab7e974c",
+              "status": "PASS",
+              "authority": null,
+              "address": "4z8HHecVPu2q1CuampT1Nh6huBB9gUzru6N2GDSXs3zS"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 160,
+              "sha256": "dced61abee53f71194b83192abc4cd23da179c429f9ede945f683d115ebc5663",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "2000000000000000",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "33fd583b6a61b1ce64508a50593eb3199b67ce88630981f01f16e7f6a1c258c3",
+            "status": "PASS",
+            "authority": null,
+            "address": "FrDZuqvHmDZ6CxhNPyH7i3NFhfJkW5k4vHhCRkcXpump"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 160,
+            "sha256": "ad1a4224768c0bec293b8ae98c651ae69a7c6ba571fcc79c1bfc3eb33a05e7ab",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "c72351c6d030c303f94929ab093d6da795ebc0a612901693e2ce68b576f42eb6",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "FrDZuqvHmDZ6CxhNPyH7i3NFhfJkW5k4vHhCRkcXpump",
+      "checkedAt": "2026-11-04T07:52:05.006Z",
+      "contextSlot": 465224715,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "33fd583b6a61b1ce64508a50593eb3199b67ce88630981f01f16e7f6a1c258c3",
+              "status": "PASS",
+              "authority": null,
+              "address": "FrDZuqvHmDZ6CxhNPyH7i3NFhfJkW5k4vHhCRkcXpump"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 160,
+              "sha256": "ad1a4224768c0bec293b8ae98c651ae69a7c6ba571fcc79c1bfc3eb33a05e7ab",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "1000000000000000",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "89ae935b4fe319c75689650900faf7df9cbf50289367d68d6d684c57e84be9be",
+            "status": "PASS",
+            "authority": null,
+            "address": "55CikhgnEah3tPM4juQhqDoEKZJadtDhcefWv7gySW37"
+          },
+          {
+            "type": 1,
+            "name": "TransferFeeConfig",
+            "byteLength": 108,
+            "sha256": "067fd89e1d7a13cf1f8e7b96d0d561c7cfc45552bf8da7b5788331d24b6543d9",
+            "status": "REJECTED",
+            "configAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+            "withdrawAuthority": "5KXDF6QnqhBj72hDtJNkkpFaQVUfbFXNybMsp3DiK6tD",
+            "withheldAmountRaw": "2610673081153",
+            "olderTransferFee": {
+              "epoch": "1076",
+              "maximumFeeRaw": "1000000000000000",
+              "basisPoints": 300
+            },
+            "newerTransferFee": {
+              "epoch": "1076",
+              "maximumFeeRaw": "1000000000000000",
+              "basisPoints": 300
+            }
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 150,
+            "sha256": "4cf297c5ad4011a7b20c53165fbe2157ab91d68f782122f70a6a196b803038ab",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "3256709c464c7853bb7dcb3899e6482c71d5f6595fa01db1e4682e3066362d52",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "55CikhgnEah3tPM4juQhqDoEKZJadtDhcefWv7gySW37",
+      "checkedAt": "2026-11-04T07:55:51.194Z",
+      "contextSlot": 465225793,
+      "status": "REJECTED",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "REJECTED",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "89ae935b4fe319c75689650900faf7df9cbf50289367d68d6d684c57e84be9be",
+              "status": "PASS",
+              "authority": null,
+              "address": "55CikhgnEah3tPM4juQhqDoEKZJadtDhcefWv7gySW37"
+            },
+            {
+              "type": 1,
+              "name": "TransferFeeConfig",
+              "byteLength": 108,
+              "sha256": "067fd89e1d7a13cf1f8e7b96d0d561c7cfc45552bf8da7b5788331d24b6543d9",
+              "status": "REJECTED",
+              "configAuthority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+              "withdrawAuthority": "5KXDF6QnqhBj72hDtJNkkpFaQVUfbFXNybMsp3DiK6tD",
+              "withheldAmountRaw": "2610673081153",
+              "olderTransferFee": {
+                "epoch": "1076",
+                "maximumFeeRaw": "1000000000000000",
+                "basisPoints": 300
+              },
+              "newerTransferFee": {
+                "epoch": "1076",
+                "maximumFeeRaw": "1000000000000000",
+                "basisPoints": 300
+              }
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 150,
+              "sha256": "4cf297c5ad4011a7b20c53165fbe2157ab91d68f782122f70a6a196b803038ab",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": "31rYartQwHeBMjAe2MgGpffGV57fQY3kug4BDN8tLGqQ",
+        "freezeAuthority": null,
+        "supplyRaw": "999992748535300474",
+        "decimals": 9,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "214c457ebe716555ea71d8aa6be89bfe29095b4809d4ea7df719f7bff6b5b426",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs",
+      "checkedAt": "2026-11-04T07:59:36.514Z",
+      "contextSlot": 465226811,
+      "status": "REJECTED",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "REJECTED",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": "31rYartQwHeBMjAe2MgGpffGV57fQY3kug4BDN8tLGqQ"
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "mintAuthority": "6BTnpBJuWAxXS2m58kgG3gda2V81enUy4gPcX8Evb93h",
+        "freezeAuthority": null,
+        "supplyRaw": "1386899947754147427",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [],
+        "accountDataSha256": "5960a7879364f7d693653952aeba057fbd14c4e1d5050337a7bdd05b147e85aa",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "AUoSrSfvPYWhzDVksecaGrVLgsFeVYgRFsRmcKR9y7r",
+      "checkedAt": "2026-11-04T08:02:58.457Z",
+      "contextSlot": 465227759,
+      "status": "REJECTED",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "REJECTED",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": "6BTnpBJuWAxXS2m58kgG3gda2V81enUy4gPcX8Evb93h"
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "PASS",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": []
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    },
+    {
+      "mint": {
+        "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "mintAuthority": null,
+        "freezeAuthority": null,
+        "supplyRaw": "1000000000000000",
+        "decimals": 6,
+        "initialized": true,
+        "extensions": [
+          {
+            "type": 18,
+            "name": "MetadataPointer",
+            "byteLength": 64,
+            "sha256": "d925103784bb55e15e0c03f147ebad41b27ee4d7b3431fa73284d655532633c4",
+            "status": "PASS",
+            "authority": null,
+            "address": "Du9FSjR2B7bYHnfFnPoQDgG2XsKjB8JJAmuQiC1Xpump"
+          },
+          {
+            "type": 19,
+            "name": "TokenMetadata",
+            "byteLength": 166,
+            "sha256": "d8cc157d6955ef8804571701c486ddee370eb451d757c853b72a4da38aca895b",
+            "status": "INCOMPLETE"
+          }
+        ],
+        "accountDataSha256": "80afaebedb73029af827c68065f8ced73c7c15b5bb259a27915c8ed9eec44365",
+        "evidenceSource": {
+          "repository": "https://github.com/solana-program/token-2022",
+          "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+          "files": [
+            "interface/src/state.rs",
+            "interface/src/extension/mod.rs",
+            "interface/src/extension/transfer_fee/mod.rs",
+            "interface/src/extension/transfer_hook/mod.rs",
+            "interface/src/extension/pausable/mod.rs",
+            "interface/src/extension/permanent_delegate.rs",
+            "interface/src/extension/permissioned_burn/mod.rs"
+          ]
+        }
+      },
+      "tokenMint": "Du9FSjR2B7bYHnfFnPoQDgG2XsKjB8JJAmuQiC1Xpump",
+      "checkedAt": "2026-11-04T08:06:14.093Z",
+      "contextSlot": 465228693,
+      "status": "INCOMPLETE",
+      "creator": null,
+      "policy": "SOLANA_BASELINE_CONSERVATIVE_V1",
+      "securityConclusion": null,
+      "tradeApproved": false,
+      "creatorEvidence": "UNKNOWN",
+      "checks": {
+        "initialized": {
+          "status": "PASS",
+          "reason": "MINT_INITIALIZATION",
+          "value": true
+        },
+        "mintAuthority": {
+          "status": "PASS",
+          "reason": "ADDITIONAL_MINT_AUTHORITY",
+          "value": null
+        },
+        "freezeAuthority": {
+          "status": "PASS",
+          "reason": "FREEZE_AUTHORITY",
+          "value": null
+        },
+        "extensions": {
+          "status": "INCOMPLETE",
+          "reason": "EXTENSION_RESTRICTIONS",
+          "value": [
+            {
+              "type": 18,
+              "name": "MetadataPointer",
+              "byteLength": 64,
+              "sha256": "d925103784bb55e15e0c03f147ebad41b27ee4d7b3431fa73284d655532633c4",
+              "status": "PASS",
+              "authority": null,
+              "address": "Du9FSjR2B7bYHnfFnPoQDgG2XsKjB8JJAmuQiC1Xpump"
+            },
+            {
+              "type": 19,
+              "name": "TokenMetadata",
+              "byteLength": 166,
+              "sha256": "d8cc157d6955ef8804571701c486ddee370eb451d757c853b72a4da38aca895b",
+              "status": "INCOMPLETE"
+            }
+          ]
+        }
+      },
+      "holders": {
+        "status": "INCOMPLETE",
+        "ownerDistributionComplete": false
+      },
+      "liquidity": {
+        "status": "UNKNOWN"
+      },
+      "authorityHistory": {
+        "status": "INCOMPLETE",
+        "reason": "CURRENT_ACCOUNT_STATE_ONLY"
+      },
+      "evidenceSource": {
+        "repository": "https://github.com/solana-program/token-2022",
+        "revision": "c5d2c28cf997ac880b43ad091c92a794186c4a11",
+        "files": [
+          "interface/src/state.rs",
+          "interface/src/extension/mod.rs",
+          "interface/src/extension/transfer_fee/mod.rs",
+          "interface/src/extension/transfer_hook/mod.rs",
+          "interface/src/extension/pausable/mod.rs",
+          "interface/src/extension/permanent_delegate.rs",
+          "interface/src/extension/permissioned_burn/mod.rs"
+        ]
+      }
+    }
+  ],
+  "activeEventsLinkedToFailedTransactions": {
+    "count": 0
+  },
+  "reconciliationInterpretation": "FAILED/REVERTED transaction states include transactions originally observed with on-chain errors; they are not a count of chain reorganizations."
+}

@@ -1,0 +1,13 @@
+{
+  "dataMode": "REAL_MAINNET_RETAINED_OBSERVATIONS_SAMPLE",
+  "checkedAt": "2026-11-04T07:48:30.806Z",
+  "sourceCommit": "54cd0dd12b5e61ac316a425135a219cc71b85064",
+  "observations": 10000,
+  "uniqueSignatures": 8578,
+  "firstReceivedAtMs": 1793778463049,
+  "lastReceivedAtMs": 1793778510398,
+  "windowSeconds": 47.349,
+  "uniqueSignaturesPerSecond": 181.16538892056855,
+  "naiveGetTransactionRequestsPerMinute": 10869.923335234113,
+  "scope": "Retained supported log observations only; not all network transactions or traders. Naive estimate assumes one enrichment per observed unique signature and does not model cache or selective investigation."
+}

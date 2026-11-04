@@ -13,7 +13,7 @@ Foram usados endpoints públicos Solana Mainnet, sem API paga ou credenciais de 
 | [Smoke de logs](../reports/mainnet-logpath-smoke-23s.json) | 22,849 s | 3 | 1 genesis, 2 `getTransaction` | 0 no contador | Janela curta, inclui arranque |
 | [Logs interrompidos](../reports/interrupted-logs.json) | 304,226 s | 31 | 1 genesis, 21 `getTransaction`, 5 `getSignaturesForAddress`, 4 `getSignatureStatuses` | 1 | 6,11/min |
 | [Probe de programas](../reports/mainnet-program-probe.json) | 26,762 s entre início/fim | 10 | 1 genesis, 1 `getSlot`, 4 `getAccountInfo`, 4 `getSignaturesForAddress` | 0 no contador | Diagnóstico pontual |
-| Nova janela de 3600 s | **IN_PROGRESS** | A preencher a partir do relatório real final | Orçamento HTTP configurado de 6/min, quatro programas e logs separados | Sem resultado aprovado | — |
+| [Janela final](../reports/mainnet-final-summary.json) | 3609.912 s, concluído | 706 | 1 `getGenesisHash`, 490 `getTransaction`, 73 `getSignaturesForAddress`, 123 `getSignatureStatuses`, 19 `getAccountInfo` | 0 | 11.734/min |
 
 A investigação adicional de graduação/migração e criação CPMM fez 11 chamadas RPC documentadas em [PROTOCOL-COVERAGE.md](PROTOCOL-COVERAGE.md), com duas respostas RPC `429`, intervalos de pelo menos 2,1 s e pausa superior a 60 s. Estes pedidos de investigação não são os contadores do serviço. Não existe um contador único comprovado de todas as consultas ad hoc realizadas para obter as primeiras fixtures; não se inventa esse total.
 
@@ -34,3 +34,13 @@ O cliente aplica uma allowlist de métodos read-only, limite global por processo
 O armazenamento é SQLite local com WAL, lotes, índices, retenção temporal e limite por quantidade para observações. Não há uma escrita D1 por transação e não foram alteradas bases Cloudflare de produção. O limite de 15.000 observações usado na tentativa interrompida de logs foi atingido; havia 132.100.824 bytes contabilizados no último checkpoint, incluindo base e ficheiros auxiliares. O valor é uma medição desse ensaio, não um custo ou limite universal.
 
 O próximo incremento de capacidade deve ser escolhido a partir de taxa real de transações únicas relevantes, cache, percentual de eventos que exigem contas e orçamento de histórico/finalização. As necessidades concretas são transporte WebSocket estável, capacidade HTTP sustentada e retenção histórica suficiente para a janela de desconexão; não se pressupõe Helius, Yellowstone pago ou infraestrutura enterprise.
+
+O probe adicional de fixtures de 2026-11-04 fez exatamente quatro `getTransaction` finalizados, espaçados a 4/min, sem retries, erros ou 429. O [relatório separado](../reports/live-fixture-probe.json) conserva cada tentativa. Esse consumo não está incluído no contador de 12/min do serviço; houve sobreposição durante aproximadamente 45 segundos. Nenhuma latência desse probe é usada como latência operacional do scanner.
+
+## Balanço final de capacidade
+
+O serviço registou 706 tentativas HTTP, 41 erros RPC/transporte, 35 retries e 0 erros de rate limit na hora final. Zero 429 não significa zero erros de rede. O orçamento de 12/min foi partilhado por enriquecimento, histórico, finalização e segurança; o probe de quatro transações foi contabilizado separadamente.
+
+Foram recebidas 1.764.929 notificações e 1.764.236 não foram admitidas para enriquecimento HTTP devido à capacidade. Isto não equivale a esse número de eventos de mercado perdidos: há notificações duplicadas, transações falhadas e observações binárias já disponíveis no fluxo parcial. 462 transações foram processadas com enriquecimento; não se promete contexto de todas as assinaturas recebidas.
+
+Uma [amostra local contemporânea](../reports/mainnet-retained-capacity-sample.json) das últimas 10.000 observações continha 8578 assinaturas distintas em 47,349 s: cerca de 181 assinaturas/s. Uma chamada por assinatura exigiria aproximadamente 10.870 pedidos/min apenas nessa amostra, antes de leituras auxiliares. A amostra abrange somente eventos suportados ainda retidos, não a rede inteira nem traders; cache e investigação seletiva podem reduzir muito essa necessidade. A capacidade adicional concreta é contexto HTTP/histórico compatível com o universo escolhido, não necessariamente um fornecedor pago.

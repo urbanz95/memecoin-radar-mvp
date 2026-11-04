@@ -1,0 +1,405 @@
+{
+  "dataMode": "REAL_MAINNET_OPERATIONAL_VALIDATION",
+  "sourceCodeCommit": "54cd0dd12b5e61ac316a425135a219cc71b85064",
+  "runtimeSourceHashesMatched": true,
+  "startedAt": "2026-11-04T07:08:52.161Z",
+  "endedAt": "2026-11-04T08:09:02.073Z",
+  "elapsedSeconds": 3609.912,
+  "continuousProcess60MinutesCompleted": true,
+  "coverage": "PARTIAL",
+  "finalHealthStatus": "DEGRADED",
+  "httpRequests": 706,
+  "httpMethods": {
+    "getGenesisHash": 1,
+    "getTransaction": 490,
+    "getSignaturesForAddress": 73,
+    "getSignatureStatuses": 123,
+    "getAccountInfo": 19
+  },
+  "httpRequestsPerMinuteAverage": 11.734358067454277,
+  "rpcErrors": 41,
+  "rateLimitErrors": 0,
+  "reconnects": 26,
+  "persistenceFailures": 0,
+  "notificationsReceived": 1764929,
+  "logObservationInsertions": 854487,
+  "retainedLogObservations": 10000,
+  "contextEnrichmentSkippedNotifications": 1764236,
+  "normalizedEnrichedEventsRetained": 503,
+  "enrichedTransactionsProcessed": 462,
+  "gapRecordsRetained": 403,
+  "storageBytesFinal": 112614304,
+  "storageBytesMaxSampled": 117970304,
+  "logObservationLatency": {
+    "count": 712403,
+    "retainedSamples": 4096,
+    "p50": 226,
+    "p95": 910,
+    "p99": 934,
+    "max": 2593,
+    "mean": 239.1089046508788,
+    "totalMaxMs": 9488,
+    "cumulativeBuckets": [
+      {
+        "upperBoundMs": 1,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 5,
+        "count": 16
+      },
+      {
+        "upperBoundMs": 10,
+        "count": 48
+      },
+      {
+        "upperBoundMs": 25,
+        "count": 498
+      },
+      {
+        "upperBoundMs": 50,
+        "count": 1334
+      },
+      {
+        "upperBoundMs": 100,
+        "count": 32723
+      },
+      {
+        "upperBoundMs": 250,
+        "count": 509491
+      },
+      {
+        "upperBoundMs": 500,
+        "count": 692143
+      },
+      {
+        "upperBoundMs": 1000,
+        "count": 706390
+      },
+      {
+        "upperBoundMs": 2000,
+        "count": 709726
+      },
+      {
+        "upperBoundMs": 5000,
+        "count": 711626
+      },
+      {
+        "upperBoundMs": 10000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 30000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 60000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 120000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 300000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 600000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": 3600000,
+        "count": 712403
+      },
+      {
+        "upperBoundMs": "Infinity",
+        "count": 712403
+      }
+    ],
+    "cumulativeQuantileUpperBounds": {
+      "p50": 250,
+      "p95": 500,
+      "p99": 1000
+    },
+    "cumulativeQuantileOverflow": {
+      "p50": false,
+      "p95": false,
+      "p99": false
+    },
+    "percentileScope": "last 4096 observations",
+    "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+  },
+  "enrichedEventLatency": {
+    "count": 300,
+    "retainedSamples": 300,
+    "p50": 359649,
+    "p95": 470519,
+    "p99": 497085,
+    "max": 530736,
+    "mean": 354605.60333333333,
+    "totalMaxMs": 530736,
+    "cumulativeBuckets": [
+      {
+        "upperBoundMs": 1,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 5,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 10,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 25,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 50,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 100,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 250,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 500,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 1000,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 2000,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 5000,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 10000,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 30000,
+        "count": 2
+      },
+      {
+        "upperBoundMs": 60000,
+        "count": 6
+      },
+      {
+        "upperBoundMs": 120000,
+        "count": 12
+      },
+      {
+        "upperBoundMs": 300000,
+        "count": 41
+      },
+      {
+        "upperBoundMs": 600000,
+        "count": 300
+      },
+      {
+        "upperBoundMs": 3600000,
+        "count": 300
+      },
+      {
+        "upperBoundMs": "Infinity",
+        "count": 300
+      }
+    ],
+    "cumulativeQuantileUpperBounds": {
+      "p50": 600000,
+      "p95": 600000,
+      "p99": 600000
+    },
+    "cumulativeQuantileOverflow": {
+      "p50": false,
+      "p95": false,
+      "p99": false
+    },
+    "percentileScope": "last 4096 observations",
+    "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+  },
+  "onchainToReceiveLatency": {
+    "count": 365,
+    "retainedSamples": 365,
+    "p50": 2275,
+    "p95": 21465,
+    "p99": 25735,
+    "max": 31031,
+    "mean": 6129.265753424657,
+    "totalMaxMs": 31031,
+    "cumulativeBuckets": [
+      {
+        "upperBoundMs": 1,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 5,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 10,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 25,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 50,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 100,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 250,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 500,
+        "count": 0
+      },
+      {
+        "upperBoundMs": 1000,
+        "count": 82
+      },
+      {
+        "upperBoundMs": 2000,
+        "count": 170
+      },
+      {
+        "upperBoundMs": 5000,
+        "count": 222
+      },
+      {
+        "upperBoundMs": 10000,
+        "count": 290
+      },
+      {
+        "upperBoundMs": 30000,
+        "count": 362
+      },
+      {
+        "upperBoundMs": 60000,
+        "count": 365
+      },
+      {
+        "upperBoundMs": 120000,
+        "count": 365
+      },
+      {
+        "upperBoundMs": 300000,
+        "count": 365
+      },
+      {
+        "upperBoundMs": 600000,
+        "count": 365
+      },
+      {
+        "upperBoundMs": 3600000,
+        "count": 365
+      },
+      {
+        "upperBoundMs": "Infinity",
+        "count": 365
+      }
+    ],
+    "cumulativeQuantileUpperBounds": {
+      "p50": 5000,
+      "p95": 30000,
+      "p99": 30000
+    },
+    "cumulativeQuantileOverflow": {
+      "p50": false,
+      "p95": false,
+      "p99": false
+    },
+    "percentileScope": "last 4096 observations",
+    "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+  },
+  "recentWindowSnapshotsWithP95AtLeast2s": [
+    {
+      "measuredAt": "2026-11-04T07:16:13.887Z",
+      "p95Ms": 3713
+    },
+    {
+      "measuredAt": "2026-11-04T07:23:29.093Z",
+      "p95Ms": 3156
+    },
+    {
+      "measuredAt": "2026-11-04T07:33:31.493Z",
+      "p95Ms": 2261
+    },
+    {
+      "measuredAt": "2026-11-04T07:33:41.684Z",
+      "p95Ms": 2888
+    },
+    {
+      "measuredAt": "2026-11-04T07:35:18.360Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T07:35:28.359Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T07:35:38.360Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T07:35:48.359Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T07:35:58.360Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T07:36:08.434Z",
+      "p95Ms": 9396
+    },
+    {
+      "measuredAt": "2026-11-04T08:03:35.440Z",
+      "p95Ms": 2275
+    },
+    {
+      "measuredAt": "2026-11-04T08:05:09.204Z",
+      "p95Ms": 2436
+    },
+    {
+      "measuredAt": "2026-11-04T08:05:19.358Z",
+      "p95Ms": 3830
+    },
+    {
+      "measuredAt": "2026-11-04T08:05:29.359Z",
+      "p95Ms": 2756
+    }
+  ],
+  "additionalFixtureProbe": {
+    "httpRequests": 4,
+    "errors": 0,
+    "retries": 0,
+    "separateFromScannerBudget": true
+  },
+  "limitations": [
+    "A continuous process is not continuous complete coverage; reconnections and gaps are preserved.",
+    "Log observations have incomplete transaction context and are separate from enriched events and market windows.",
+    "Whole-run quantiles are cumulative bucket upper bounds; recent-window quantiles are exact for at most 4096 retained samples.",
+    "Zero rate-limit errors does not mean zero transport or RPC errors.",
+    "The exact cause of local latency spikes was not isolated.",
+    "No paid service, trading, merge or production deployment was performed."
+  ]
+}

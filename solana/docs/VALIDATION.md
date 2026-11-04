@@ -6,14 +6,14 @@ A implementação tem três classes de prova separadas: testes determinísticos,
 
 | Verificação | Estado e evidência |
 |---|---|
-| Suite determinística final | **162/162** passaram em Node 24.19.0; TAP e resumo em `reports/` |
-| Compatibilidade Node 22.13 | **162/162** passaram em Node 22.13.0, sem testes live no comando CI |
-| Registos reais de protocolos | 14 fixtures de transações Mainnet, incluindo um caso negativo de mera menção ao programa, com signatures, slots e SHA-256 em [MANIFEST.json](../fixtures/MANIFEST.json) |
+| Suite determinística final | **168/168** passaram em Node 24.19.0; TAP e resumo em `reports/` |
+| Compatibilidade Node 22.13 | **168/168** passaram em Node 22.13.0, sem testes live no comando CI |
+| Registos reais de protocolos | 14 fixtures iniciais e quatro adicionais de transações Mainnet (18 no total), incluindo um caso negativo de mera menção ao programa, com signatures, slots e SHA-256 em [MANIFEST.json](../fixtures/MANIFEST.json) e [LIVE-VALIDATION-MANIFEST.json](../fixtures/LIVE-VALIDATION-MANIFEST.json) |
 | Program IDs e rede | [Probe Mainnet](../reports/mainnet-program-probe.json): genesis hash Mainnet e quatro contas de programa executáveis, sem erro no probe |
 | Ensaio live inicial | 60,438 s concluídos; evidenciou sobrecarga e falha do objetivo p95 de 2 s |
 | Primeira tentativa longa com enriquecimento HTTP | Interrompida pelo ambiente após 952,081 s observados; **não completou 60 minutos contínuos** |
 | Tentativa com observações por logs | Interrompida pelo ambiente após 304,226 s observados; **não completou a duração pedida** |
-| Nova janela contínua de 3600 s | **IN_PROGRESS** — preparação/reexecução; só será aprovada com relatório final `DURATION_COMPLETED`, duração efetiva ≥3600 s e revisão das lacunas |
+| Nova janela contínua de 3600 s | **Concluída: 3609.912 s**, `DURATION_COMPLETED`, código `54cd0dd`, cobertura **PARTIAL**; [resumo](../reports/mainnet-final-summary.json) e [relatório integral](../reports/mainnet-final-60m.json) |
 
 Os ensaios interrompidos conservam as últimas amostras duráveis, não um relatório final de encerramento normal. A duração refere-se ao último checkpoint de métricas disponível; o instante exato da interrupção pode ser posterior. Não se somam janelas separadas para afirmar uma hora contínua. O código evoluiu entre os ensaios; os resultados antigos não são um benchmark da versão final. O manifesto [mainnet-60m-baseline.json](../reports/mainnet-60m-baseline.json) identifica a configuração e os hashes de fonte da primeira tentativa longa, não constitui prova de conclusão dessa tentativa.
 
@@ -65,3 +65,15 @@ Os relatórios em [PERFORMANCE.md](PERFORMANCE.md) e [RPC-CONSUMPTION.md](RPC-CO
 Uma janela contínua só confirma a estabilidade do processo e das métricas durante a duração observada. Reconexões, lacunas, retenção e limites HTTP continuam visíveis e impedem qualquer afirmação de cobertura total. O ensaio final deve conservar configuração, hashes/commit, relatório completo, exemplos verificáveis e consumo RPC. Não há aprovação de trading ou de segurança de tokens associada ao ensaio.
 
 Não foram enviados trades, mensagens Telegram, ordens, pedidos a LLMs ou transações assinadas. Não houve contratação de serviços pagos, deploy ou alteração das bases/configurações de produção Robinhood.
+
+## Ensaio final de uma hora
+
+Processo read-only contínuo entre 2026-11-04T07:08:52.161Z e 2026-11-04T08:09:02.073Z, sem alterar os ficheiros de execução durante a janela; todos os hashes de fonte foram conferidos. As interrupções anteriores não foram somadas a esta duração. O processo terminou normalmente após 3609.912 segundos. Estado final `DEGRADED` por limitação de contexto/cobertura, não aprovação integral do mercado.
+
+Houve 1.764.929 notificações, 854.487 inserções de observações ao longo da janela, 10.000 observações retidas e 503 eventos enriquecidos retidos. Estes conjuntos não são somados. Foram observadas 26 reconexões, 403 registos de lacunas e 0 falhas de persistência. O contador de lacunas inclui categorias e intervalos sobrepostos; não é um total conhecido de eventos perdidos.
+
+A p95 de logs da janela recente final foi 910 ms, enquanto o limite superior da p95 acumulada por buckets foi 500 ms. O máximo foi 9.488 ms; 14 snapshots tiveram p95 recente ≥2 s. Portanto não há garantia de dois segundos em todas as janelas. O enriquecimento de eventos teve p95 470.519 ms e não sustentou o objetivo de 2 s.
+
+O [probe adicional de fixtures](../reports/live-fixture-probe.json) efetuou quatro pedidos RPC fora do orçamento do serviço, todos documentados. São provas de decodificação de transações selecionadas, não medições de latência operacional. A API local também foi verificada por replay de logs e correspondência do hash de evidência. Os testes determinísticos finais são **168/168** em Node 24.19.0 e **168/168** em Node 22.13.0.
+
+A verificação pós-ensaio da base real devolveu `PRAGMA integrity_check = ok`, nenhum trabalho em `PROCESSING` e nenhum valor bruto financeiro com tipo numérico JSON indevido. Não existiam eventos `ACTIVE` associados a transações marcadas `FAILED`/`REVERTED`. O [relatório de armazenamento](../reports/mainnet-final-storage-check.json) conserva os estados: transações originalmente falhadas não são contadas como reorganizações de cadeia. O [manifesto dos artefactos](../reports/ARTIFACT-MANIFEST.json) permite conferir os hashes dos relatórios e gráficos.
