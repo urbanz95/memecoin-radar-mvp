@@ -1,0 +1,52 @@
+{
+  "startedAt": "2026-11-04T07:08:52.161Z",
+  "dataMode": "REAL_MAINNET_LIVE",
+  "status": "IN_PROGRESS",
+  "baseCommit": "b3827920450ba93eca066fa30bba3d2d1badcfeb",
+  "nodeVersion": "v24.19.0",
+  "config": {
+    "source": "public Solana Mainnet",
+    "programs": [
+      "pump_fun",
+      "pump_swap",
+      "raydium_launchlab",
+      "raydium_cpmm"
+    ],
+    "requestsPerMinute": 12,
+    "queueCapacity": 8,
+    "maxDurableBacklog": 64,
+    "maxObservationRows": 10000,
+    "recoveryPageSize": 2,
+    "recoveryMaxPages": 1,
+    "recoveryBacklogThreshold": 100,
+    "securityEnabled": true,
+    "logObservationsEnabled": true
+  },
+  "dependencies": {
+    "https-proxy-agent": "7.0.6",
+    "undici": "7.30.1",
+    "ws": "8.22.1"
+  },
+  "sourceSha256": {
+    "solana/src/api.mjs": "0cee251bee07825eddcdf79b4559dd10f75e11bf2ec5cb74cf450f88012b475a",
+    "solana/src/cli.mjs": "f7d8f49ce707be7b619c20e33f4fff90ee15f493aee28d3d266d1f630ae8d9a0",
+    "solana/src/config.mjs": "ad85e243375cdf9e6309ad9acac45fa5c609c09c5dbc6293ff6553c08e7f1c06",
+    "solana/src/events.mjs": "450793758f63cd73773428eb5956d38d45a275015057e4c1083a527fef9d3e4a",
+    "solana/src/log-observations.mjs": "b4053a5b5a7962bbba3576c56055da94599f39b49ca3c56d40c252b864633cec",
+    "solana/src/market.mjs": "706235401641af199e25a980c965853ad520a4e0b36a762b68f4b98b1784ee5b",
+    "solana/src/metrics.mjs": "d3d2639479d3c964ff4ab2487e6df73935dfc0c2dbdd9184c7f8272a1a65ff8c",
+    "solana/src/protocols/borsh.mjs": "4f012597b33ac9474e326935655d951553d280c9ea99fc2509348bb6341e5fe7",
+    "solana/src/protocols/index.mjs": "7edd603041401c61dbfb534b53f6ef492bf4a56b85874a182df6f576b6a63952",
+    "solana/src/protocols/pump.mjs": "269253dd072ff466c1f4780abff2105a23aca3b4d6008fd4d8e9521b33ac3c8d",
+    "solana/src/protocols/raydium.mjs": "b750c76c095d1cfff10790b32477c6074d3c5a56bb4ec3cef921edb502637d08",
+    "solana/src/protocols/registry.mjs": "a527dd1883c9f0efb0a380332c65746df8176487e5d66a04e102a0cdaf9e6e17",
+    "solana/src/queue.mjs": "011d0babaa0c6bc7c3d20d091c220ab675d7e0454cc3ebe6ce63a83abaa8b895",
+    "solana/src/recovery.mjs": "a78c8231df521c82b71eccf9109b9e4f0fd9e5890d914492fe48f2f67087b3a9",
+    "solana/src/rpc.mjs": "4dd8ac039b3eb87b75de68c88c08d13b6f27f81b55448fdbf060cd7d0facaf00",
+    "solana/src/scanner.mjs": "5b4c8360b183cb9110b6806f8066901aadfaf27a7d00c9f1ea71aeee65ad2022",
+    "solana/src/security.mjs": "44a51b3730d1112df31a4854c7dc828bfbf467802d1e992f836774f4ffbfb2d8",
+    "solana/src/store.mjs": "63ee1b985b84fb8e3a8ed7408515f5dafd9d9b7df5443d4dfad7e2f5e76f7f84",
+    "solana/src/websocket.mjs": "ea637fdba3029b7f47cf2a08ad45fc6e26c909916a3ce73ae810c2a07ba5c78a"
+  },
+  "fixtureManifestSha256": "2e9888af7a96ffb5e47de166c7afabd241a62f2152f27b27c73f5186d323fa5d"
+}

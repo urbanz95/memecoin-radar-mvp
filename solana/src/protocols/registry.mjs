@@ -152,6 +152,8 @@ export function decodeTransaction(input, options = {}) {
       for (const partial of mapped) {
         const missing = [
           "tokenMint",
+          "quoteMint",
+          "poolAddress",
           "wallet",
           "amountTokenRaw",
           "amountQuoteRaw",

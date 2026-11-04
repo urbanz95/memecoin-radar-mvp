@@ -6,8 +6,8 @@ A implementação tem três classes de prova separadas: testes determinísticos,
 
 | Verificação | Estado e evidência |
 |---|---|
-| Suite determinística final | **160/160** passaram em Node 24.19.0; TAP e resumo em `reports/` |
-| Compatibilidade Node 22.13 | **160/160** passaram em Node 22.13.0, sem testes live no comando CI |
+| Suite determinística final | **162/162** passaram em Node 24.19.0; TAP e resumo em `reports/` |
+| Compatibilidade Node 22.13 | **162/162** passaram em Node 22.13.0, sem testes live no comando CI |
 | Registos reais de protocolos | 14 fixtures de transações Mainnet, incluindo um caso negativo de mera menção ao programa, com signatures, slots e SHA-256 em [MANIFEST.json](../fixtures/MANIFEST.json) |
 | Program IDs e rede | [Probe Mainnet](../reports/mainnet-program-probe.json): genesis hash Mainnet e quatro contas de programa executáveis, sem erro no probe |
 | Ensaio live inicial | 60,438 s concluídos; evidenciou sobrecarga e falha do objetivo p95 de 2 s |

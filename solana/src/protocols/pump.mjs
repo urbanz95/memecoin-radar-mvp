@@ -1,7 +1,13 @@
 export const SOL_MINT = "So11111111111111111111111111111111111111112";
 const value = (...xs) => xs.find((x) => x !== undefined && x !== null) ?? null;
 export function mapPump(protocol, name, d, c) {
-  const accounts = c.parentNamedAccounts ?? c.namedAccounts ?? {};
+  const candidates = [c.namedAccounts, c.parentNamedAccounts].filter(Boolean);
+  // Instruction-only mints must belong to the pool proven by the binary event.
+  // Unknown nesting/stackHeight is not evidence that an outer pool owns this trade.
+  const accounts =
+    protocol === "pump_swap"
+      ? (candidates.find((a) => d.pool && a.pool === d.pool) ?? {})
+      : (c.parentNamedAccounts ?? c.namedAccounts ?? {});
   const common = {
     tokenMint: value(d.mint, d.base_mint, accounts.base_mint, accounts.mint),
     quoteMint: value(d.quote_mint, accounts.quote_mint),
@@ -42,6 +48,8 @@ export function mapPump(protocol, name, d, c) {
     common.wallet = d.creator ?? null;
     common.poolCreator = d.creator ?? null;
   }
+  if (protocol === "pump_swap" && (!common.tokenMint || !common.quoteMint))
+    common.completeness = "INCOMPLETE";
   const event = (eventType, extra = {}) => ({ ...common, eventType, ...extra });
   if (protocol === "pump_fun") {
     // Old event layouts predate quote_mint; they only priced native SOL. Explicitly

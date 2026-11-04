@@ -1,0 +1,5039 @@
+{
+  "dataMode": "REAL_MAINNET_LIVE_LOCAL_API_VERIFICATION",
+  "checkedAt": "2026-11-04T07:02:40.798Z",
+  "health": {
+    "schemaVersion": 1,
+    "chain": "solana",
+    "network": "mainnet-beta",
+    "mode": "READ_ONLY",
+    "status": "DEGRADED",
+    "startedAt": "2026-11-04T06:59:29.883Z",
+    "programs": [
+      {
+        "protocol": "pump_fun",
+        "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+      },
+      {
+        "protocol": "pump_swap",
+        "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      {
+        "protocol": "raydium_launchlab",
+        "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+      },
+      {
+        "protocol": "raydium_cpmm",
+        "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+      }
+    ],
+    "metrics": {
+      "startedAt": "2026-11-04T06:59:29.320Z",
+      "measuredAt": "2026-11-04T07:02:40.800Z",
+      "uptimeMs": 191480,
+      "counters": {
+        "rpc_requests": 39,
+        "rpc_method_getGenesisHash": 1,
+        "log_notifications": 93203,
+        "logDiagnostic_NO_SUPPORTED_LOG_EVENT": 23588,
+        "notificationsReceived": 93203,
+        "logDiagnostic_LOG_TRANSACTION_FAILED": 30093,
+        "logDiagnostic_EVENT_TRAILING_BYTES": 41690,
+        "logObservationsDecoded": 49059,
+        "logObservationsPersisted": 47404,
+        "rpc_budget_waits": 43,
+        "contextEnrichmentSkipped": 93113,
+        "recoveryGaps": 7,
+        "rpc_method_getTransaction": 27,
+        "transactionsProcessed": 26,
+        "events_processed": 17,
+        "decoderFailures": 0,
+        "rpc_method_getSignaturesForAddress": 5,
+        "logDiagnostic_LOGS_TRUNCATED_COVERAGE_PARTIAL": 2,
+        "logDecoderFailures": 2,
+        "websocket_disconnects": 1,
+        "reconnect_count": 1,
+        "rpc_method_getSignatureStatuses": 5,
+        "rpc_method_getAccountInfo": 1,
+        "rpc_errors": 1,
+        "rpc_retries": 1
+      },
+      "gauges": {
+        "mainnetVerified": true,
+        "websocket_connected": true,
+        "durableBacklog": 66,
+        "websocket_connected_at": "2026-11-04T07:00:18.447Z",
+        "last_event_received": "2026-11-04T07:02:40.770Z",
+        "current_slot": 465210808,
+        "currentSlot": 465210808,
+        "lastEventReceived": "2026-11-04T07:02:40.770Z",
+        "logObservationRowsPruned": 37404,
+        "lastLogObservationPersisted": "2026-11-04T07:02:40.758Z",
+        "queue_depth": 6,
+        "queue_active": 2,
+        "coverageOverloaded": true,
+        "lastEventProcessed": "2026-11-04T07:02:35.207Z",
+        "storageConsumptionBytes": 101616304,
+        "recovery.pump_fun": {
+          "pages": 1,
+          "recovered": 2,
+          "selected": 2,
+          "complete": false,
+          "gap": "INITIAL_HISTORY_BOUNDARY",
+          "transactionHoles": 0,
+          "hadHoles": false,
+          "continuation": false,
+          "checkpointAdvanced": true
+        },
+        "websocket_disconnected_at": "2026-11-04T07:00:17.558Z",
+        "reconnect_delay_ms": 406.20468583707066,
+        "recovery.pump_swap": {
+          "pages": 1,
+          "recovered": 2,
+          "selected": 2,
+          "complete": false,
+          "gap": "INITIAL_HISTORY_BOUNDARY",
+          "transactionHoles": 0,
+          "hadHoles": false,
+          "continuation": false,
+          "checkpointAdvanced": true
+        },
+        "recovery.raydium_launchlab": {
+          "pages": 1,
+          "recovered": 2,
+          "selected": 2,
+          "complete": false,
+          "gap": "INITIAL_HISTORY_BOUNDARY",
+          "transactionHoles": 0,
+          "hadHoles": false,
+          "continuation": false,
+          "checkpointAdvanced": true
+        },
+        "recovery.raydium_cpmm": {
+          "pages": 1,
+          "recovered": 2,
+          "selected": 2,
+          "complete": false,
+          "gap": "INITIAL_HISTORY_BOUNDARY",
+          "transactionHoles": 0,
+          "hadHoles": false,
+          "continuation": false,
+          "checkpointAdvanced": true
+        }
+      },
+      "histograms": {
+        "rpc_latency_ms": {
+          "count": 38,
+          "retainedSamples": 38,
+          "p50": 241,
+          "p95": 1141,
+          "p99": 2347,
+          "max": 2347,
+          "mean": 330.05263157894734,
+          "totalMaxMs": 2347,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 23
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 33
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 36
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 37
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 38
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 38
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 250,
+            "p95": 2000,
+            "p99": 5000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        },
+        "logObservationLatencyMs": {
+          "count": 39474,
+          "retainedSamples": 4096,
+          "p50": 217,
+          "p95": 276,
+          "p99": 284,
+          "max": 312,
+          "mean": 206.09360591781933,
+          "totalMaxMs": 1168,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 6
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 29
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 331
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 830
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 4370
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 29856
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 38773
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 39355
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 39474
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 39474
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 250,
+            "p95": 500,
+            "p99": 1000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        },
+        "transactionEnrichmentLatencyMs": {
+          "count": 26,
+          "retainedSamples": 26,
+          "p50": 15506.056562999998,
+          "p95": 20404.221355999995,
+          "p99": 20481.777690000003,
+          "max": 20481.777690000003,
+          "mean": 16599.533692346155,
+          "totalMaxMs": 20481.777690000003,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 1
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 26
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 26
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 30000,
+            "p95": 30000,
+            "p99": 30000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        },
+        "onchainToReceiveLatencyMs": {
+          "count": 22,
+          "retainedSamples": 22,
+          "p50": 910,
+          "p95": 1293,
+          "p99": 1297,
+          "max": 1297,
+          "mean": 1031,
+          "totalMaxMs": 1297,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 11
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 22
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 22
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 1000,
+            "p95": 2000,
+            "p99": 2000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        },
+        "eventProcessingLatencyMs": {
+          "count": 12,
+          "retainedSamples": 12,
+          "p50": 94088,
+          "p95": 183910,
+          "p99": 183910,
+          "max": 183910,
+          "mean": 98069.16666666667,
+          "totalMaxMs": 183910,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 7
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 12
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 12
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 12
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 12
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 120000,
+            "p95": 300000,
+            "p99": 300000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        },
+        "recoveryProcessingLatencyMs": {
+          "count": 3,
+          "retainedSamples": 3,
+          "p50": 20146,
+          "p95": 35026,
+          "p99": 35026,
+          "max": 35026,
+          "mean": 24330,
+          "totalMaxMs": 35026,
+          "cumulativeBuckets": [
+            {
+              "upperBoundMs": 1,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 25,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 50,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 100,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 250,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 500,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 1000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 2000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 5000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 10000,
+              "count": 0
+            },
+            {
+              "upperBoundMs": 30000,
+              "count": 2
+            },
+            {
+              "upperBoundMs": 60000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 120000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 300000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 600000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": 3600000,
+              "count": 3
+            },
+            {
+              "upperBoundMs": "Infinity",
+              "count": 3
+            }
+          ],
+          "cumulativeQuantileUpperBounds": {
+            "p50": 30000,
+            "p95": 60000,
+            "p99": 60000
+          },
+          "cumulativeQuantileOverflow": {
+            "p50": false,
+            "p95": false,
+            "p99": false
+          },
+          "percentileScope": "last 4096 observations",
+          "cumulativeScope": "all observations in this process since startedAt; quantiles are bucket upper bounds, not exact percentiles"
+        }
+      },
+      "rpcRequestsPerMinute": 12,
+      "eventsPerSecond": 0,
+      "observationsPerSecond": 227,
+      "histogramWindow": "last 4096 observations per metric"
+    },
+    "storage": {
+      "inbox": 100,
+      "events": 17,
+      "event_observations": 10000,
+      "tokens": 12,
+      "pools": 14,
+      "gaps": 13,
+      "errors": 22,
+      "raw_transactions": 26,
+      "pending": 66,
+      "deferred": 0,
+      "storageBytes": 101616304
+    },
+    "coverage": "PARTIAL",
+    "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+  },
+  "observations": {
+    "data": [
+      {
+        "chain": "solana",
+        "schemaVersion": 1,
+        "dataMode": "REAL_RPC_LOG_OBSERVATION",
+        "protocol": "pump_swap",
+        "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+        "eventType": "TOKEN_SOLD",
+        "transactionSignature": "5KPF8CVk1Yik5QKtwngDzzcc8gx4wzPMRMFxbLB6WkkmyTx3WtD8jX8dwQC6XieXyHQXp1U6saRqgqD2XH2PgkgM",
+        "slot": 465210807,
+        "instructionIndex": null,
+        "innerInstructionIndex": null,
+        "tokenMint": null,
+        "quoteMint": null,
+        "poolAddress": "4sQ1M4mB6MybZ4Qk1Vn6TszjsYpyLVJwTEpe787xhceu",
+        "wallet": "FNwGAp3qvxhX8FBkZcDZ9FmdDCFpXpLjJt7gVtBbujTd",
+        "creator": null,
+        "amountTokenRaw": "6702459652",
+        "amountQuoteRaw": "90806613416987",
+        "tokenDecimals": null,
+        "quoteDecimals": null,
+        "eventTimestamp": "2026-11-04T07:02:39.000Z",
+        "receivedAt": "2026-11-04T07:02:40.533Z",
+        "processedAt": "2026-11-04T07:02:40.533Z",
+        "confirmationStatus": "confirmed",
+        "reconciliationStatus": "UNRECONCILED",
+        "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+        "completeness": "INCOMPLETE",
+        "contextCompleteness": "INCOMPLETE",
+        "confidence": null,
+        "missingFields": [
+          "instructionIndex",
+          "transactionContext",
+          "tokenMint",
+          "quoteMint",
+          "creator",
+          "tokenDecimals",
+          "quoteDecimals"
+        ],
+        "evidenceSource": {
+          "kind": "rpc:logsSubscribe",
+          "eventEncoding": "anchor_program_data",
+          "eventName": "SellEvent",
+          "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+          "sourceMessageSha256": "2ba8621f621f5b078227f64af10788e34673019f892dd75f2c09bac6bdd589c2",
+          "transactionSignature": "5KPF8CVk1Yik5QKtwngDzzcc8gx4wzPMRMFxbLB6WkkmyTx3WtD8jX8dwQC6XieXyHQXp1U6saRqgqD2XH2PgkgM",
+          "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        "eventOrdinal": 0,
+        "reserves": {
+          "realTokenRaw": "949827650695",
+          "realQuoteRaw": "12998306064396901",
+          "virtualQuoteRaw": "-18429935"
+        },
+        "financialSemantics": "user_quote_after_reported_fees",
+        "id": "2c80505f6121af7d670939ee8ad0002c5307a547147e691681a87561d315a05d",
+        "contextEnrichmentAvailable": false,
+        "contextSlotMismatch": false
+      },
+      {
+        "chain": "solana",
+        "schemaVersion": 1,
+        "dataMode": "REAL_RPC_LOG_OBSERVATION",
+        "protocol": "pump_swap",
+        "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+        "eventType": "TOKEN_BOUGHT",
+        "transactionSignature": "5KPF8CVk1Yik5QKtwngDzzcc8gx4wzPMRMFxbLB6WkkmyTx3WtD8jX8dwQC6XieXyHQXp1U6saRqgqD2XH2PgkgM",
+        "slot": 465210807,
+        "instructionIndex": null,
+        "innerInstructionIndex": null,
+        "tokenMint": null,
+        "quoteMint": null,
+        "poolAddress": "4sQ1M4mB6MybZ4Qk1Vn6TszjsYpyLVJwTEpe787xhceu",
+        "wallet": "FNwGAp3qvxhX8FBkZcDZ9FmdDCFpXpLjJt7gVtBbujTd",
+        "creator": null,
+        "amountTokenRaw": "6618879980",
+        "amountQuoteRaw": "90207573179276",
+        "tokenDecimals": null,
+        "quoteDecimals": null,
+        "eventTimestamp": "2026-11-04T07:02:39.000Z",
+        "receivedAt": "2026-11-04T07:02:40.533Z",
+        "processedAt": "2026-11-04T07:02:40.533Z",
+        "confirmationStatus": "confirmed",
+        "reconciliationStatus": "UNRECONCILED",
+        "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+        "completeness": "INCOMPLETE",
+        "contextCompleteness": "INCOMPLETE",
+        "confidence": null,
+        "missingFields": [
+          "instructionIndex",
+          "transactionContext",
+          "tokenMint",
+          "quoteMint",
+          "creator",
+          "tokenDecimals",
+          "quoteDecimals"
+        ],
+        "evidenceSource": {
+          "kind": "rpc:logsSubscribe",
+          "eventEncoding": "anchor_program_data",
+          "eventName": "BuyEvent",
+          "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+          "sourceMessageSha256": "2ba8621f621f5b078227f64af10788e34673019f892dd75f2c09bac6bdd589c2",
+          "transactionSignature": "5KPF8CVk1Yik5QKtwngDzzcc8gx4wzPMRMFxbLB6WkkmyTx3WtD8jX8dwQC6XieXyHQXp1U6saRqgqD2XH2PgkgM",
+          "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        "eventOrdinal": 1,
+        "reserves": {
+          "realTokenRaw": "956530110347",
+          "realQuoteRaw": "12907453911053426",
+          "virtualQuoteRaw": "-18429935"
+        },
+        "financialSemantics": "user_quote_including_reported_fees",
+        "id": "89c9346850f2e8a7b180504f72a2214167b7ff1e9935ea9e57318dbe28b5671a",
+        "contextEnrichmentAvailable": false,
+        "contextSlotMismatch": false
+      },
+      {
+        "chain": "solana",
+        "schemaVersion": 1,
+        "dataMode": "REAL_RPC_LOG_OBSERVATION",
+        "protocol": "pump_fun",
+        "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+        "eventType": "CURVE_PROGRESS_UPDATED",
+        "transactionSignature": "49CW39ZJNUyRhtzBsS8rSr2Snti7jujKNQ4dR2RkDJ73Dkdm8k2WhkGoZNvjWTSQMFs7aFa2jkCJp1M5S1JdwdKR",
+        "slot": 465210807,
+        "instructionIndex": null,
+        "innerInstructionIndex": null,
+        "tokenMint": "CF2tUXzKeEJb6ZqvJJMRb5UWTWEJHSaibyyoW6KVpump",
+        "quoteMint": "C5xph2yL6gMdxmuLGxJBkGpmuDFfyi5fqkBNhvL6pump",
+        "poolAddress": null,
+        "wallet": "7wiVpQs3Wv3wNdVv8kVFDbjcvvikQmCsJQXEERq3dTMR",
+        "creator": "2kyLp59kDdFn6CkV9DfRQtP1wG6MZLT5LYCBTbG1jedc",
+        "amountTokenRaw": null,
+        "amountQuoteRaw": null,
+        "tokenDecimals": null,
+        "quoteDecimals": null,
+        "eventTimestamp": "2026-11-04T07:02:39.000Z",
+        "receivedAt": "2026-11-04T07:02:40.532Z",
+        "processedAt": "2026-11-04T07:02:40.532Z",
+        "confirmationStatus": "confirmed",
+        "reconciliationStatus": "UNRECONCILED",
+        "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+        "completeness": "INCOMPLETE",
+        "contextCompleteness": "INCOMPLETE",
+        "confidence": null,
+        "missingFields": [
+          "instructionIndex",
+          "transactionContext",
+          "poolAddress",
+          "amountTokenRaw",
+          "amountQuoteRaw",
+          "tokenDecimals",
+          "quoteDecimals"
+        ],
+        "evidenceSource": {
+          "kind": "rpc:logsSubscribe",
+          "eventEncoding": "anchor_program_data",
+          "eventName": "TradeEvent",
+          "idlSha256": "7616681ea557975f9f623ac211080f22a93060781eaf4765b0a488d980997207",
+          "sourceMessageSha256": "c06fac4f44974521a35f2474fb9f4ea035999f023625357c01c3545725bcb50c",
+          "transactionSignature": "49CW39ZJNUyRhtzBsS8rSr2Snti7jujKNQ4dR2RkDJ73Dkdm8k2WhkGoZNvjWTSQMFs7aFa2jkCJp1M5S1JdwdKR",
+          "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        "eventOrdinal": 2,
+        "reserves": {
+          "virtualTokenRaw": "755965576798136",
+          "virtualQuoteRaw": "639593241636",
+          "realTokenRaw": "476065576798136",
+          "realQuoteRaw": "188977703027"
+        },
+        "id": "03c596354e0d018e15f6242c22bd484d4dc93b9135e806775442eca5a53d70dd",
+        "contextEnrichmentAvailable": false,
+        "contextSlotMismatch": false
+      },
+      {
+        "chain": "solana",
+        "schemaVersion": 1,
+        "dataMode": "REAL_RPC_LOG_OBSERVATION",
+        "protocol": "pump_swap",
+        "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+        "eventType": "TOKEN_BOUGHT",
+        "transactionSignature": "4urAuy6hvBGbME2A5tfYiogWqi2A9eUkU3mHU9fP78mHmwACuaZbdqVWBCARpA2SncQG96uWubgTpDQUMzpCSUcT",
+        "slot": 465210807,
+        "instructionIndex": null,
+        "innerInstructionIndex": null,
+        "tokenMint": null,
+        "quoteMint": null,
+        "poolAddress": "Hmd4BFVNWgaDi32JT5hmFKuUGUQ79HNSKkem3cL4URP9",
+        "wallet": "8foNeKK2ibnt3SrVjj9qdBvDDnyGu6qvJ6z87add7PEA",
+        "creator": "66yFkxtLCe1ydZ3w9wAFTZAda3zJJGr2TDsqskGpPMkZ",
+        "amountTokenRaw": "392407073990",
+        "amountQuoteRaw": "1765913",
+        "tokenDecimals": null,
+        "quoteDecimals": null,
+        "eventTimestamp": "2026-11-04T07:02:39.000Z",
+        "receivedAt": "2026-11-04T07:02:40.532Z",
+        "processedAt": "2026-11-04T07:02:40.533Z",
+        "confirmationStatus": "confirmed",
+        "reconciliationStatus": "UNRECONCILED",
+        "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+        "completeness": "INCOMPLETE",
+        "contextCompleteness": "INCOMPLETE",
+        "confidence": null,
+        "missingFields": [
+          "instructionIndex",
+          "transactionContext",
+          "tokenMint",
+          "quoteMint",
+          "tokenDecimals",
+          "quoteDecimals"
+        ],
+        "evidenceSource": {
+          "kind": "rpc:logsSubscribe",
+          "eventEncoding": "anchor_program_data",
+          "eventName": "BuyEvent",
+          "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+          "sourceMessageSha256": "8f9b211ffe00fdc1c74e20224a57260374b037a57b487b47a79688b1ddce1640",
+          "transactionSignature": "4urAuy6hvBGbME2A5tfYiogWqi2A9eUkU3mHU9fP78mHmwACuaZbdqVWBCARpA2SncQG96uWubgTpDQUMzpCSUcT",
+          "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        "eventOrdinal": 0,
+        "reserves": {
+          "realTokenRaw": "290866503833116",
+          "realQuoteRaw": "962092952",
+          "virtualQuoteRaw": "345099826"
+        },
+        "financialSemantics": "user_quote_including_reported_fees",
+        "id": "2d241f153a02dff527a357c0246f5c9a49aa622df0e6ed18cd6fc7d468f330aa",
+        "contextEnrichmentAvailable": false,
+        "contextSlotMismatch": false
+      },
+      {
+        "chain": "solana",
+        "schemaVersion": 1,
+        "dataMode": "REAL_RPC_LOG_OBSERVATION",
+        "protocol": "pump_fun",
+        "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+        "eventType": "TOKEN_BOUGHT",
+        "transactionSignature": "36aTeUEcEK9wxvkkmp2L59iJ7jRjbVetuSid5kSz5d5t4Qc1A6KuSMBJGSkzbr312yHAHKgoZYQgzP3kXZmny4sv",
+        "slot": 465210807,
+        "instructionIndex": null,
+        "innerInstructionIndex": null,
+        "tokenMint": "7gk277UPH13GKFitp5PHhiXKd8CN9rY7n9tAyfmnpump",
+        "quoteMint": null,
+        "poolAddress": null,
+        "wallet": "BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s",
+        "creator": "8WZwQJna2Kc9212usM2GhQSknk8sec5qScsq9FU29iLV",
+        "amountTokenRaw": "22469985843299",
+        "amountQuoteRaw": "140415685",
+        "tokenDecimals": null,
+        "quoteDecimals": null,
+        "eventTimestamp": "2026-11-04T07:02:39.000Z",
+        "receivedAt": "2026-11-04T07:02:40.532Z",
+        "processedAt": "2026-11-04T07:02:40.532Z",
+        "confirmationStatus": "confirmed",
+        "reconciliationStatus": "UNRECONCILED",
+        "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+        "completeness": "INCOMPLETE",
+        "contextCompleteness": "INCOMPLETE",
+        "confidence": null,
+        "missingFields": [
+          "instructionIndex",
+          "transactionContext",
+          "quoteMint",
+          "poolAddress",
+          "tokenDecimals",
+          "quoteDecimals"
+        ],
+        "evidenceSource": {
+          "kind": "rpc:logsSubscribe",
+          "eventEncoding": "anchor_program_data",
+          "eventName": "TradeEvent",
+          "idlSha256": "7616681ea557975f9f623ac211080f22a93060781eaf4765b0a488d980997207",
+          "sourceMessageSha256": "af10ea23da173537fdf7a73fa181ef875186d54de91e4b73518b85267e94f56b",
+          "transactionSignature": "36aTeUEcEK9wxvkkmp2L59iJ7jRjbVetuSid5kSz5d5t4Qc1A6KuSMBJGSkzbr312yHAHKgoZYQgzP3kXZmny4sv",
+          "subscribedProgramId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        "eventOrdinal": 0,
+        "reserves": {
+          "virtualTokenRaw": "992907928087714",
+          "virtualQuoteRaw": "9286045454",
+          "realTokenRaw": "713007928087714",
+          "realQuoteRaw": "405851763"
+        },
+        "protocolQuoteMint": "11111111111111111111111111111111",
+        "quoteMintEvidence": null,
+        "financialSemantics": "protocol_trade_amount_excludes_separately_reported_fees",
+        "id": "717194047192a99cb75e679f133b7cec00f0c309a9e5ff67bb1cf7a81ec73e3b",
+        "contextEnrichmentAvailable": false,
+        "contextSlotMismatch": false
+      }
+    ],
+    "coverage": "PARTIAL",
+    "context": "RPC_LOGS_WITH_INCOMPLETE_TRANSACTION_CONTEXT",
+    "mergedWithMarket": false
+  },
+  "evidenceReplay": {
+    "transactionSignature": "5KPF8CVk1Yik5QKtwngDzzcc8gx4wzPMRMFxbLB6WkkmyTx3WtD8jX8dwQC6XieXyHQXp1U6saRqgqD2XH2PgkgM",
+    "sourceMessageSha256": "2ba8621f621f5b078227f64af10788e34673019f892dd75f2c09bac6bdd589c2",
+    "observationId": "2c80505f6121af7d670939ee8ad0002c5307a547147e691681a87561d315a05d",
+    "idMatched": true
+  },
+  "market": {
+    "asOf": "2026-11-04T07:02:40.810Z",
+    "coverage": {
+      "status": "PARTIAL",
+      "scope": "selected_programs_and_decoded_events",
+      "gaps": 13,
+      "limit": 10000
+    },
+    "usd": null,
+    "missingTimestamps": 0,
+    "futureEvents": 0,
+    "groups": [
+      {
+        "tokenMint": "2724239D1JhWQGV5WZ7tdBTN5Jz4FZ3pdmvj3iD4LsVE",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "ETTUbzdvpgVrudLKUeMzs8XNpPbF71Wd2KYAhiqzMHtD",
+        "protocols": [
+          "raydium_cpmm"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": null,
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1065498175735",
+            "observedQuoteVolumeRaw": "818113207",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "818113207",
+                "denominator": "1065498175735000"
+              },
+              "rawRatio": {
+                "numerator": "818113207",
+                "denominator": "1065498175735"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "4GETj3TkrLwuKN4oB9hCjeEWce4gQcWsVsBm4EUgoTFHtH3A1v87EasRDyy1sXAWK4ARi8CRoZg1gmWk4ZYgDXMS",
+              "eventTimestamp": "2026-11-04T07:01:19.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "818113207",
+                "denominator": "1065498175735000"
+              },
+              "rawRatio": {
+                "numerator": "818113207",
+                "denominator": "1065498175735"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "4GETj3TkrLwuKN4oB9hCjeEWce4gQcWsVsBm4EUgoTFHtH3A1v87EasRDyy1sXAWK4ARi8CRoZg1gmWk4ZYgDXMS",
+              "eventTimestamp": "2026-11-04T07:01:19.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1065498175735",
+            "observedQuoteVolumeRaw": "818113207",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "818113207",
+                "denominator": "1065498175735000"
+              },
+              "rawRatio": {
+                "numerator": "818113207",
+                "denominator": "1065498175735"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "4GETj3TkrLwuKN4oB9hCjeEWce4gQcWsVsBm4EUgoTFHtH3A1v87EasRDyy1sXAWK4ARi8CRoZg1gmWk4ZYgDXMS",
+              "eventTimestamp": "2026-11-04T07:01:19.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "818113207",
+                "denominator": "1065498175735000"
+              },
+              "rawRatio": {
+                "numerator": "818113207",
+                "denominator": "1065498175735"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "4GETj3TkrLwuKN4oB9hCjeEWce4gQcWsVsBm4EUgoTFHtH3A1v87EasRDyy1sXAWK4ARi8CRoZg1gmWk4ZYgDXMS",
+              "eventTimestamp": "2026-11-04T07:01:19.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "FhVLEhoYTQH2F8NnJ2gYRA7FidTGtKSRhgUqggBUFxEh",
+        "quoteMint": "6zjLjqd483pWwrowtKdyhie8tqEvkWwRcrR4btkVpump",
+        "poolAddress": "kKyyHCJpaJSZNvMW3bD5pq735gXzhynD3VhyUPZgCuL",
+        "protocols": [
+          "raydium_launchlab"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "soldTokenRaw": "85298637768884",
+            "raisedQuoteRaw": "12407037558018",
+            "virtualTokenRaw": "1073025605595360",
+            "virtualQuoteRaw": "143668948382034",
+            "totalBaseSellRaw": "793100000000000"
+          },
+          "eventTimestamp": "2026-11-04T07:00:38.000Z",
+          "slot": 465210245,
+          "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "11344238832021",
+            "observedQuoteVolumeRaw": "1794642305442",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "rawRatio": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 6,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:38.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "rawRatio": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 6,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:38.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "11344238832021",
+            "observedQuoteVolumeRaw": "1794642305442",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "rawRatio": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 6,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:38.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "rawRatio": {
+                "numerator": "598214101814",
+                "denominator": "3781412944007"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 6,
+              "semantics": "PROTOCOL_REPORTED_AMOUNTS",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:38.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "6zjLjqd483pWwrowtKdyhie8tqEvkWwRcrR4btkVpump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "CQTRSc6NpAvgCqDAYHznP4AmVrJkscC1LuuP2wj1Ke3U",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "671681722222183",
+            "realQuoteRaw": "19079729128",
+            "virtualQuoteRaw": "17583896843"
+          },
+          "eventTimestamp": "2026-11-04T07:00:37.000Z",
+          "slot": 465210245,
+          "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1794642305442",
+            "observedQuoteVolumeRaw": "98222666",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "49111333",
+                "denominator": "897321152721000"
+              },
+              "rawRatio": {
+                "numerator": "49111333",
+                "denominator": "897321152721"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:37.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "49111333",
+                "denominator": "897321152721000"
+              },
+              "rawRatio": {
+                "numerator": "49111333",
+                "denominator": "897321152721"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:37.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1794642305442",
+            "observedQuoteVolumeRaw": "98222666",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "49111333",
+                "denominator": "897321152721000"
+              },
+              "rawRatio": {
+                "numerator": "49111333",
+                "denominator": "897321152721"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:37.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "49111333",
+                "denominator": "897321152721000"
+              },
+              "rawRatio": {
+                "numerator": "49111333",
+                "denominator": "897321152721"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5eDQR8NYeCKZjKN84sxtaisZNVKJ5ecgCQmc3EFpFFMZatEhV5eojqFKQAiBTNZEQYzycbwSYEvtBrY7P4uBuscR",
+              "eventTimestamp": "2026-11-04T07:00:37.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "HtCdpTU9Sds7ERsxwruU3KERNTAMFtd1oKQK9xER2Xp9",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "9hkZ8FjZYfumeZmqFq1BT6qn7JJxE1DdsXtWWwcPffHN",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "158969132869557",
+            "realQuoteRaw": "94761488372",
+            "virtualQuoteRaw": "16359780278"
+          },
+          "eventTimestamp": "2026-11-04T07:00:03.000Z",
+          "slot": 465210087,
+          "transactionSignature": "43wr8MbtDZofu6HwccLLA3n9cUkxh1JS74JrD6xBAzbFmDE3WXA9oDErYsfusJpXDqV7mTVL8pmtt1RBfFmYGxv7",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "753290738950",
+            "observedQuoteVolumeRaw": "529066000",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "264533",
+                "denominator": "376645369475"
+              },
+              "rawRatio": {
+                "numerator": "10581320",
+                "denominator": "15065814779"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "43wr8MbtDZofu6HwccLLA3n9cUkxh1JS74JrD6xBAzbFmDE3WXA9oDErYsfusJpXDqV7mTVL8pmtt1RBfFmYGxv7",
+              "eventTimestamp": "2026-11-04T07:00:03.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "264533",
+                "denominator": "376645369475"
+              },
+              "rawRatio": {
+                "numerator": "10581320",
+                "denominator": "15065814779"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "43wr8MbtDZofu6HwccLLA3n9cUkxh1JS74JrD6xBAzbFmDE3WXA9oDErYsfusJpXDqV7mTVL8pmtt1RBfFmYGxv7",
+              "eventTimestamp": "2026-11-04T07:00:03.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "753290738950",
+            "observedQuoteVolumeRaw": "529066000",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "264533",
+                "denominator": "376645369475"
+              },
+              "rawRatio": {
+                "numerator": "10581320",
+                "denominator": "15065814779"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "43wr8MbtDZofu6HwccLLA3n9cUkxh1JS74JrD6xBAzbFmDE3WXA9oDErYsfusJpXDqV7mTVL8pmtt1RBfFmYGxv7",
+              "eventTimestamp": "2026-11-04T07:00:03.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "264533",
+                "denominator": "376645369475"
+              },
+              "rawRatio": {
+                "numerator": "10581320",
+                "denominator": "15065814779"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "43wr8MbtDZofu6HwccLLA3n9cUkxh1JS74JrD6xBAzbFmDE3WXA9oDErYsfusJpXDqV7mTVL8pmtt1RBfFmYGxv7",
+              "eventTimestamp": "2026-11-04T07:00:03.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "GyvTYtDqSKCzsNdsgxLbuyRRczCyt4RuKr7LriTbpump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "Gn79hmpBXRofd2ygJtYTA4AvXGfaVuCujDcho9zeBFuT",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "74285302183698",
+            "realQuoteRaw": "221142948658",
+            "virtualQuoteRaw": "17576391586"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "39zm8ZByQ7tskfCLYbSYkNQbevG8AnQSQoGEshiU63PaSuMj5s2TsJPjobGFxDniMDZsTF8ZStivZb4iYqQg2Bms",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "571217119",
+            "observedQuoteVolumeRaw": "1815426",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "907713",
+                "denominator": "285608559500"
+              },
+              "rawRatio": {
+                "numerator": "1815426",
+                "denominator": "571217119"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "39zm8ZByQ7tskfCLYbSYkNQbevG8AnQSQoGEshiU63PaSuMj5s2TsJPjobGFxDniMDZsTF8ZStivZb4iYqQg2Bms",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "907713",
+                "denominator": "285608559500"
+              },
+              "rawRatio": {
+                "numerator": "1815426",
+                "denominator": "571217119"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "39zm8ZByQ7tskfCLYbSYkNQbevG8AnQSQoGEshiU63PaSuMj5s2TsJPjobGFxDniMDZsTF8ZStivZb4iYqQg2Bms",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "571217119",
+            "observedQuoteVolumeRaw": "1815426",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "907713",
+                "denominator": "285608559500"
+              },
+              "rawRatio": {
+                "numerator": "1815426",
+                "denominator": "571217119"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "39zm8ZByQ7tskfCLYbSYkNQbevG8AnQSQoGEshiU63PaSuMj5s2TsJPjobGFxDniMDZsTF8ZStivZb4iYqQg2Bms",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "907713",
+                "denominator": "285608559500"
+              },
+              "rawRatio": {
+                "numerator": "1815426",
+                "denominator": "571217119"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "39zm8ZByQ7tskfCLYbSYkNQbevG8AnQSQoGEshiU63PaSuMj5s2TsJPjobGFxDniMDZsTF8ZStivZb4iYqQg2Bms",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "CkjxYW13a9RPvjKKwU88CqM2K7AZG3d5FVPNQ9Epump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "HGpuZgrJJidSi14itMJ1ZPQyGeqzjb1rmfs6RFxx2cC6",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "13862416828455",
+            "realQuoteRaw": "1253493315155",
+            "virtualQuoteRaw": "17583698920"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "496ursPLp1Wod3QgTchxmTEucetWik8qVCPnRhCWrtM1Z6Ziazg6ykRc9j6Utod13XSHKmJY6fWi3pYbEBzMJCkq",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "3740716",
+            "observedQuoteVolumeRaw": "344196",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "86049",
+                "denominator": "935179000"
+              },
+              "rawRatio": {
+                "numerator": "86049",
+                "denominator": "935179"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "496ursPLp1Wod3QgTchxmTEucetWik8qVCPnRhCWrtM1Z6Ziazg6ykRc9j6Utod13XSHKmJY6fWi3pYbEBzMJCkq",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "86049",
+                "denominator": "935179000"
+              },
+              "rawRatio": {
+                "numerator": "86049",
+                "denominator": "935179"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "496ursPLp1Wod3QgTchxmTEucetWik8qVCPnRhCWrtM1Z6Ziazg6ykRc9j6Utod13XSHKmJY6fWi3pYbEBzMJCkq",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "3740716",
+            "observedQuoteVolumeRaw": "344196",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "86049",
+                "denominator": "935179000"
+              },
+              "rawRatio": {
+                "numerator": "86049",
+                "denominator": "935179"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "496ursPLp1Wod3QgTchxmTEucetWik8qVCPnRhCWrtM1Z6Ziazg6ykRc9j6Utod13XSHKmJY6fWi3pYbEBzMJCkq",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "86049",
+                "denominator": "935179000"
+              },
+              "rawRatio": {
+                "numerator": "86049",
+                "denominator": "935179"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "496ursPLp1Wod3QgTchxmTEucetWik8qVCPnRhCWrtM1Z6Ziazg6ykRc9j6Utod13XSHKmJY6fWi3pYbEBzMJCkq",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "tLRHkL2LB1Tzqg97rkmxPqZFtDmDAcUZhdVaKKvpump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "xV7Qa2fvBJFRnmhBQWy3dSWHvySSkG6UHBHm4Pt4PhJ",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "60140537876401",
+            "realQuoteRaw": "275638544914",
+            "virtualQuoteRaw": "17558403293"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "4ArenJdxkFBrDHSHq6Sr2mXeud9HLUKPjyNKfvH1hEQbxpeqRZuCQvjEb9narqHxatuK8GQ7RCCJVpDWHcH45PiN",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "4007632",
+            "observedQuoteVolumeRaw": "19539",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "19539",
+                "denominator": "4007632000"
+              },
+              "rawRatio": {
+                "numerator": "19539",
+                "denominator": "4007632"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "4ArenJdxkFBrDHSHq6Sr2mXeud9HLUKPjyNKfvH1hEQbxpeqRZuCQvjEb9narqHxatuK8GQ7RCCJVpDWHcH45PiN",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "19539",
+                "denominator": "4007632000"
+              },
+              "rawRatio": {
+                "numerator": "19539",
+                "denominator": "4007632"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "4ArenJdxkFBrDHSHq6Sr2mXeud9HLUKPjyNKfvH1hEQbxpeqRZuCQvjEb9narqHxatuK8GQ7RCCJVpDWHcH45PiN",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "4007632",
+            "observedQuoteVolumeRaw": "19539",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "19539",
+                "denominator": "4007632000"
+              },
+              "rawRatio": {
+                "numerator": "19539",
+                "denominator": "4007632"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "4ArenJdxkFBrDHSHq6Sr2mXeud9HLUKPjyNKfvH1hEQbxpeqRZuCQvjEb9narqHxatuK8GQ7RCCJVpDWHcH45PiN",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "19539",
+                "denominator": "4007632000"
+              },
+              "rawRatio": {
+                "numerator": "19539",
+                "denominator": "4007632"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "4ArenJdxkFBrDHSHq6Sr2mXeud9HLUKPjyNKfvH1hEQbxpeqRZuCQvjEb9narqHxatuK8GQ7RCCJVpDWHcH45PiN",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "Ajqo3AC4DevGsLF88qwwaRLsu56m67PYHgaP4ctNYACd",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "EsGBWzHKmteAg9yRvPYq3Mv8DLQ1NUg5EWwke1qyQwZk",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "302080831025100",
+            "realQuoteRaw": "45556899609",
+            "virtualQuoteRaw": "13718970095"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "5LUo9QfsVhirnq1m4Mw9ncncapVxqxNUFeLmPizFk4F5VDjxdYBcCwjXKdLC5uJvm8hjAnbEKPdB8D2SzWvod6zA",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "5343119516770",
+            "observedQuoteVolumeRaw": "1067333353",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770000"
+              },
+              "rawRatio": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5LUo9QfsVhirnq1m4Mw9ncncapVxqxNUFeLmPizFk4F5VDjxdYBcCwjXKdLC5uJvm8hjAnbEKPdB8D2SzWvod6zA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770000"
+              },
+              "rawRatio": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5LUo9QfsVhirnq1m4Mw9ncncapVxqxNUFeLmPizFk4F5VDjxdYBcCwjXKdLC5uJvm8hjAnbEKPdB8D2SzWvod6zA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "5343119516770",
+            "observedQuoteVolumeRaw": "1067333353",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770000"
+              },
+              "rawRatio": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5LUo9QfsVhirnq1m4Mw9ncncapVxqxNUFeLmPizFk4F5VDjxdYBcCwjXKdLC5uJvm8hjAnbEKPdB8D2SzWvod6zA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770000"
+              },
+              "rawRatio": {
+                "numerator": "1067333353",
+                "denominator": "5343119516770"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "5LUo9QfsVhirnq1m4Mw9ncncapVxqxNUFeLmPizFk4F5VDjxdYBcCwjXKdLC5uJvm8hjAnbEKPdB8D2SzWvod6zA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "So11111111111111111111111111111111111111112",
+        "quoteMint": "FAzwgcRnsM7CCGy2tJNpggMDmaaKENxfAbGo3yCZcYPZ",
+        "poolAddress": "4yNTmLPM77GtMg9gDYebdXqxBoewdoCAsPiUUpW7se76",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "271275057961",
+            "realQuoteRaw": "667158828462847",
+            "virtualQuoteRaw": "0"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "5v7aJgYaBDqGi3iEUvcCqh5YBznPtEeixV2hiWR5GsJqs3cE5aDUpMYajcQB5ESiV6QMG3FyCYtKz9VBKzHEu6UD",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "598404216",
+            "observedQuoteVolumeRaw": "1464037572991",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "183004696623875",
+                "denominator": "74800527"
+              },
+              "rawRatio": {
+                "numerator": "1464037572991",
+                "denominator": "598404216"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "5v7aJgYaBDqGi3iEUvcCqh5YBznPtEeixV2hiWR5GsJqs3cE5aDUpMYajcQB5ESiV6QMG3FyCYtKz9VBKzHEu6UD",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "183004696623875",
+                "denominator": "74800527"
+              },
+              "rawRatio": {
+                "numerator": "1464037572991",
+                "denominator": "598404216"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "5v7aJgYaBDqGi3iEUvcCqh5YBznPtEeixV2hiWR5GsJqs3cE5aDUpMYajcQB5ESiV6QMG3FyCYtKz9VBKzHEu6UD",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "598404216",
+            "observedQuoteVolumeRaw": "1464037572991",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "183004696623875",
+                "denominator": "74800527"
+              },
+              "rawRatio": {
+                "numerator": "1464037572991",
+                "denominator": "598404216"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "5v7aJgYaBDqGi3iEUvcCqh5YBznPtEeixV2hiWR5GsJqs3cE5aDUpMYajcQB5ESiV6QMG3FyCYtKz9VBKzHEu6UD",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "183004696623875",
+                "denominator": "74800527"
+              },
+              "rawRatio": {
+                "numerator": "1464037572991",
+                "denominator": "598404216"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "5v7aJgYaBDqGi3iEUvcCqh5YBznPtEeixV2hiWR5GsJqs3cE5aDUpMYajcQB5ESiV6QMG3FyCYtKz9VBKzHEu6UD",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "HYCqwheYsDLgoMGAzAdVVts628dHz6UsNrL6Gsb7pump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "AL2aiaSjYe4AXZptR3u79aaGYEW6XqWECTu4dauwmeAW",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "154780142225964",
+            "realQuoteRaw": "96577825482",
+            "virtualQuoteRaw": "17553935378"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "3Q8wzSs154d6GzV8ba81i8fRtLzaEC8NLt9V541BhXpW6Bs8Z9D6iH2YgYU8T4zi8DbtFPaw3hvJz5VFgmCPHoKz",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1996662874",
+            "observedQuoteVolumeRaw": "1472319",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "1472319",
+                "denominator": "1996662874000"
+              },
+              "rawRatio": {
+                "numerator": "1472319",
+                "denominator": "1996662874"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "3Q8wzSs154d6GzV8ba81i8fRtLzaEC8NLt9V541BhXpW6Bs8Z9D6iH2YgYU8T4zi8DbtFPaw3hvJz5VFgmCPHoKz",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "1472319",
+                "denominator": "1996662874000"
+              },
+              "rawRatio": {
+                "numerator": "1472319",
+                "denominator": "1996662874"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "3Q8wzSs154d6GzV8ba81i8fRtLzaEC8NLt9V541BhXpW6Bs8Z9D6iH2YgYU8T4zi8DbtFPaw3hvJz5VFgmCPHoKz",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "1996662874",
+            "observedQuoteVolumeRaw": "1472319",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "1472319",
+                "denominator": "1996662874000"
+              },
+              "rawRatio": {
+                "numerator": "1472319",
+                "denominator": "1996662874"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "3Q8wzSs154d6GzV8ba81i8fRtLzaEC8NLt9V541BhXpW6Bs8Z9D6iH2YgYU8T4zi8DbtFPaw3hvJz5VFgmCPHoKz",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "1472319",
+                "denominator": "1996662874000"
+              },
+              "rawRatio": {
+                "numerator": "1472319",
+                "denominator": "1996662874"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "3Q8wzSs154d6GzV8ba81i8fRtLzaEC8NLt9V541BhXpW6Bs8Z9D6iH2YgYU8T4zi8DbtFPaw3hvJz5VFgmCPHoKz",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "So11111111111111111111111111111111111111112",
+        "quoteMint": "Ccs8Pndz18LimKUuH157uC59FZEgmgXyjvw93em59Ndd",
+        "poolAddress": "2hr54KSZC1Mim1Hh8A6sXR7g7ZJcfL3QQjk6MyL66pff",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "151013804975",
+            "realQuoteRaw": "571730806654162",
+            "virtualQuoteRaw": "-72514572"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "ydLnUyKfkYC4X93VQBDq7VN4pstKEKYwYSLbbTrUTjDyFKhanV9QuLk1bh38GmwApdgFd5RVmCpXf58bLTz3SfA",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "186904711",
+            "observedQuoteVolumeRaw": "708488789621",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "708488789621000",
+                "denominator": "186904711"
+              },
+              "rawRatio": {
+                "numerator": "708488789621",
+                "denominator": "186904711"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "ydLnUyKfkYC4X93VQBDq7VN4pstKEKYwYSLbbTrUTjDyFKhanV9QuLk1bh38GmwApdgFd5RVmCpXf58bLTz3SfA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "708488789621000",
+                "denominator": "186904711"
+              },
+              "rawRatio": {
+                "numerator": "708488789621",
+                "denominator": "186904711"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "ydLnUyKfkYC4X93VQBDq7VN4pstKEKYwYSLbbTrUTjDyFKhanV9QuLk1bh38GmwApdgFd5RVmCpXf58bLTz3SfA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 0,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 1,
+            "distinctSellers": 0,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "186904711",
+            "observedQuoteVolumeRaw": "708488789621",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "708488789621000",
+                "denominator": "186904711"
+              },
+              "rawRatio": {
+                "numerator": "708488789621",
+                "denominator": "186904711"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "ydLnUyKfkYC4X93VQBDq7VN4pstKEKYwYSLbbTrUTjDyFKhanV9QuLk1bh38GmwApdgFd5RVmCpXf58bLTz3SfA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "708488789621000",
+                "denominator": "186904711"
+              },
+              "rawRatio": {
+                "numerator": "708488789621",
+                "denominator": "186904711"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "ydLnUyKfkYC4X93VQBDq7VN4pstKEKYwYSLbbTrUTjDyFKhanV9QuLk1bh38GmwApdgFd5RVmCpXf58bLTz3SfA",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "So11111111111111111111111111111111111111112",
+        "quoteMint": "456vrobjh9kHCuFFz25HdJngnZ33oRzp8HLYRtUXkHcx",
+        "poolAddress": "EZDHYC4HwwQT6kv5bPeGEJFGJXCWjJxxu3c8CWweA4gK",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "129684141481",
+            "realQuoteRaw": "91064668614684",
+            "virtualQuoteRaw": "-5090946"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "2ovCPwxLiStVqjYYwA9eM92c2oNs87m3ATwfcSVqBMa1xAQP6MKkoU27HHZWYPCmNyvbmdDEnqmcYpcyUqyKFCWR",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "926792395",
+            "observedQuoteVolumeRaw": "644240424572",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "128848084914400",
+                "denominator": "185358479"
+              },
+              "rawRatio": {
+                "numerator": "644240424572",
+                "denominator": "926792395"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2ovCPwxLiStVqjYYwA9eM92c2oNs87m3ATwfcSVqBMa1xAQP6MKkoU27HHZWYPCmNyvbmdDEnqmcYpcyUqyKFCWR",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "128848084914400",
+                "denominator": "185358479"
+              },
+              "rawRatio": {
+                "numerator": "644240424572",
+                "denominator": "926792395"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2ovCPwxLiStVqjYYwA9eM92c2oNs87m3ATwfcSVqBMa1xAQP6MKkoU27HHZWYPCmNyvbmdDEnqmcYpcyUqyKFCWR",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "926792395",
+            "observedQuoteVolumeRaw": "644240424572",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "128848084914400",
+                "denominator": "185358479"
+              },
+              "rawRatio": {
+                "numerator": "644240424572",
+                "denominator": "926792395"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2ovCPwxLiStVqjYYwA9eM92c2oNs87m3ATwfcSVqBMa1xAQP6MKkoU27HHZWYPCmNyvbmdDEnqmcYpcyUqyKFCWR",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "128848084914400",
+                "denominator": "185358479"
+              },
+              "rawRatio": {
+                "numerator": "644240424572",
+                "denominator": "926792395"
+              },
+              "tokenDecimals": 9,
+              "quoteDecimals": 6,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2ovCPwxLiStVqjYYwA9eM92c2oNs87m3ATwfcSVqBMa1xAQP6MKkoU27HHZWYPCmNyvbmdDEnqmcYpcyUqyKFCWR",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "h2bkcmu68sjJ6R8VaoMTJdznK9Cq7ZsQNZPryfQpump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "ErEmVv9nXYopUzFef9Tz87spJiPNNn7HHbFqm6dNYFup",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "121368529155795",
+            "realQuoteRaw": "127928881525",
+            "virtualQuoteRaw": "17567541745"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "D6Yis7n5jC5ozWAMEJVwJcongH3wGPV3nfpmhgMyQFhYHLKqrUvxQrhkWPMgdUhK5uLUp3YSa5QxLpcwuWJC2gj",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 1,
+            "sells": 2,
+            "swapCount": 3,
+            "transactionCount": 3,
+            "distinctBuyers": 1,
+            "distinctSellers": 2,
+            "distinctTraders": 3,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "35684848",
+            "observedQuoteVolumeRaw": "42403",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "12999",
+                "denominator": "10977601000"
+              },
+              "rawRatio": {
+                "numerator": "12999",
+                "denominator": "10977601"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "CrjeoJAjnJpTPkcsJfAXk8vatbTTRtcGV3xo9L7CGjfrmCqFDtXWEt6MzVtZsLW9WXTfj7w95qKk9eEErQ8mRQ6",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "732",
+                "denominator": "610559125"
+              },
+              "rawRatio": {
+                "numerator": "5856",
+                "denominator": "4884473"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "D6Yis7n5jC5ozWAMEJVwJcongH3wGPV3nfpmhgMyQFhYHLKqrUvxQrhkWPMgdUhK5uLUp3YSa5QxLpcwuWJC2gj",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "100"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "3"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "3"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 1,
+            "sells": 2,
+            "swapCount": 3,
+            "transactionCount": 3,
+            "distinctBuyers": 1,
+            "distinctSellers": 2,
+            "distinctTraders": 3,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "35684848",
+            "observedQuoteVolumeRaw": "42403",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "12999",
+                "denominator": "10977601000"
+              },
+              "rawRatio": {
+                "numerator": "12999",
+                "denominator": "10977601"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "CrjeoJAjnJpTPkcsJfAXk8vatbTTRtcGV3xo9L7CGjfrmCqFDtXWEt6MzVtZsLW9WXTfj7w95qKk9eEErQ8mRQ6",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "732",
+                "denominator": "610559125"
+              },
+              "rawRatio": {
+                "numerator": "5856",
+                "denominator": "4884473"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_including_reported_fees",
+              "transactionSignature": "D6Yis7n5jC5ozWAMEJVwJcongH3wGPV3nfpmhgMyQFhYHLKqrUvxQrhkWPMgdUhK5uLUp3YSa5QxLpcwuWJC2gj",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "3"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "3"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      },
+      {
+        "tokenMint": "9bz8ubx6D676wPJGeEwvgJHnB84mqR23KQ26zdsZpump",
+        "quoteMint": "So11111111111111111111111111111111111111112",
+        "poolAddress": "3Qw7TYfC31h96zk3X5HdpvgPo1JztSENZ5eJ77MMk7Yx",
+        "protocols": [
+          "pump_swap"
+        ],
+        "firstProvenCreationAt": null,
+        "creationTransactionSignature": null,
+        "provenAgeSeconds": null,
+        "graduatedAt": null,
+        "migrationTransactionSignature": null,
+        "latestProtocolReportedReserves": {
+          "values": {
+            "realTokenRaw": "63949038486309",
+            "realQuoteRaw": "273628083128",
+            "virtualQuoteRaw": "17581570918"
+          },
+          "eventTimestamp": "2026-11-04T06:59:29.000Z",
+          "slot": 465209929,
+          "transactionSignature": "2oU4RSoRpbAzdUN8khxWQX55jw1SauqLXJF6rbdp4hjdPEX8xWfAvaE2wLkdtda5RDTDXX5zmrZx2zYiq9tbRu5E",
+          "semantics": "PROTOCOL_EVENT_SNAPSHOT_CHECK_ADAPTER_FOR_PRE_OR_POST_TRADE"
+        },
+        "graduationProgress": null,
+        "liquidityAvailableRaw": null,
+        "estimatedImpact": null,
+        "usd": null,
+        "windows": {
+          "5s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "30s": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "1m": {
+            "buys": 0,
+            "sells": 0,
+            "swapCount": 0,
+            "transactionCount": 0,
+            "distinctBuyers": 0,
+            "distinctSellers": 0,
+            "distinctTraders": 0,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "0",
+            "observedQuoteVolumeRaw": "0",
+            "volumeCompleteWithinObservedTrades": false,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": null,
+            "latestPrice": null,
+            "priceChangePercent": null,
+            "swapFrequencyPerSecond": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "topWalletSwapShare": null,
+            "observedTopWalletSwapShareLowerBound": null,
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "5m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "3807042301",
+            "observedQuoteVolumeRaw": "17162034",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "8581017",
+                "denominator": "1903521150500"
+              },
+              "rawRatio": {
+                "numerator": "17162034",
+                "denominator": "3807042301"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2oU4RSoRpbAzdUN8khxWQX55jw1SauqLXJF6rbdp4hjdPEX8xWfAvaE2wLkdtda5RDTDXX5zmrZx2zYiq9tbRu5E",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "8581017",
+                "denominator": "1903521150500"
+              },
+              "rawRatio": {
+                "numerator": "17162034",
+                "denominator": "3807042301"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2oU4RSoRpbAzdUN8khxWQX55jw1SauqLXJF6rbdp4hjdPEX8xWfAvaE2wLkdtda5RDTDXX5zmrZx2zYiq9tbRu5E",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "300"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          },
+          "15m": {
+            "buys": 0,
+            "sells": 1,
+            "swapCount": 1,
+            "transactionCount": 1,
+            "distinctBuyers": 0,
+            "distinctSellers": 1,
+            "distinctTraders": 1,
+            "walletAttributionComplete": true,
+            "unattributedSwaps": 0,
+            "observedTokenVolumeRaw": "3807042301",
+            "observedQuoteVolumeRaw": "17162034",
+            "volumeCompleteWithinObservedTrades": true,
+            "missingTokenAmounts": 0,
+            "missingQuoteAmounts": 0,
+            "firstPrice": {
+              "quotePerToken": {
+                "numerator": "8581017",
+                "denominator": "1903521150500"
+              },
+              "rawRatio": {
+                "numerator": "17162034",
+                "denominator": "3807042301"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2oU4RSoRpbAzdUN8khxWQX55jw1SauqLXJF6rbdp4hjdPEX8xWfAvaE2wLkdtda5RDTDXX5zmrZx2zYiq9tbRu5E",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "latestPrice": {
+              "quotePerToken": {
+                "numerator": "8581017",
+                "denominator": "1903521150500"
+              },
+              "rawRatio": {
+                "numerator": "17162034",
+                "denominator": "3807042301"
+              },
+              "tokenDecimals": 6,
+              "quoteDecimals": 9,
+              "semantics": "user_quote_after_reported_fees",
+              "transactionSignature": "2oU4RSoRpbAzdUN8khxWQX55jw1SauqLXJF6rbdp4hjdPEX8xWfAvaE2wLkdtda5RDTDXX5zmrZx2zYiq9tbRu5E",
+              "eventTimestamp": "2026-11-04T06:59:29.000Z"
+            },
+            "priceChangePercent": {
+              "numerator": "0",
+              "denominator": "1"
+            },
+            "swapFrequencyPerSecond": {
+              "numerator": "1",
+              "denominator": "900"
+            },
+            "topWalletSwapShare": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "observedTopWalletSwapShareLowerBound": {
+              "numerator": "1",
+              "denominator": "1"
+            },
+            "quoteVolumeUsd": null,
+            "priceUsd": null,
+            "coverage": {
+              "status": "PARTIAL",
+              "scope": "selected_programs_and_decoded_events",
+              "gaps": 13,
+              "limit": 10000
+            },
+            "status": "PARTIAL"
+          }
+        },
+        "untimedSwaps": 0,
+        "coverage": {
+          "status": "PARTIAL",
+          "scope": "selected_programs_and_decoded_events",
+          "gaps": 13,
+          "limit": 10000
+        }
+      }
+    ]
+  },
+  "tokens": {
+    "data": [
+      {
+        "mint": "2724239D1JhWQGV5WZ7tdBTN5Jz4FZ3pdmvj3iD4LsVE",
+        "creator": null,
+        "firstEvidence": "b3b996eda349746f76a59dd90f8cc026dc499e2fdb247c64ac189582d257fb70",
+        "firstSeenAt": "2026-11-04T07:01:20.205Z",
+        "createdAt": null,
+        "confirmationStatus": null,
+        "reconciliationStatus": "UNKNOWN",
+        "creationEvidenceRetained": false
+      },
+      {
+        "mint": "6zjLjqd483pWwrowtKdyhie8tqEvkWwRcrR4btkVpump",
+        "creator": null,
+        "firstEvidence": "602469eef8cd0260cc5c44789099f73b195a7f0995c05f634c40a62804882ac4",
+        "firstSeenAt": "2026-11-04T07:00:42.119Z",
+        "createdAt": null,
+        "confirmationStatus": null,
+        "reconciliationStatus": "UNKNOWN",
+        "creationEvidenceRetained": false
+      },
+      {
+        "mint": "FhVLEhoYTQH2F8NnJ2gYRA7FidTGtKSRhgUqggBUFxEh",
+        "creator": null,
+        "firstEvidence": "ad36bbf6270454a0ac5f03c4891b07b3c9eefdc609099435e5ba88dc08edd363",
+        "firstSeenAt": "2026-11-04T07:00:42.119Z",
+        "createdAt": null,
+        "confirmationStatus": null,
+        "reconciliationStatus": "UNKNOWN",
+        "creationEvidenceRetained": false
+      },
+      {
+        "mint": "HtCdpTU9Sds7ERsxwruU3KERNTAMFtd1oKQK9xER2Xp9",
+        "creator": null,
+        "firstEvidence": "2803a5e07e12b6e356c7359650ceb73972883fb60d4bbba179ee2d5e67657119",
+        "firstSeenAt": "2026-11-04T07:00:04.631Z",
+        "createdAt": null,
+        "confirmationStatus": null,
+        "reconciliationStatus": "UNKNOWN",
+        "creationEvidenceRetained": false
+      },
+      {
+        "mint": "9bz8ubx6D676wPJGeEwvgJHnB84mqR23KQ26zdsZpump",
+        "creator": null,
+        "firstEvidence": "09848b8669589a0f965cea58de22e47c33d9b79e4ae53be94b7b9996a01f4d4e",
+        "firstSeenAt": "2026-11-04T06:59:31.297Z",
+        "createdAt": null,
+        "confirmationStatus": null,
+        "reconciliationStatus": "UNKNOWN",
+        "creationEvidenceRetained": false
+      }
+    ],
+    "coverage": "PARTIAL"
+  }
+}

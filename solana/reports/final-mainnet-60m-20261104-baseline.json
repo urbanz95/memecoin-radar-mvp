@@ -1,7 +1,7 @@
 {
   "startedAt": "2026-11-04T06:59:29.355Z",
   "dataMode": "REAL_MAINNET_LIVE",
-  "status": "IN_PROGRESS",
+  "status": "SUPERSEDED_AFTER_530_SECONDS",
   "baseCommit": "b3827920450ba93eca066fa30bba3d2d1badcfeb",
   "nodeVersion": "v24.19.0",
   "config": {
@@ -48,5 +48,6 @@
     "solana/src/store.mjs": "63ee1b985b84fb8e3a8ed7408515f5dafd9d9b7df5443d4dfad7e2f5e76f7f84",
     "solana/src/websocket.mjs": "ea637fdba3029b7f47cf2a08ad45fc6e26c909916a3ce73ae810c2a07ba5c78a"
   },
-  "fixtureManifestSha256": "2e9888af7a96ffb5e47de166c7afabd241a62f2152f27b27c73f5186d323fa5d"
+  "fixtureManifestSha256": "2e9888af7a96ffb5e47de166c7afabd241a62f2152f27b27c73f5186d323fa5d",
+  "reason": "PumpSwap instruction-derived mint attribution strengthened with explicit pool match; separate successful guard tests"
 }

@@ -3,15 +3,15 @@
   "liveLatencyClaim": false,
   "results": {
     "node24": {
-      "tests": 160,
-      "pass": 160,
+      "tests": 162,
+      "pass": 162,
       "fail": 0,
       "cancelled": 0,
       "skipped": 0
     },
     "node22": {
-      "tests": 160,
-      "pass": 160,
+      "tests": 162,
+      "pass": 162,
       "fail": 0,
       "cancelled": 0,
       "skipped": 0
