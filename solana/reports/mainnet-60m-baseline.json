@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-11-03T21:53:20.559Z",
+  "dataMode": "REAL_MAINNET_LIVE",
+  "baseCommit": "b3827920450ba93eca066fa30bba3d2d1badcfeb",
+  "config": {
+    "rpc": "public Solana Mainnet",
+    "programs": [
+      "pump_fun",
+      "pump_swap",
+      "raydium_launchlab",
+      "raydium_cpmm"
+    ],
+    "requestsPerMinute": 60,
+    "queueCapacity": 32,
+    "maxDurableBacklog": 250,
+    "recoveryPageSize": 5,
+    "recoveryMaxPages": 1,
+    "securityEnabled": false
+  },
+  "sourceSha256": {
+    "solana/src/api.mjs": "0bbd9bc445af5114c9d5b0cc8d41186ceb9fd4986a9ba47b6f90eb3c5e4ea8a4",
+    "solana/src/cli.mjs": "7e507060aeb5de75f5c9a58b00eac04115fad38d797f3fcc7813a6df929b3089",
+    "solana/src/config.mjs": "2eeeb9e3621a013b771bed355b4b65b2fc6cf3cf66ed0e4544e1c043b1b664d3",
+    "solana/src/events.mjs": "8e65c8482943613ad6c4db8476c77bb70ed0082483d1bbc09edaf90dd465d89b",
+    "solana/src/market.mjs": "09c73df9bf845a541117775e3fb465562f729fe170df4a51e262e042e4c8374b",
+    "solana/src/metrics.mjs": "a35dd1c87f28816c9f1d168e52d99368be8718dabfd021380506416d703c6350",
+    "solana/src/protocols/borsh.mjs": "1459806d65a171f12b44e34f4fe921389968b5f3c31b724c8df751cf66a0f7a8",
+    "solana/src/protocols/index.mjs": "ddea550bc7d4772ef9b20d5e052e9a661d2728a88b119317b1117dbc6fa47eb1",
+    "solana/src/protocols/pump.mjs": "161d981f2da56f811c3e77bd936fb42a6470b577db9d7bb2e7bde12535c7724d",
+    "solana/src/protocols/raydium.mjs": "75b47a0a98bdee5ff1a8711a1c08353449aae610836dd22e4196e0a1b9fcece8",
+    "solana/src/protocols/registry.mjs": "c36d815f153ec5371c257b026dd2be4ce92cd87611739a0eadf575683ac16253",
+    "solana/src/queue.mjs": "fa1726b366a45cef9acf6566c314a3639a5c00904730c8d6b4447d83b801a19a",
+    "solana/src/recovery.mjs": "371e1f5185a138d923bca557db0f4517931c3f02029f366f2d7913707425c8c6",
+    "solana/src/rpc.mjs": "54146fb481f46e924f1a842d05335c3d279f31f711170b32ed5ddb5efa95414b",
+    "solana/src/scanner.mjs": "e9ecf498210f5364f1267c0bfaa06d12092854130e6ce354eb7398c906865382",
+    "solana/src/security.mjs": "92cb5d214a743c2afc1534e7c179a821b8162f9af720790d602adf2ef7b9f6c0",
+    "solana/src/store.mjs": "3775ca7b4965fdb5c46ae6f979e42dc74cd8f4c4476f529314d7a96a96ef3524",
+    "solana/src/websocket.mjs": "959ffa6860423e24d24a41e7a9451abc4a8b6a40406e06b637bfb8b5558ad7fe"
+  }
+}

@@ -1,0 +1,996 @@
+{
+  "dataMode": "REAL_MAINNET_LIVE",
+  "requestedSeconds": 2700,
+  "startedAt": "2026-11-03T22:03:06.082Z",
+  "samples": [
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "OBSERVING",
+      "startedAt": "2026-11-03T22:03:06.403Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:03:06.023Z",
+        "measuredAt": "2026-11-03T22:03:16.413Z",
+        "uptimeMs": 10390,
+        "counters": {
+          "rpc_requests": 2,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 3317,
+          "notificationsReceived": 3317,
+          "logObservationsDecoded": 989,
+          "contextEnrichmentSkipped": 3284,
+          "logObservationsPersisted": 882,
+          "rpc_budget_waits": 2,
+          "recoveryGaps": 1,
+          "rpc_method_getTransaction": 1,
+          "transactionsProcessed": 1,
+          "events_processed": 0,
+          "decoderFailures": 0
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 16,
+          "websocket_connected_at": "2026-11-03T22:03:07.601Z",
+          "last_event_received": "2026-11-03T22:03:16.292Z",
+          "current_slot": 465059605,
+          "currentSlot": 465059605,
+          "lastEventReceived": "2026-11-03T22:03:16.292Z",
+          "queue_depth": 2,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:03:16.198Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:03:16.216Z",
+          "storageConsumptionBytes": 10019496
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 129,
+            "p95": 319,
+            "p99": 319,
+            "max": 319,
+            "mean": 224
+          },
+          "logObservationLatencyMs": {
+            "count": 692,
+            "retainedSamples": 692,
+            "p50": 99,
+            "p95": 242,
+            "p99": 252,
+            "max": 257,
+            "mean": 114.4306358381503
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 7527.604311000001,
+            "p95": 7527.604311000001,
+            "p99": 7527.604311000001,
+            "max": 7527.604311000001,
+            "mean": 7527.604311000001
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 1942,
+            "p95": 1942,
+            "p99": 1942,
+            "max": 1942,
+            "mean": 1942
+          }
+        },
+        "rpcRequestsPerMinute": 2,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 33,
+        "events": 0,
+        "event_observations": 882,
+        "tokens": 0,
+        "pools": 0,
+        "gaps": 1,
+        "errors": 17,
+        "raw_transactions": 1,
+        "pending": 15,
+        "storageBytes": 10019496
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "RPC receipt to committed normalized events; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "OBSERVING",
+      "startedAt": "2026-11-03T22:03:06.403Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:03:06.023Z",
+        "measuredAt": "2026-11-03T22:03:26.414Z",
+        "uptimeMs": 20391,
+        "counters": {
+          "rpc_requests": 3,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 7360,
+          "notificationsReceived": 7360,
+          "logObservationsDecoded": 2119,
+          "contextEnrichmentSkipped": 7325,
+          "logObservationsPersisted": 1989,
+          "rpc_budget_waits": 3,
+          "recoveryGaps": 1,
+          "rpc_method_getTransaction": 2,
+          "transactionsProcessed": 2,
+          "events_processed": 0,
+          "decoderFailures": 0
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 15,
+          "websocket_connected_at": "2026-11-03T22:03:07.601Z",
+          "last_event_received": "2026-11-03T22:03:26.273Z",
+          "current_slot": 465059619,
+          "currentSlot": 465059619,
+          "lastEventReceived": "2026-11-03T22:03:26.274Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:03:26.222Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:03:26.237Z",
+          "storageConsumptionBytes": 22042696
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 149,
+            "p95": 319,
+            "p99": 319,
+            "max": 319,
+            "mean": 199
+          },
+          "logObservationLatencyMs": {
+            "count": 1580,
+            "retainedSamples": 1580,
+            "p50": 146,
+            "p95": 241,
+            "p99": 251,
+            "max": 257,
+            "mean": 133.4367088607595
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 7527.604311000001,
+            "p95": 17545.436417,
+            "p99": 17545.436417,
+            "max": 17545.436417,
+            "mean": 12536.520364
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 1942,
+            "p95": 2053,
+            "p99": 2053,
+            "max": 2053,
+            "mean": 1997.5
+          }
+        },
+        "rpcRequestsPerMinute": 3,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 34,
+        "events": 0,
+        "event_observations": 1989,
+        "tokens": 0,
+        "pools": 0,
+        "gaps": 1,
+        "errors": 17,
+        "raw_transactions": 2,
+        "pending": 15,
+        "storageBytes": 22042696
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "RPC receipt to committed normalized events; no production guarantee"
+    }
+  ],
+  "reason": "SIGTERM",
+  "endedAt": "2026-11-03T22:03:28.931Z",
+  "elapsedSeconds": 22.849,
+  "final": {
+    "schemaVersion": 1,
+    "chain": "solana",
+    "network": "mainnet-beta",
+    "mode": "READ_ONLY",
+    "status": "OBSERVING",
+    "startedAt": "2026-11-03T22:03:06.403Z",
+    "programs": [
+      {
+        "protocol": "pump_fun",
+        "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+      },
+      {
+        "protocol": "pump_swap",
+        "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      {
+        "protocol": "raydium_launchlab",
+        "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+      },
+      {
+        "protocol": "raydium_cpmm",
+        "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+      }
+    ],
+    "metrics": {
+      "startedAt": "2026-11-03T22:03:06.023Z",
+      "measuredAt": "2026-11-03T22:03:28.931Z",
+      "uptimeMs": 22908,
+      "counters": {
+        "rpc_requests": 3,
+        "rpc_method_getGenesisHash": 1,
+        "log_notifications": 8182,
+        "notificationsReceived": 8182,
+        "logObservationsDecoded": 2358,
+        "contextEnrichmentSkipped": 8147,
+        "logObservationsPersisted": 2160,
+        "rpc_budget_waits": 3,
+        "recoveryGaps": 1,
+        "rpc_method_getTransaction": 2,
+        "transactionsProcessed": 2,
+        "events_processed": 0,
+        "decoderFailures": 0
+      },
+      "gauges": {
+        "mainnetVerified": true,
+        "websocket_connected": true,
+        "durableBacklog": 16,
+        "websocket_connected_at": "2026-11-03T22:03:07.601Z",
+        "last_event_received": "2026-11-03T22:03:28.930Z",
+        "current_slot": 465059621,
+        "currentSlot": 465059621,
+        "lastEventReceived": "2026-11-03T22:03:28.930Z",
+        "queue_depth": 3,
+        "queue_active": 2,
+        "lastLogObservationPersisted": "2026-11-03T22:03:28.714Z",
+        "coverageOverloaded": true,
+        "lastEventProcessed": "2026-11-03T22:03:26.237Z",
+        "storageConsumptionBytes": 22042696
+      },
+      "histograms": {
+        "rpc_latency_ms": {
+          "count": 3,
+          "retainedSamples": 3,
+          "p50": 149,
+          "p95": 319,
+          "p99": 319,
+          "max": 319,
+          "mean": 199
+        },
+        "logObservationLatencyMs": {
+          "count": 1713,
+          "retainedSamples": 1713,
+          "p50": 140,
+          "p95": 240,
+          "p99": 251,
+          "max": 257,
+          "mean": 132.89258610624634
+        },
+        "transactionEnrichmentLatencyMs": {
+          "count": 2,
+          "retainedSamples": 2,
+          "p50": 7527.604311000001,
+          "p95": 17545.436417,
+          "p99": 17545.436417,
+          "max": 17545.436417,
+          "mean": 12536.520364
+        },
+        "onchainToReceiveLatencyMs": {
+          "count": 2,
+          "retainedSamples": 2,
+          "p50": 1942,
+          "p95": 2053,
+          "p99": 2053,
+          "max": 2053,
+          "mean": 1997.5
+        }
+      },
+      "rpcRequestsPerMinute": 3,
+      "eventsPerSecond": 0,
+      "histogramWindow": "last 4096 observations per metric"
+    },
+    "storage": {
+      "inbox": 35,
+      "events": 0,
+      "event_observations": 2160,
+      "tokens": 0,
+      "pools": 0,
+      "gaps": 1,
+      "errors": 17,
+      "raw_transactions": 2,
+      "pending": 16,
+      "storageBytes": 22042696
+    },
+    "coverage": "PARTIAL",
+    "latencyScope": "RPC receipt to committed normalized events; no production guarantee"
+  },
+  "gaps": [
+    {
+      "id": 1,
+      "created_at": 1793743389186,
+      "resolved_at": null,
+      "code": "DURABLE_BACKPRESSURE",
+      "payload": {
+        "pending": 16,
+        "limit": 16
+      }
+    }
+  ],
+  "eventExamples": [],
+  "logObservationExamples": [
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "3jSdGPyj7B94XjertrZoi3dVTRkJ87ZLqATUWgE9wpmBU6kmMke6ZC5g4rtXu3xgffVK7gC887WQvEoj7wNtvVTb",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "FoEM9m4Q4oV4EHukrZVfC9xCeZGCbAhEoYpCBmnYUAfU",
+      "wallet": "2aycyoL1gsnjcVJihYAfJs4zV3EWhmuB4Zykbty8twMx",
+      "creator": null,
+      "amountTokenRaw": "16580",
+      "amountQuoteRaw": "19940581",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.709Z",
+      "processedAt": "2026-11-03T22:03:28.709Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "creator",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "a37f6eb5320133519ce81357d31905ebede024d05ec36ed69bf668983961d878",
+        "transactionSignature": "3jSdGPyj7B94XjertrZoi3dVTRkJ87ZLqATUWgE9wpmBU6kmMke6ZC5g4rtXu3xgffVK7gC887WQvEoj7wNtvVTb",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "117902937820",
+        "realQuoteRaw": "142227258816195",
+        "virtualQuoteRaw": "-50142"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "b9abe1bbb1f1ad95d74ca55bd27374398c7336536eda0e800389c7f65d85b30e",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "7rTPYa41mBMWrWShexq7Bv9oHR7gMe8qGE5CjbcyToVRzECjYq6VvKGZZNYNaTk94BBPdzXYJwEy5SkUnoTWaHW",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "EMEAa3c3HRUdsjwuoMF9ZabZE3nGWo7eapxbjr2yprcV",
+      "wallet": "6hWAtceciBpZR14SDJnR5coE3UkbY9yyJtai9wFx5rN5",
+      "creator": "FY314o8NtiuSe8BV6M2d82ytqMpUZ7avzqthxiQhPXgY",
+      "amountTokenRaw": "1120454004",
+      "amountQuoteRaw": "1937908",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.708Z",
+      "processedAt": "2026-11-03T22:03:28.708Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "a4ebfe37a9f39eb348ec4cf727592ccdc70632e670ed3d13405b7863ae07b445",
+        "transactionSignature": "7rTPYa41mBMWrWShexq7Bv9oHR7gMe8qGE5CjbcyToVRzECjYq6VvKGZZNYNaTk94BBPdzXYJwEy5SkUnoTWaHW",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "100535714986340",
+        "realQuoteRaw": "158338856703",
+        "virtualQuoteRaw": "17570230054"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "b48c0675cf805cca1cceb65c1dc5ee9df9c8a13a807ed45d85e2839a707410fc",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "5UzfxJoPaoa4Vfiybjnwhvt7rnQJAbY742ggjNa8GLFRupavbW8qXTTaXgcfdAWreBbGiX3BDwbtqFoScpBQocEF",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "9oKbruCw9ot3yUMNPirvMMAkuzvpKqCcTAt8YzE3gs14",
+      "wallet": "DskjPXPzWeHB2Bztb5VXzdSnNTD8Wctw43vVV1yfGQPB",
+      "creator": "GMDj3RpddapCUU5GxKaRaTXRCvW2e72LRbMkceJ91TxM",
+      "amountTokenRaw": "9900567",
+      "amountQuoteRaw": "38747",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.645Z",
+      "processedAt": "2026-11-03T22:03:28.646Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "919e5cdd1447220f7ddb7fdc7938bb21f6764e6236fc68a1e6e0cf0030572ae9",
+        "transactionSignature": "5UzfxJoPaoa4Vfiybjnwhvt7rnQJAbY742ggjNa8GLFRupavbW8qXTTaXgcfdAWreBbGiX3BDwbtqFoScpBQocEF",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "68484921975128",
+        "realQuoteRaw": "253298552717",
+        "virtualQuoteRaw": "17584064855"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "bc61ef5489891a89b10f673d71ded722ba40dc856b33b96cfa4f1043501de661",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_BOUGHT",
+      "transactionSignature": "3vjj9R2WKDHGvCWme3b15n9brCsn2HNx7X7uLnNvpNP2ijhkLqa5Qsy9hBeYbVEwzYgxJrnHa4Cja7H3BtT1Lkqa",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "9oKbruCw9ot3yUMNPirvMMAkuzvpKqCcTAt8YzE3gs14",
+      "wallet": "GDUVzCPPsCc9AedaCNoueP6STtuiQ8Z2YuHgwWcoZPup",
+      "creator": "GMDj3RpddapCUU5GxKaRaTXRCvW2e72LRbMkceJ91TxM",
+      "amountTokenRaw": "1112991261",
+      "amountQuoteRaw": "4402212",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.642Z",
+      "processedAt": "2026-11-03T22:03:28.642Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "BuyEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "449a52781c909af7a0bacaf37110f00c2865a461dc3f43645d778a45f27aacfd",
+        "transactionSignature": "3vjj9R2WKDHGvCWme3b15n9brCsn2HNx7X7uLnNvpNP2ijhkLqa5Qsy9hBeYbVEwzYgxJrnHa4Cja7H3BtT1Lkqa",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "68486034966389",
+        "realQuoteRaw": "253294141700",
+        "virtualQuoteRaw": "17584064855"
+      },
+      "financialSemantics": "user_quote_including_reported_fees",
+      "id": "f35efb1c1f1771388d20ebc5958a9953f1f38cd9d1008ef5b449393d02ee7ceb",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "3YXrQnFoVud6mAiE8EJHSNaKAeNQjYzT3iarCLRZ5ezyrbMs5HEnpa4HwtJfYwAGVqvg6row8sNi5BcJHsx3QWZZ",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "DbUagshRdbcHm2nnh41Y33nyKw1kJchYehr1jLMHhxHe",
+      "wallet": "5PhpDtxEowTfXNAW7VcRuXiqMCucd6dGGiJ7UmVq5hx9",
+      "creator": "CDHN9E4X9xAKLosxfiyqm1frkgH3UUHr7mtNWPK3eHtt",
+      "amountTokenRaw": "3674217819",
+      "amountQuoteRaw": "6816365",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.641Z",
+      "processedAt": "2026-11-03T22:03:28.641Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "6f67e3884b9c58e5f71b3fd149a8c94047f6f010a0688c6f917023abc2a82c4c",
+        "transactionSignature": "3YXrQnFoVud6mAiE8EJHSNaKAeNQjYzT3iarCLRZ5ezyrbMs5HEnpa4HwtJfYwAGVqvg6row8sNi5BcJHsx3QWZZ",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "96983574068483",
+        "realQuoteRaw": "164455803153",
+        "virtualQuoteRaw": "17567074751"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "7c4c02f09c8c66d83d5daac2c9b38afd893ebdfa362ecb9283ce06054a8ae6a3",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_BOUGHT",
+      "transactionSignature": "VzYnSGcfCoyF5RrNnqNScRpBsD23ZXyMMCwFiuQicQwLovhDVikcFvMTmqqGY4DiQw7wgrkQr8AuysbyM2Xyu7P",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "7wW4jRMDY78ttRrsJxV7xwiSLYDtkK9VKkN4KpaBaWMh",
+      "wallet": "5DHS64ozAvmpAgrYpwCrXCyy8k1fLt2UWGid2VwQQ9F7",
+      "creator": "7vw7iFyg2UPWfnJSV17e9voWspYq9hVNqmoK2k5mYbnp",
+      "amountTokenRaw": "976039544",
+      "amountQuoteRaw": "1863771",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.407Z",
+      "processedAt": "2026-11-03T22:03:28.407Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "BuyEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "4ce466a5c936d771965a999a8b3343a00527b997ffa97887fbb359a2b158650a",
+        "transactionSignature": "VzYnSGcfCoyF5RrNnqNScRpBsD23ZXyMMCwFiuQicQwLovhDVikcFvMTmqqGY4DiQw7wgrkQr8AuysbyM2Xyu7P",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "96080971223527",
+        "realQuoteRaw": "165913107740",
+        "virtualQuoteRaw": "17553856979"
+      },
+      "financialSemantics": "user_quote_including_reported_fees",
+      "id": "dc2c2acd5ae4730e0de8dbf4285979e9b0e8262976bf9d42fd59112bcc9655d2",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "5VPFZzaSgRcWVd1po7MzSFWZdVRBFosDFZ9CkfgRxQeGjKPwQYCTsHQEu8kFzisFkaZXZFMnaq8pdUXUJ8wo6pDL",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "HbVD6zuxs4ZvLbLZjPx1YREzStFSPS5oSAjzdCFR5a4t",
+      "wallet": "FMZVwGkziUKanHPYoqsyEP8hhme9xiuSk5PGqSQ96D6f",
+      "creator": null,
+      "amountTokenRaw": "16684",
+      "amountQuoteRaw": "56595300",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.403Z",
+      "processedAt": "2026-11-03T22:03:28.403Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "creator",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "8a5384d5be1a9c8fb95790f489af7da021d67909c8d1d2ce1af599cee211b39e",
+        "transactionSignature": "5VPFZzaSgRcWVd1po7MzSFWZdVRBFosDFZ9CkfgRxQeGjKPwQYCTsHQEu8kFzisFkaZXZFMnaq8pdUXUJ8wo6pDL",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "230517273806",
+        "realQuoteRaw": "784311430103638",
+        "virtualQuoteRaw": "-5359940"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "b578f9536cde2dfc35acc39005750aa9f1cb516b64bbd8dd75cba31c511722d8",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "5x8tSGwnAddPjGTNp9LkwFCXtkd1eJL3JsBmEGDen9teZamABMDozJVbw7LRd4gjuooezwSLue6d4Mm5qpPakxP5",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "7RD5YALHcMLUFKJ8FRePGd6ei11F15uXZF1rc7mPKeCv",
+      "wallet": "tqDnyWorYJm8Eh5H4dRnjeQU2iX1pK7YUCULFPCRKqS",
+      "creator": "Cx3tv9NrdDWQ8v6QwgngXH36Sm26qT7sR79NHod9UEgc",
+      "amountTokenRaw": "287379596247",
+      "amountQuoteRaw": "1017639",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.401Z",
+      "processedAt": "2026-11-03T22:03:28.401Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "0dfb82ffb4411e51f8e87d98bab1244aac4244f029a997a1325eb4a1b4f89199",
+        "transactionSignature": "5x8tSGwnAddPjGTNp9LkwFCXtkd1eJL3JsBmEGDen9teZamABMDozJVbw7LRd4gjuooezwSLue6d4Mm5qpPakxP5",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "36329410087048",
+        "realQuoteRaw": "142228523",
+        "virtualQuoteRaw": "-10923293"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "69e499240c431084c9f4ec2b87935c6c4d2be1193d25c59d84ab3eef771753cf",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_SOLD",
+      "transactionSignature": "2VwUnqNecrnwo8mrNs2VwYYdaXT6328UTGsjc4yrgAqineC1DqeZDYP8rdRf3SayKQqbZeMfaTAqUhpSCfeQT8G3",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "7RD5YALHcMLUFKJ8FRePGd6ei11F15uXZF1rc7mPKeCv",
+      "wallet": "HVb3dStRtLaQ5XFYULXBh3JGhUWfYSKim4X756kXxaCU",
+      "creator": "Cx3tv9NrdDWQ8v6QwgngXH36Sm26qT7sR79NHod9UEgc",
+      "amountTokenRaw": "38513584957",
+      "amountQuoteRaw": "137603",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.395Z",
+      "processedAt": "2026-11-03T22:03:28.395Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "SellEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "9b10f1e7bf8cb58ed562f82b18655605676abef6646cbf21d384ef8f0c42dd61",
+        "transactionSignature": "2VwUnqNecrnwo8mrNs2VwYYdaXT6328UTGsjc4yrgAqineC1DqeZDYP8rdRf3SayKQqbZeMfaTAqUhpSCfeQT8G3",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "36290896502091",
+        "realQuoteRaw": "142366161",
+        "virtualQuoteRaw": "-10921864"
+      },
+      "financialSemantics": "user_quote_after_reported_fees",
+      "id": "f4d28b4d5df17a6201556ab3857120471d3407a3bcff5baa1b8273f2aedef13e",
+      "contextEnrichmentAvailable": false
+    },
+    {
+      "chain": "solana",
+      "schemaVersion": 1,
+      "dataMode": "REAL_RPC_LOG_OBSERVATION",
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "eventType": "TOKEN_BOUGHT",
+      "transactionSignature": "3MvikRJDkaqvzqGxuq4LeSAax25h2ETYASzcdjW8ATu88DCqCZ9m4vC9zptf2oArUrWUqR1HECW3THka2dC6qZFg",
+      "slot": 465059620,
+      "instructionIndex": null,
+      "innerInstructionIndex": null,
+      "tokenMint": null,
+      "quoteMint": null,
+      "poolAddress": "HmcVp73ePenjn2JDHQBws6sYN56aBCmPuGDGouqzNUok",
+      "wallet": "9VW3ZGe86T6KapWqQFHMJUT3p3JsHTTV4eMEFUy9yxLA",
+      "creator": "HN9YV4zbrsSjGwrLkr17ebbmCv99U34j7FuRcDtHjtZ9",
+      "amountTokenRaw": "841858643",
+      "amountQuoteRaw": "1647761",
+      "tokenDecimals": null,
+      "quoteDecimals": null,
+      "eventTimestamp": "2026-11-03T22:03:12.000Z",
+      "receivedAt": "2026-11-03T22:03:28.361Z",
+      "processedAt": "2026-11-03T22:03:28.362Z",
+      "confirmationStatus": "confirmed",
+      "reconciliationStatus": "UNRECONCILED",
+      "evidenceStatus": "VERIFIED_RPC_LOG_EVENT",
+      "completeness": "INCOMPLETE",
+      "contextCompleteness": "INCOMPLETE",
+      "confidence": null,
+      "missingFields": [
+        "instructionIndex",
+        "transactionContext",
+        "tokenMint",
+        "quoteMint",
+        "tokenDecimals",
+        "quoteDecimals"
+      ],
+      "evidenceSource": {
+        "kind": "rpc:logsSubscribe",
+        "eventEncoding": "anchor_program_data",
+        "eventName": "BuyEvent",
+        "idlSha256": "b7d8c57a4d9c4dd0109a9ab893052352333252d4eedced10ac091d4d66cab89b",
+        "sourceMessageSha256": "20f484b79a74ffc8f53e48ca70f572a609a0329adfff5aa15b81f6118d7d0c67",
+        "transactionSignature": "3MvikRJDkaqvzqGxuq4LeSAax25h2ETYASzcdjW8ATu88DCqCZ9m4vC9zptf2oArUrWUqR1HECW3THka2dC6qZFg",
+        "subscribedProgramId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+      },
+      "eventOrdinal": 0,
+      "reserves": {
+        "realTokenRaw": "102417845268823",
+        "realQuoteRaw": "182878326567",
+        "virtualQuoteRaw": "17581267001"
+      },
+      "financialSemantics": "user_quote_including_reported_fees",
+      "id": "1f4b86c94dca0071e80bcc11412cb0442f95c5a6a9b9bb0251feff543e10da69",
+      "contextEnrichmentAvailable": false
+    }
+  ],
+  "logObservationCounts": [
+    {
+      "protocol": "pump_fun",
+      "eventType": "CURVE_PROGRESS_UPDATED",
+      "count": 389
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_BOUGHT",
+      "count": 222
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_CREATED",
+      "count": 8
+    },
+    {
+      "protocol": "pump_fun",
+      "eventType": "TOKEN_SOLD",
+      "count": 167
+    },
+    {
+      "protocol": "pump_swap",
+      "eventType": "TOKEN_BOUGHT",
+      "count": 688
+    },
+    {
+      "protocol": "pump_swap",
+      "eventType": "TOKEN_SOLD",
+      "count": 671
+    },
+    {
+      "protocol": "raydium_cpmm",
+      "eventType": "TOKEN_BOUGHT",
+      "count": 3
+    },
+    {
+      "protocol": "raydium_cpmm",
+      "eventType": "TOKEN_SOLD",
+      "count": 4
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "CURVE_PROGRESS_UPDATED",
+      "count": 4
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "TOKEN_BOUGHT",
+      "count": 1
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "eventType": "TOKEN_SOLD",
+      "count": 3
+    }
+  ],
+  "protocolCounts": []
+}

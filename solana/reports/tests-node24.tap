@@ -1,0 +1,970 @@
+TAP version 13
+# Subtest: health reports partial/degraded state and no invented latency before observations
+ok 1 - health reports partial/degraded state and no invented latency before observations
+  ---
+  duration_ms: 64.508103
+  type: 'test'
+  ...
+# Subtest: all mutation verbs are refused without mutating persisted state
+ok 2 - all mutation verbs are refused without mutating persisted state
+  ---
+  duration_ms: 63.906604
+  type: 'test'
+  ...
+# Subtest: event filters use exact mint/wallet/signature and bounded limits
+ok 3 - event filters use exact mint/wallet/signature and bounded limits
+  ---
+  duration_ms: 26.099154
+  type: 'test'
+  ...
+# Subtest: token projection revokes creation/creator proof when transaction is reverted
+ok 4 - token projection revokes creation/creator proof when transaction is reverted
+  ---
+  duration_ms: 19.27107
+  type: 'test'
+  ...
+# Subtest: null status is unresolved rather than definite reversal and excluded from market
+ok 5 - null status is unresolved rather than definite reversal and excluded from market
+  ---
+  duration_ms: 14.618111
+  type: 'test'
+  ...
+# Subtest: security has no safety conclusion for unknown mint and preserves incomplete evidence
+ok 6 - security has no safety conclusion for unknown mint and preserves incomplete evidence
+  ---
+  duration_ms: 11.899035
+  type: 'test'
+  ...
+# Subtest: different status slot cannot finalize event decoded in original slot
+ok 7 - different status slot cannot finalize event decoded in original slot
+  ---
+  duration_ms: 10.359336
+  type: 'test'
+  ...
+# Subtest: malformed status with missing confirmation stage cannot restore active state
+ok 8 - malformed status with missing confirmation stage cannot restore active state
+  ---
+  duration_ms: 7.363694
+  type: 'test'
+  ...
+# Subtest: eighth unavailable enrichment persists a hole and lets recovery continue to older pages
+ok 9 - eighth unavailable enrichment persists a hole and lets recovery continue to older pages
+  ---
+  duration_ms: 19.19046
+  type: 'test'
+  ...
+# Subtest: an already deferred signature is not retried before its cooldown or counted as recovered
+ok 10 - an already deferred signature is not retried before its cooldown or counted as recovered
+  ---
+  duration_ms: 8.653477
+  type: 'test'
+  ...
+# Subtest: a transient pending failure remains uncommitted history rather than a declared coverage hole
+ok 11 - a transient pending failure remains uncommitted history rather than a declared coverage hole
+  ---
+  duration_ms: 6.133161
+  type: 'test'
+  ...
+# Subtest: RPC interruption after a deferred hole preserves the partial coverage flag across continuation
+ok 12 - RPC interruption after a deferred hole preserves the partial coverage flag across continuation
+  ---
+  duration_ms: 6.243156
+  type: 'test'
+  ...
+# Subtest: a callback claiming success without committing cannot inflate recovered count
+ok 13 - a callback claiming success without committing cannot inflate recovered count
+  ---
+  duration_ms: 2.911021
+  type: 'test'
+  ...
+# Subtest: a weaker processed error cannot terminally revoke confirmed events and block later finalization
+ok 14 - a weaker processed error cannot terminally revoke confirmed events and block later finalization
+  ---
+  duration_ms: 50.50392
+  type: 'test'
+  ...
+# Subtest: a confirmed error requires fresh enrichment before successful finality reactivates old events
+ok 15 - a confirmed error requires fresh enrichment before successful finality reactivates old events
+  ---
+  duration_ms: 12.996765
+  type: 'test'
+  ...
+# Subtest: a synthetic confirmed failure can be re-enriched after successful status at the same slot
+ok 16 - a synthetic confirmed failure can be re-enriched after successful status at the same slot
+  ---
+  duration_ms: 7.804585
+  type: 'test'
+  ...
+# Subtest: a synthetic confirmed failure can be re-enriched after successful status at another slot
+ok 17 - a synthetic confirmed failure can be re-enriched after successful status at another slot
+  ---
+  duration_ms: 14.182077
+  type: 'test'
+  ...
+# Subtest: finalized on-chain failure is terminal and produces no market events
+ok 18 - finalized on-chain failure is terminal and produces no market events
+  ---
+  duration_ms: 1.811022
+  type: 'test'
+  ...
+# Subtest: an explicitly invalid status slot -1 cannot finalize existing events
+ok 19 - an explicitly invalid status slot -1 cannot finalize existing events
+  ---
+  duration_ms: 4.970039
+  type: 'test'
+  ...
+# Subtest: an explicitly invalid status slot 1.5 cannot finalize existing events
+ok 20 - an explicitly invalid status slot 1.5 cannot finalize existing events
+  ---
+  duration_ms: 5.672253
+  type: 'test'
+  ...
+# Subtest: an explicitly invalid status slot "465054514" cannot finalize existing events
+ok 21 - an explicitly invalid status slot "465054514" cannot finalize existing events
+  ---
+  duration_ms: 5.011664
+  type: 'test'
+  ...
+# Subtest: status without a recognized confirmation level remains unresolved
+ok 22 - status without a recognized confirmation level remains unresolved
+  ---
+  duration_ms: 8.5958
+  type: 'test'
+  ...
+# Subtest: a failed RPC transaction with mismatching signature cannot terminally complete another observation
+ok 23 - a failed RPC transaction with mismatching signature cannot terminally complete another observation
+  ---
+  duration_ms: 3.080148
+  type: 'test'
+  ...
+# Subtest: a failed RPC transaction with mismatching slot cannot terminally complete another observation
+ok 24 - a failed RPC transaction with mismatching slot cannot terminally complete another observation
+  ---
+  duration_ms: 2.790241
+  type: 'test'
+  ...
+# Subtest: metrics uses bounded recent samples and distinguishes empty measurements
+ok 25 - metrics uses bounded recent samples and distinguishes empty measurements
+  ---
+  duration_ms: 2.897519
+  type: 'test'
+  ...
+# Subtest: queue rejects backpressure, contains task failure and drains accepted tasks
+ok 26 - queue rejects backpressure, contains task failure and drains accepted tasks
+  ---
+  duration_ms: 8.104387
+  type: 'test'
+  ...
+# Subtest: RPC parser preserves u64 precision and leaves text and normal numbers unchanged
+ok 27 - RPC parser preserves u64 precision and leaves text and normal numbers unchanged
+  ---
+  duration_ms: 1.009282
+  type: 'test'
+  ...
+# Subtest: RPC method allowlist prevents transaction submission and rejects non-mainnet
+ok 28 - RPC method allowlist prevents transaction submission and rejects non-mainnet
+  ---
+  duration_ms: 6.180044
+  type: 'test'
+  ...
+# Subtest: RPC verifies Mainnet and handles 429 Retry-After with bounded retry
+ok 29 - RPC verifies Mainnet and handles 429 Retry-After with bounded retry
+  ---
+  duration_ms: 3.795896
+  type: 'test'
+  ...
+# Subtest: RPC spaces concurrent requests across the global budget without bursting
+ok 30 - RPC spaces concurrent requests across the global budget without bursting
+  ---
+  duration_ms: 2.959887
+  type: 'test'
+  ...
+# Subtest: 429 Retry-After remains a global cooldown after retry exhaustion
+ok 31 - 429 Retry-After remains a global cooldown after retry exhaustion
+  ---
+  duration_ms: 3.210082
+  type: 'test'
+  ...
+# Subtest: closing RPC cancels rate-limit waits promptly
+ok 32 - closing RPC cancels rate-limit waits promptly
+  ---
+  duration_ms: 7.47935
+  type: 'test'
+  ...
+# Subtest: RPC bounds payload, rejects malformed envelopes and propagates unavailable history
+ok 33 - RPC bounds payload, rejects malformed envelopes and propagates unavailable history
+  ---
+  duration_ms: 2.477472
+  type: 'test'
+  ...
+# Subtest: RPC concurrency remains bounded under concurrent enrichment
+ok 34 - RPC concurrency remains bounded under concurrent enrichment
+  ---
+  duration_ms: 19.487168
+  type: 'test'
+  ...
+# Subtest: WebSocket separates mentions subscriptions, decodes notification and resubscribes after disconnect
+ok 35 - WebSocket separates mentions subscriptions, decodes notification and resubscribes after disconnect
+  ---
+  duration_ms: 59.249555
+  type: 'test'
+  ...
+# Subtest: WebSocket forces reconnect when consumer rejects work, without silently dropping coverage
+ok 36 - WebSocket forces reconnect when consumer rejects work, without silently dropping coverage
+  ---
+  duration_ms: 8.51258
+  type: 'test'
+  ...
+# Subtest: WebSocket detects missing subscription acknowledgements
+ok 37 - WebSocket detects missing subscription acknowledgements
+  ---
+  duration_ms: 33.362705
+  type: 'test'
+  ...
+# Subtest: configuration rejects invalid or financial network settings and bounds resources
+ok 38 - configuration rejects invalid or financial network settings and bounds resources
+  ---
+  duration_ms: 1.115193
+  type: 'test'
+  ...
+# Subtest: real Pump log trade proves mint, user, direction and exact amounts while native quote and instruction context stay unknown
+ok 39 - real Pump log trade proves mint, user, direction and exact amounts while native quote and instruction context stay unknown
+  ---
+  duration_ms: 5.454272
+  type: 'test'
+  ...
+# Subtest: real Pump creation log preserves creator and bonding curve without pretending the full transaction was fetched
+ok 40 - real Pump creation log preserves creator and bonding curve without pretending the full transaction was fetched
+  ---
+  duration_ms: 1.604634
+  type: 'test'
+  ...
+# Subtest: real Pump graduation and PumpSwap migration logs remain distinct lifecycle observations
+ok 41 - real Pump graduation and PumpSwap migration logs remain distinct lifecycle observations
+  ---
+  duration_ms: 1.961225
+  type: 'test'
+  ...
+# Subtest: real PumpSwap trade log does not invent mints from a known application or pool address
+ok 42 - real PumpSwap trade log does not invent mints from a known application or pool address
+  ---
+  duration_ms: 2.290241
+  type: 'test'
+  ...
+# Subtest: real CPMM log swap preserves mints and raw amounts but wallet and block timestamp remain unknown
+ok 43 - real CPMM log swap preserves mints and raw amounts but wallet and block timestamp remain unknown
+  ---
+  duration_ms: 1.128608
+  type: 'test'
+  ...
+# Subtest: real LaunchLab log trade proves pool and amounts but does not invent instruction accounts or timestamps
+ok 44 - real LaunchLab log trade proves pool and amounts but does not invent instruction accounts or timestamps
+  ---
+  duration_ms: 1.001894
+  type: 'test'
+  ...
+# Subtest: instruction-only real CPMM creation and mere address mentions cannot create a log event
+ok 45 - instruction-only real CPMM creation and mere address mentions cannot create a log event
+  ---
+  duration_ms: 0.907124
+  type: 'test'
+  ...
+# Subtest: identical notifications deduplicate across subscription delivery and confirmation upgrades
+ok 46 - identical notifications deduplicate across subscription delivery and confirmation upgrades
+  ---
+  duration_ms: 1.866283
+  type: 'test'
+  ...
+# Subtest: failed transactions, unknown instructions and malformed notification data produce no fabricated observations
+ok 47 - failed transactions, unknown instructions and malformed notification data produce no fabricated observations
+  ---
+  duration_ms: 0.574234
+  type: 'test'
+  ...
+# Subtest: caught CPI failure and truncation cannot publish events from unsuccessful or unfinished runtime frames
+ok 48 - caught CPI failure and truncation cannot publish events from unsuccessful or unfinished runtime frames
+  ---
+  duration_ms: 0.61665
+  type: 'test'
+  ...
+# Subtest: log input size is bounded before decoding
+ok 49 - log input size is bounded before decoding
+  ---
+  duration_ms: 11.297899
+  type: 'test'
+  ...
+# Subtest: malformed runtime ownership traces cannot attribute another programme payload
+ok 50 - malformed runtime ownership traces cannot attribute another programme payload
+  ---
+  duration_ms: 0.394224
+  type: 'test'
+  ...
+# Subtest: log batches are idempotent and never increment canonical events or token/pool projections
+ok 51 - log batches are idempotent and never increment canonical events or token/pool projections
+  ---
+  duration_ms: 11.54544
+  type: 'test'
+  ...
+# Subtest: observation identity and exact values remain distinct from canonical event identity
+ok 52 - observation identity and exact values remain distinct from canonical event identity
+  ---
+  duration_ms: 3.615374
+  type: 'test'
+  ...
+# Subtest: selected raw log messages retain verifiable source hash and transaction signature
+ok 53 - selected raw log messages retain verifiable source hash and transaction signature
+  ---
+  duration_ms: 3.549342
+  type: 'test'
+  ...
+# Subtest: duplicate notifications upgrade commitment monotonically and do not add rows
+ok 54 - duplicate notifications upgrade commitment monotonically and do not add rows
+  ---
+  duration_ms: 2.835173
+  type: 'test'
+  ...
+# Subtest: observation filters select mint, wallet, pool and signature independently
+ok 55 - observation filters select mint, wallet, pool and signature independently
+  ---
+  duration_ms: 7.774157
+  type: 'test'
+  ...
+# Subtest: row cap evicts oldest observations and removes only unreferenced raw messages
+ok 56 - row cap evicts oldest observations and removes only unreferenced raw messages
+  ---
+  duration_ms: 6.823083
+  type: 'test'
+  ...
+# Subtest: time retention removes log observations and dangling raw logs separately from canonical retention
+ok 57 - time retention removes log observations and dangling raw logs separately from canonical retention
+  ---
+  duration_ms: 3.974614
+  type: 'test'
+  ...
+# Subtest: storage budget rejects a whole log batch explicitly without publishing raw or decoded rows
+ok 58 - storage budget rejects a whole log batch explicitly without publishing raw or decoded rows
+  ---
+  duration_ms: 3.302344
+  type: 'test'
+  ...
+# Subtest: an invalid item causes the entire log batch transaction to roll back
+ok 59 - an invalid item causes the entire log batch transaction to roll back
+  ---
+  duration_ms: 8.381151
+  type: 'test'
+  ...
+# Subtest: empty decoder output retains no selected logs and creates no placeholder events
+ok 60 - empty decoder output retains no selected logs and creates no placeholder events
+  ---
+  duration_ms: 2.499544
+  type: 'test'
+  ...
+# Subtest: enriched transaction joins finality and reconciliation without turning observations into market events
+ok 61 - enriched transaction joins finality and reconciliation without turning observations into market events
+  ---
+  duration_ms: 4.036032
+  type: 'test'
+  ...
+# Subtest: log observation and canonical swap count exactly once in their respective datasets
+ok 62 - log observation and canonical swap count exactly once in their respective datasets
+  ---
+  duration_ms: 6.829042
+  type: 'test'
+  ...
+# Subtest: notification and observation signature mismatch is rejected before evidence references can diverge
+ok 63 - notification and observation signature mismatch is rejected before evidence references can diverge
+  ---
+  duration_ms: 2.614558
+  type: 'test'
+  ...
+# Subtest: joining a canonical transaction at a different slot cannot confirm the old log data
+ok 64 - joining a canonical transaction at a different slot cannot confirm the old log data
+  ---
+  duration_ms: 3.039599
+  type: 'test'
+  ...
+# Subtest: canonical context cannot downgrade stronger finalized RPC log commitment
+ok 65 - canonical context cannot downgrade stronger finalized RPC log commitment
+  ---
+  duration_ms: 2.682259
+  type: 'test'
+  ...
+# Subtest: conflicting log payloads for one signature must never leave unverifiable observation references
+ok 66 - conflicting log payloads for one signature must never leave unverifiable observation references
+  ---
+  duration_ms: 3.38213
+  type: 'test'
+  ...
+# Subtest: raw log source hash mismatch is rejected atomically
+ok 67 - raw log source hash mismatch is rejected atomically
+  ---
+  duration_ms: 2.190012
+  type: 'test'
+  ...
+# Subtest: reopening an old three-column selected logs schema migrates existing evidence without loss
+ok 68 - reopening an old three-column selected logs schema migrates existing evidence without loss
+  ---
+  duration_ms: 6.931127
+  type: 'test'
+  ...
+# Subtest: row pruning removes unreferenced payload variants even while the signature remains
+ok 69 - row pruning removes unreferenced payload variants even while the signature remains
+  ---
+  duration_ms: 3.938569
+  type: 'test'
+  ...
+# Subtest: cumulative latency buckets retain old high values after the bounded recent window wraps
+ok 70 - cumulative latency buckets retain old high values after the bounded recent window wraps
+  ---
+  duration_ms: 24.616336
+  type: 'test'
+  ...
+# Subtest: cumulative bucket boundaries are inclusive, monotonic and count every sample exactly once
+ok 71 - cumulative bucket boundaries are inclusive, monotonic and count every sample exactly once
+  ---
+  duration_ms: 1.578832
+  type: 'test'
+  ...
+# Subtest: overflow is explicit and JSON serializable rather than a fabricated finite percentile
+ok 72 - overflow is explicit and JSON serializable rather than a fabricated finite percentile
+  ---
+  duration_ms: 0.725128
+  type: 'test'
+  ...
+# Subtest: empty and invalid latency measurements never create zero-valued success metrics
+ok 73 - empty and invalid latency measurements never create zero-valued success metrics
+  ---
+  duration_ms: 0.933205
+  type: 'test'
+  ...
+# Subtest: cumulative histogram memory stays fixed and counts are exact across many reservoir wraps
+ok 74 - cumulative histogram memory stays fixed and counts are exact across many reservoir wraps
+  ---
+  duration_ms: 53.203981
+  type: 'test'
+  ...
+# Subtest: observation throughput is independent of enriched-event throughput and expires normally
+ok 75 - observation throughput is independent of enriched-event throughput and expires normally
+  ---
+  duration_ms: 0.75983
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump create_v2 proves mint/creator and first buy; v1 transaction + Token-2022
+ok 76 - Mainnet Pump create_v2 proves mint/creator and first buy; v1 transaction + Token-2022
+  ---
+  duration_ms: 16.778878
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump v3 buy exact raws; native quote established from instruction
+ok 77 - Mainnet Pump v3 buy exact raws; native quote established from instruction
+  ---
+  duration_ms: 4.215999
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump routed sell preserves non-SOL quote and inner ownership
+ok 78 - Mainnet Pump routed sell preserves non-SOL quote and inner ownership
+  ---
+  duration_ms: 3.204032
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump routed v2 buy supported
+ok 79 - Mainnet Pump routed v2 buy supported
+  ---
+  duration_ms: 4.452622
+  type: 'test'
+  ...
+# Subtest: Mainnet PumpSwap buys/sells with base and quote from real instruction accounts
+ok 80 - Mainnet PumpSwap buys/sells with base and quote from real instruction accounts
+  ---
+  duration_ms: 9.646955
+  type: 'test'
+  ...
+# Subtest: Failed transaction does not fabricate events from existing successful logs
+ok 81 - Failed transaction does not fabricate events from existing successful logs
+  ---
+  duration_ms: 0.391641
+  type: 'test'
+  ...
+# Subtest: Unknown instruction never classifies SPL transfer as swap
+ok 82 - Unknown instruction never classifies SPL transfer as swap
+  ---
+  duration_ms: 2.029648
+  type: 'test'
+  ...
+# Subtest: Financial exact integer > Number.MAX_SAFE_INTEGER and signed i128
+ok 83 - Financial exact integer > Number.MAX_SAFE_INTEGER and signed i128
+  ---
+  duration_ms: 0.563313
+  type: 'test'
+  ...
+# Subtest: Base58 roundtrip preserves leading zeroes
+ok 84 - Base58 roundtrip preserves leading zeroes
+  ---
+  duration_ms: 0.714851
+  type: 'test'
+  ...
+# Subtest: SYNTHETIC Pump graduation and migration preserve token mint and target pool
+ok 85 - SYNTHETIC Pump graduation and migration preserve token mint and target pool
+  ---
+  duration_ms: 9.291166
+  type: 'test'
+  ...
+# Subtest: SYNTHETIC spoofed Program data outside owning program cannot fabricate swap
+ok 86 - SYNTHETIC spoofed Program data outside owning program cannot fabricate swap
+  ---
+  duration_ms: 6.435542
+  type: 'test'
+  ...
+# Subtest: Truncated Borsh mid-field fails explicitly
+ok 87 - Truncated Borsh mid-field fails explicitly
+  ---
+  duration_ms: 1.014387
+  type: 'test'
+  ...
+# Subtest: SYNTHETIC caught inner CPI failure rolls back its emitted events
+ok 88 - SYNTHETIC caught inner CPI failure rolls back its emitted events
+  ---
+  duration_ms: 4.081475
+  type: 'test'
+  ...
+# Subtest: SYNTHETIC PumpSwap pool creator remains distinct from token coin_creator
+ok 89 - SYNTHETIC PumpSwap pool creator remains distinct from token coin_creator
+  ---
+  duration_ms: 5.025823
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump migrate_v2 creates PumpSwap pool with continued mint identity and distinct creator actors
+ok 90 - Mainnet Pump migrate_v2 creates PumpSwap pool with continued mint identity and distinct creator actors
+  ---
+  duration_ms: 3.562593
+  type: 'test'
+  ...
+# Subtest: Mainnet Pump final curve buy graduates then migrates same mint into PumpSwap
+ok 91 - Mainnet Pump final curve buy graduates then migrates same mint into PumpSwap
+  ---
+  duration_ms: 5.935394
+  type: 'test'
+  ...
+# Subtest: Mainnet Raydium CPMM initialize proves new pool through successful instruction
+ok 92 - Mainnet Raydium CPMM initialize proves new pool through successful instruction
+  ---
+  duration_ms: 7.061041
+  type: 'test'
+  ...
+# Subtest: real Mainnet LaunchLab initialize_v2 creates mint and curve with proven creator
+ok 93 - real Mainnet LaunchLab initialize_v2 creates mint and curve with proven creator
+  ---
+  duration_ms: 10.769377
+  type: 'test'
+  ...
+# Subtest: real Mainnet LaunchLab routed v1 transaction: event CPI and log are deduplicated
+ok 94 - real Mainnet LaunchLab routed v1 transaction: event CPI and log are deduplicated
+  ---
+  duration_ms: 3.198061
+  type: 'test'
+  ...
+# Subtest: real Mainnet CPMM routed swap: actual amounts, mints and wallet
+ok 95 - real Mainnet CPMM routed swap: actual amounts, mints and wallet
+  ---
+  duration_ms: 2.049481
+  type: 'test'
+  ...
+# Subtest: real Mainnet mere CPMM address mention creates no swap
+ok 96 - real Mainnet mere CPMM address mention creates no swap
+  ---
+  duration_ms: 1.009927
+  type: 'test'
+  ...
+# Subtest: deterministic CPMM new pool instruction maps exact mint addresses; no token creator inference
+ok 97 - deterministic CPMM new pool instruction maps exact mint addresses; no token creator inference
+  ---
+  duration_ms: 0.496857
+  type: 'test'
+  ...
+# Subtest: deterministic LaunchLab funded status and migration remain distinct
+ok 98 - deterministic LaunchLab funded status and migration remain distinct
+  ---
+  duration_ms: 1.835859
+  type: 'test'
+  ...
+# Subtest: deterministic unknown direction, ambiguous quote and missing accounts do not fabricate attribution
+ok 99 - deterministic unknown direction, ambiguous quote and missing accounts do not fabricate attribution
+  ---
+  duration_ms: 0.375244
+  type: 'test'
+  ...
+# Subtest: reconnection recovers paginated lost history oldest first up to the persisted anchor
+ok 100 - reconnection recovers paginated lost history oldest first up to the persisted anchor
+  ---
+  duration_ms: 8.759104
+  type: 'test'
+  ...
+# Subtest: duplicate signatures from overlapping pages are persisted and processed only once
+ok 101 - duplicate signatures from overlapping pages are persisted and processed only once
+  ---
+  duration_ms: 3.954286
+  type: 'test'
+  ...
+# Subtest: first start establishes an explicit bounded initial history boundary
+ok 102 - first start establishes an explicit bounded initial history boundary
+  ---
+  duration_ms: 3.173992
+  type: 'test'
+  ...
+# Subtest: insufficient retained history remains a gap even after available events persist
+ok 103 - insufficient retained history remains a gap even after available events persist
+  ---
+  duration_ms: 2.499696
+  type: 'test'
+  ...
+# Subtest: maxPages bounds each tick and preserves the anchor with durable continuation
+ok 104 - maxPages bounds each tick and preserves the anchor with durable continuation
+  ---
+  duration_ms: 3.149123
+  type: 'test'
+  ...
+# Subtest: recovery resumes the saved before cursor on the next tick and commits the original head
+ok 105 - recovery resumes the saved before cursor on the next tick and commits the original head
+  ---
+  duration_ms: 3.915286
+  type: 'test'
+  ...
+# Subtest: RPC failure during continuation preserves the cursor and old checkpoint for the next tick
+ok 106 - RPC failure during continuation preserves the cursor and old checkpoint for the next tick
+  ---
+  duration_ms: 3.898738
+  type: 'test'
+  ...
+# Subtest: unavailable transaction cannot advance checkpoint even when another persists
+ok 107 - unavailable transaction cannot advance checkpoint even when another persists
+  ---
+  duration_ms: 3.067925
+  type: 'test'
+  ...
+# Subtest: process callback claiming success without durable writes cannot advance checkpoint
+ok 108 - process callback claiming success without durable writes cannot advance checkpoint
+  ---
+  duration_ms: 2.255294
+  type: 'test'
+  ...
+# Subtest: persistence failure retains old checkpoint and durable pending observations
+ok 109 - persistence failure retains old checkpoint and durable pending observations
+  ---
+  duration_ms: 1.82903
+  type: 'test'
+  ...
+# Subtest: 429 returned by RPC after retry exhaustion records recovery error without advancing
+ok 110 - 429 returned by RPC after retry exhaustion records recovery error without advancing
+  ---
+  duration_ms: 1.966611
+  type: 'test'
+  ...
+# Subtest: empty history cannot overwrite a checkpoint or imply no lost events
+ok 111 - empty history cannot overwrite a checkpoint or imply no lost events
+  ---
+  duration_ms: 1.347842
+  type: 'test'
+  ...
+# Subtest: replayed recovery sees durable duplicates and does not invoke decoder again
+ok 112 - replayed recovery sees durable duplicates and does not invoke decoder again
+  ---
+  duration_ms: 2.580674
+  type: 'test'
+  ...
+# Subtest: failed on-chain transactions can complete history without normalized market events
+ok 113 - failed on-chain transactions can complete history without normalized market events
+  ---
+  duration_ms: 2.191901
+  type: 'test'
+  ...
+# Subtest: stalled pagination is an explicit error and cannot move the checkpoint
+ok 114 - stalled pagination is an explicit error and cannot move the checkpoint
+  ---
+  duration_ms: 1.418347
+  type: 'test'
+  ...
+# Subtest: invalid history observations fail atomically and retain prior checkpoint
+ok 115 - invalid history observations fail atomically and retain prior checkpoint
+  ---
+  duration_ms: 1.527461
+  type: 'test'
+  ...
+# Subtest: scanner persists and decodes a real Pump buy fixture once despite duplicate notifications, then reconciles finality
+ok 116 - scanner persists and decodes a real Pump buy fixture once despite duplicate notifications, then reconciles finality
+  ---
+  duration_ms: 24.73904
+  type: 'test'
+  ...
+# Subtest: scanner creation replay registers token by mint and preserves the creator evidence
+ok 117 - scanner creation replay registers token by mint and preserves the creator evidence
+  ---
+  duration_ms: 12.077716
+  type: 'test'
+  ...
+# Subtest: unavailable enrichment remains retryable and produces no fabricated event
+ok 118 - unavailable enrichment remains retryable and produces no fabricated event
+  ---
+  duration_ms: 7.733696
+  type: 'test'
+  ...
+# Subtest: enrichment identity mismatch is rejected without admitting another transaction
+ok 119 - enrichment identity mismatch is rejected without admitting another transaction
+  ---
+  duration_ms: 3.048915
+  type: 'test'
+  ...
+# Subtest: failed on-chain observation is retained as failed without unnecessary enrichment
+ok 120 - failed on-chain observation is retained as failed without unnecessary enrichment
+  ---
+  duration_ms: 5.439771
+  type: 'test'
+  ...
+# Subtest: read API serves actual persisted replay data and refuses mutation
+ok 121 - read API serves actual persisted replay data and refuses mutation
+  ---
+  duration_ms: 97.918052
+  type: 'test'
+  ...
+# Subtest: processed failure is reconciled against successful confirmed transaction instead of becoming a definitive failure
+ok 122 - processed failure is reconciled against successful confirmed transaction instead of becoming a definitive failure
+  ---
+  duration_ms: 9.361141
+  type: 'test'
+  ...
+# Subtest: shutdown closes RPC before draining blocked work and preserves flushed and pending inbox across restart
+ok 123 - shutdown closes RPC before draining blocked work and preserves flushed and pending inbox across restart
+  ---
+  duration_ms: 16.772127
+  type: 'test'
+  ...
+# Subtest: disconnect persists the actual reason and configured WebSocket timeouts reach connection manager
+ok 124 - disconnect persists the actual reason and configured WebSocket timeouts reach connection manager
+  ---
+  duration_ms: 5.315505
+  type: 'test'
+  ...
+# Subtest: durable overload stops capture, retains work, emits one gap and resumes only after drain
+ok 125 - durable overload stops capture, retains work, emits one gap and resumes only after drain
+  ---
+  duration_ms: 8.25081
+  type: 'test'
+  ...
+# Subtest: historical recovery latency stays separate from live notification latency
+ok 126 - historical recovery latency stays separate from live notification latency
+  ---
+  duration_ms: 7.26697
+  type: 'test'
+  ...
+# Subtest: checkpoint advancement and continuation removal commit atomically or both roll back
+ok 127 - checkpoint advancement and continuation removal commit atomically or both roll back
+  ---
+  duration_ms: 2.788737
+  type: 'test'
+  ...
+# Subtest: log observation fast path remains connected at context capacity, persists idempotently and stays outside market events
+ok 128 - log observation fast path remains connected at context capacity, persists idempotently and stays outside market events
+  ---
+  duration_ms: 11.4811
+  type: 'test'
+  ...
+# Subtest: observations API exposes incomplete context explicitly and cannot inflate canonical market data
+ok 129 - observations API exposes incomplete context explicitly and cannot inflate canonical market data
+  ---
+  duration_ms: 52.491942
+  type: 'test'
+  ...
+# Subtest: finalized observations request finalized enrichment before publishing finalized events
+ok 130 - finalized observations request finalized enrichment before publishing finalized events
+  ---
+  duration_ms: 5.721236
+  type: 'test'
+  ...
+# Subtest: processed observation confirmed in another slot preserves canonical slot and records the fork change
+ok 131 - processed observation confirmed in another slot preserves canonical slot and records the fork change
+  ---
+  duration_ms: 6.059711
+  type: 'test'
+  ...
+# Subtest: archived REAL Mainnet SOL mint response decodes independently of lossy JSON numeric metadata
+ok 132 - archived REAL Mainnet SOL mint response decodes independently of lossy JSON numeric metadata
+  ---
+  duration_ms: 2.329888
+  type: 'test'
+  ...
+# Subtest: SPL mint binary decoding preserves u64 precision and explicit null authorities
+ok 133 - SPL mint binary decoding preserves u64 precision and explicit null authorities
+  ---
+  duration_ms: 1.649906
+  type: 'test'
+  ...
+# Subtest: absence of mint/freeze authority does not make overall token safe
+ok 134 - absence of mint/freeze authority does not make overall token safe
+  ---
+  duration_ms: 1.129996
+  type: 'test'
+  ...
+# Subtest: active mint/freeze authority is a known policy rejection
+ok 135 - active mint/freeze authority is a known policy rejection
+  ---
+  duration_ms: 0.777849
+  type: 'test'
+  ...
+# Subtest: Token-2022 extensions report fees, hooks, permanent delegate, pausable, permissioned burn
+ok 136 - Token-2022 extensions report fees, hooks, permanent delegate, pausable, permissioned burn
+  ---
+  duration_ms: 2.173014
+  type: 'test'
+  ...
+# Subtest: unknown extensions remain incomplete and malformed layouts never pass
+ok 137 - unknown extensions remain incomplete and malformed layouts never pass
+  ---
+  duration_ms: 1.212983
+  type: 'test'
+  ...
+# Subtest: default frozen/non-transferable and invalid duplicate/account TLVs are explicit
+ok 138 - default frozen/non-transferable and invalid duplicate/account TLVs are explicit
+  ---
+  duration_ms: 1.68135
+  type: 'test'
+  ...
+# Subtest: missing RPC data stays UNKNOWN and provider error secrets are not persisted
+ok 139 - missing RPC data stays UNKNOWN and provider error secrets are not persisted
+  ---
+  duration_ms: 0.429319
+  type: 'test'
+  ...
+# Subtest: largest token accounts remain an incomplete sample, not a holder census
+ok 140 - largest token accounts remain an incomplete sample, not a holder census
+  ---
+  duration_ms: 0.692185
+  type: 'test'
+  ...
+# Subtest: market windows count swaps separately from transactions and unique traders
+ok 141 - market windows count swaps separately from transactions and unique traders
+  ---
+  duration_ms: 2.721635
+  type: 'test'
+  ...
+# Subtest: market financial sums and rational prices stay exact beyond Number precision
+ok 142 - market financial sums and rational prices stay exact beyond Number precision
+  ---
+  duration_ms: 1.400201
+  type: 'test'
+  ...
+# Subtest: incomplete amounts/decimals/wallets remain partial, untimed swaps excluded from windows
+ok 143 - incomplete amounts/decimals/wallets remain partial, untimed swaps excluded from windows
+  ---
+  duration_ms: 0.568449
+  type: 'test'
+  ...
+# Subtest: duplicates and unresolved/reverted observations do not inflate market data
+ok 144 - duplicates and unresolved/reverted observations do not inflate market data
+  ---
+  duration_ms: 0.361339
+  type: 'test'
+  ...
+# Subtest: mint identity survives duplicate symbols and age requires a verified creation
+ok 145 - mint identity survives duplicate symbols and age requires a verified creation
+  ---
+  duration_ms: 0.908819
+  type: 'test'
+  ...
+# Subtest: future data excluded, protocol reserves do not imply withdrawable liquidity or graduation percentage
+ok 146 - future data excluded, protocol reserves do not imply withdrawable liquidity or graduation percentage
+  ---
+  duration_ms: 0.320511
+  type: 'test'
+  ...
+# Subtest: SQLite WAL persists exact raw amounts above 2^53 across reopen
+ok 147 - SQLite WAL persists exact raw amounts above 2^53 across reopen
+  ---
+  duration_ms: 9.694881
+  type: 'test'
+  ...
+# Subtest: duplicates preserve one inbox transaction, one event and one token
+ok 148 - duplicates preserve one inbox transaction, one event and one token
+  ---
+  duration_ms: 5.00816
+  type: 'test'
+  ...
+# Subtest: token identities remain case-sensitive mint addresses despite duplicate symbols
+ok 149 - token identities remain case-sensitive mint addresses despite duplicate symbols
+  ---
+  duration_ms: 5.723951
+  type: 'test'
+  ...
+# Subtest: an invalid event rolls back raw transaction, normalized events, token and inbox completion
+ok 150 - an invalid event rolls back raw transaction, normalized events, token and inbox completion
+  ---
+  duration_ms: 4.383338
+  type: 'test'
+  ...
+# Subtest: receiveBatch rolls back its entire batch when an observation is invalid
+ok 151 - receiveBatch rolls back its entire batch when an observation is invalid
+  ---
+  duration_ms: 2.95875
+  type: 'test'
+  ...
+# Subtest: checkpoint advances only once all required signatures are durably complete
+ok 152 - checkpoint advances only once all required signatures are durably complete
+  ---
+  duration_ms: 6.139594
+  type: 'test'
+  ...
+# Subtest: process killed before SQLite COMMIT cannot publish events or advance checkpoint
+ok 153 - process killed before SQLite COMMIT cannot publish events or advance checkpoint
+  ---
+  duration_ms: 94.876855
+  type: 'test'
+  ...
+# Subtest: restart requeues PROCESSING inbox work with retry attempts intact
+ok 154 - restart requeues PROCESSING inbox work with retry attempts intact
+  ---
+  duration_ms: 4.848492
+  type: 'test'
+  ...
+# Subtest: processed observations remain provisional and finality upgrades never regress
+ok 155 - processed observations remain provisional and finality upgrades never regress
+  ---
+  duration_ms: 7.490114
+  type: 'test'
+  ...
+# Subtest: unresolved signature remains eligible for a later finality reconciliation
+ok 156 - unresolved signature remains eligible for a later finality reconciliation
+  ---
+  duration_ms: 4.702191
+  type: 'test'
+  ...
+# Subtest: reverted transaction preserves evidence, records a gap and exits active reconciliation
+ok 157 - reverted transaction preserves evidence, records a gap and exits active reconciliation
+  ---
+  duration_ms: 5.652286
+  type: 'test'
+  ...
+# Subtest: retention removes old completed evidence while preserving pending work and checkpoint
+ok 158 - retention removes old completed evidence while preserving pending work and checkpoint
+  ---
+  duration_ms: 4.472039
+  type: 'test'
+  ...
+# Subtest: storage budget refuses observations explicitly without silently dropping them
+ok 159 - storage budget refuses observations explicitly without silently dropping them
+  ---
+  duration_ms: 2.059522
+  type: 'test'
+  ...
+# Subtest: event identity includes inner instruction/event index and raw values reject Number
+ok 160 - event identity includes inner instruction/event index and raw values reject Number
+  ---
+  duration_ms: 0.580043
+  type: 'test'
+  ...
+1..160
+# tests 160
+# suites 0
+# pass 160
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4137.959629

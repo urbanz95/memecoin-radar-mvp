@@ -1,0 +1,116 @@
+{
+  "dataMode": "REAL_MAINNET_RPC",
+  "startedAt": "2026-11-03T21:54:59.465Z",
+  "programs": [
+    {
+      "protocol": "pump_fun",
+      "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+      "executable": true,
+      "owner": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "contextSlot": 465057366,
+      "latest": [
+        {
+          "blockTime": 1793742908,
+          "confirmationStatus": "finalized",
+          "err": {
+            "InstructionError": [
+              0,
+              {
+                "Custom": 6001
+              }
+            ]
+          },
+          "memo": "[22] QLyH34HCgmCv7weh73qBVg",
+          "signature": "5kzoSE4kDWdmJr3FB7LrsFURPTULoWbHjhC4CHwUXuz5ookiWFBBRBVz8JdfG4BKoV26V6Fkfm5W7EiwHHkpbPuG",
+          "slot": 465057377,
+          "transactionIndex": 457
+        }
+      ]
+    },
+    {
+      "protocol": "pump_swap",
+      "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
+      "executable": true,
+      "owner": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "contextSlot": 465057387,
+      "latest": [
+        {
+          "blockTime": 1793742913,
+          "confirmationStatus": "finalized",
+          "err": null,
+          "memo": null,
+          "signature": "2r2HL4B9X8Qoy1oJTuqPvnQY9hJhEh9AN2jsZAUneeH2aRTV7wnvVFf1LBCHw9vemjRDZAiw7hivZxRPHj5ALYhE",
+          "slot": 465057398,
+          "transactionIndex": 688
+        }
+      ]
+    },
+    {
+      "protocol": "raydium_launchlab",
+      "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+      "executable": true,
+      "owner": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "contextSlot": 465057405,
+      "latest": [
+        {
+          "blockTime": 1793742916,
+          "confirmationStatus": "finalized",
+          "err": null,
+          "memo": null,
+          "signature": "3augi2XJiEu6sJmqc1oxvvJMB4uerfMwNxLGncYq9pkVt6ni2AhqDFhgp4A2ZSkDrQTsoJhnrHHV453i3uWHZqU5",
+          "slot": 465057412,
+          "transactionIndex": 112
+        }
+      ]
+    },
+    {
+      "protocol": "raydium_cpmm",
+      "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C",
+      "executable": true,
+      "owner": "BPFLoaderUpgradeab1e11111111111111111111111",
+      "contextSlot": 465057423,
+      "latest": [
+        {
+          "blockTime": 1793742925,
+          "confirmationStatus": "finalized",
+          "err": null,
+          "memo": null,
+          "signature": "F482VYUpSLze1bpWbeRJyxb9aCHZhjGWCULNTNKXwbfGRNVGEhDYCQzK5MxFM3YvNcaFeYnxHTmjMFMnB5heDM8",
+          "slot": 465057454,
+          "transactionIndex": 342
+        }
+      ]
+    }
+  ],
+  "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+  "slot": 465057354,
+  "endedAt": "2026-11-03T21:55:26.227Z",
+  "metrics": {
+    "startedAt": "2026-11-03T21:54:59.461Z",
+    "measuredAt": "2026-11-03T21:55:26.230Z",
+    "uptimeMs": 26769,
+    "counters": {
+      "rpc_requests": 10,
+      "rpc_method_getGenesisHash": 1,
+      "rpc_budget_waits": 8,
+      "rpc_method_getSlot": 1,
+      "rpc_method_getAccountInfo": 4,
+      "rpc_method_getSignaturesForAddress": 4
+    },
+    "gauges": {},
+    "histograms": {
+      "rpc_latency_ms": {
+        "count": 10,
+        "retainedSamples": 10,
+        "p50": 593,
+        "p95": 4904,
+        "p99": 4904,
+        "max": 4904,
+        "mean": 1536.5
+      }
+    },
+    "rpcRequestsPerMinute": 10,
+    "eventsPerSecond": 0,
+    "histogramWindow": "last 4096 observations per metric"
+  }
+}

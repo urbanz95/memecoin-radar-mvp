@@ -1,0 +1,20 @@
+{
+  "dataMode": "DETERMINISTIC_TESTS_WITH_ARCHIVED_MAINNET_FIXTURES",
+  "liveLatencyClaim": false,
+  "results": {
+    "node24": {
+      "tests": 160,
+      "pass": 160,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "node22": {
+      "tests": 160,
+      "pass": 160,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  }
+}

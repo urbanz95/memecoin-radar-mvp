@@ -1,0 +1,4693 @@
+{
+  "dataMode": "REAL_MAINNET_LIVE",
+  "reason": "ENVIRONMENT_INTERRUPTED",
+  "continuous60MinutesCompleted": false,
+  "requestedSeconds": 2700,
+  "startedAt": "2026-11-03T22:04:04.679Z",
+  "samples": [
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:04:15.074Z",
+        "uptimeMs": 10421,
+        "counters": {
+          "rpc_requests": 2,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 3301,
+          "notificationsReceived": 3301,
+          "logObservationsDecoded": 818,
+          "contextEnrichmentSkipped": 3267,
+          "logObservationsPersisted": 773,
+          "rpc_budget_waits": 2,
+          "recoveryGaps": 1,
+          "rpc_method_getTransaction": 1,
+          "transactionsProcessed": 1,
+          "events_processed": 2,
+          "decoderFailures": 0
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:04:05.534Z",
+          "last_event_received": "2026-11-03T22:04:15.022Z",
+          "current_slot": 465059869,
+          "currentSlot": 465059869,
+          "lastEventReceived": "2026-11-03T22:04:15.022Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:04:14.849Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:04:14.839Z",
+          "storageConsumptionBytes": 10582184
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 124,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 247.5
+          },
+          "logObservationLatencyMs": {
+            "count": 602,
+            "retainedSamples": 602,
+            "p50": 126,
+            "p95": 241,
+            "p99": 247,
+            "max": 260,
+            "mean": 128.8388704318937
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 8243.258601999998,
+            "p95": 8243.258601999998,
+            "p99": 8243.258601999998,
+            "max": 8243.258601999998,
+            "mean": 8243.258601999998
+          },
+          "eventProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 8758,
+            "p95": 8758,
+            "p99": 8758,
+            "max": 8758,
+            "mean": 8758
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 1081,
+            "p95": 1081,
+            "p99": 1081,
+            "max": 1081,
+            "mean": 1081
+          }
+        },
+        "rpcRequestsPerMinute": 2,
+        "eventsPerSecond": 2,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 34,
+        "events": 2,
+        "event_observations": 773,
+        "tokens": 1,
+        "pools": 1,
+        "gaps": 1,
+        "errors": 16,
+        "raw_transactions": 1,
+        "pending": 18,
+        "storageBytes": 10582184
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:04:25.075Z",
+        "uptimeMs": 20422,
+        "counters": {
+          "rpc_requests": 3,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 6828,
+          "notificationsReceived": 6828,
+          "logObservationsDecoded": 1602,
+          "contextEnrichmentSkipped": 6794,
+          "logObservationsPersisted": 1512,
+          "rpc_budget_waits": 3,
+          "recoveryGaps": 1,
+          "rpc_method_getTransaction": 2,
+          "transactionsProcessed": 2,
+          "events_processed": 4,
+          "decoderFailures": 0
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 16,
+          "websocket_connected_at": "2026-11-03T22:04:05.534Z",
+          "last_event_received": "2026-11-03T22:04:25.025Z",
+          "current_slot": 465059878,
+          "currentSlot": 465059878,
+          "lastEventReceived": "2026-11-03T22:04:25.025Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:04:24.864Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:04:24.854Z",
+          "storageConsumptionBytes": 17352872
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 211.66666666666666
+          },
+          "logObservationLatencyMs": {
+            "count": 1202,
+            "retainedSamples": 1202,
+            "p50": 120,
+            "p95": 239,
+            "p99": 248,
+            "max": 265,
+            "mean": 126.60981697171381
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 8243.258601999998,
+            "p95": 18011.232261,
+            "p99": 18011.232261,
+            "max": 18011.232261,
+            "mean": 13127.2454315
+          },
+          "eventProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 8758,
+            "p95": 18770,
+            "p99": 18770,
+            "max": 18770,
+            "mean": 13764
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 1081,
+            "p95": 1084,
+            "p99": 1084,
+            "max": 1084,
+            "mean": 1082.5
+          }
+        },
+        "rpcRequestsPerMinute": 3,
+        "eventsPerSecond": 2,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 34,
+        "events": 4,
+        "event_observations": 1512,
+        "tokens": 2,
+        "pools": 2,
+        "gaps": 1,
+        "errors": 18,
+        "raw_transactions": 2,
+        "pending": 16,
+        "storageBytes": 17352872
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:04:35.076Z",
+        "uptimeMs": 30423,
+        "counters": {
+          "rpc_requests": 4,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 10277,
+          "notificationsReceived": 10277,
+          "logObservationsDecoded": 2358,
+          "contextEnrichmentSkipped": 10243,
+          "logObservationsPersisted": 2227,
+          "rpc_budget_waits": 4,
+          "recoveryGaps": 2,
+          "rpc_method_getTransaction": 2,
+          "transactionsProcessed": 2,
+          "events_processed": 4,
+          "decoderFailures": 0,
+          "websocket_disconnects": 1,
+          "reconnect_count": 1,
+          "rpc_method_getSignaturesForAddress": 1,
+          "rpc_errors": 1,
+          "rpc_retries": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 16,
+          "websocket_connected_at": "2026-11-03T22:04:31.053Z",
+          "last_event_received": "2026-11-03T22:04:35.015Z",
+          "current_slot": 465059979,
+          "currentSlot": 465059979,
+          "lastEventReceived": "2026-11-03T22:04:35.015Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:04:34.381Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:04:24.854Z",
+          "storageConsumptionBytes": 24421640,
+          "websocket_disconnected_at": "2026-11-03T22:04:29.162Z",
+          "reconnect_delay_ms": 292.448301819729
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 211.66666666666666
+          },
+          "logObservationLatencyMs": {
+            "count": 1745,
+            "retainedSamples": 1745,
+            "p50": 117,
+            "p95": 239,
+            "p99": 257,
+            "max": 275,
+            "mean": 126.74097421203439
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 8243.258601999998,
+            "p95": 18011.232261,
+            "p99": 18011.232261,
+            "max": 18011.232261,
+            "mean": 13127.2454315
+          },
+          "eventProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 8758,
+            "p95": 18770,
+            "p99": 18770,
+            "max": 18770,
+            "mean": 13764
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 1081,
+            "p95": 1084,
+            "p99": 1084,
+            "max": 1084,
+            "mean": 1082.5
+          }
+        },
+        "rpcRequestsPerMinute": 4,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 34,
+        "events": 4,
+        "event_observations": 2227,
+        "tokens": 2,
+        "pools": 2,
+        "gaps": 2,
+        "errors": 18,
+        "raw_transactions": 2,
+        "pending": 16,
+        "storageBytes": 24421640
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:04:45.077Z",
+        "uptimeMs": 40424,
+        "counters": {
+          "rpc_requests": 5,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 14372,
+          "notificationsReceived": 14372,
+          "logObservationsDecoded": 3294,
+          "contextEnrichmentSkipped": 14336,
+          "logObservationsPersisted": 3127,
+          "rpc_budget_waits": 5,
+          "recoveryGaps": 2,
+          "rpc_method_getTransaction": 3,
+          "transactionsProcessed": 3,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 1,
+          "reconnect_count": 1,
+          "rpc_method_getSignaturesForAddress": 1,
+          "rpc_errors": 1,
+          "rpc_retries": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 14,
+          "websocket_connected_at": "2026-11-03T22:04:31.053Z",
+          "last_event_received": "2026-11-03T22:04:44.959Z",
+          "current_slot": 465059990,
+          "currentSlot": 465059990,
+          "lastEventReceived": "2026-11-03T22:04:44.959Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:04:44.916Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:04:44.889Z",
+          "storageConsumptionBytes": 32408840,
+          "websocket_disconnected_at": "2026-11-03T22:04:29.162Z",
+          "reconnect_delay_ms": 292.448301819729
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 198.5
+          },
+          "logObservationLatencyMs": {
+            "count": 2452,
+            "retainedSamples": 2452,
+            "p50": 131,
+            "p95": 359,
+            "p99": 1133,
+            "max": 1150,
+            "mean": 164.43800978792822
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18011.232261,
+            "p95": 30033.698696000003,
+            "p99": 30033.698696000003,
+            "max": 30033.698696000003,
+            "mean": 18762.729853
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 1084,
+            "p95": 1086,
+            "p99": 1086,
+            "max": 1086,
+            "mean": 1083.6666666666667
+          }
+        },
+        "rpcRequestsPerMinute": 5,
+        "eventsPerSecond": 2,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 34,
+        "events": 6,
+        "event_observations": 3127,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 2,
+        "errors": 20,
+        "raw_transactions": 3,
+        "pending": 14,
+        "storageBytes": 32408840
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:04:55.076Z",
+        "uptimeMs": 50423,
+        "counters": {
+          "rpc_requests": 6,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 17993,
+          "notificationsReceived": 17993,
+          "logObservationsDecoded": 4270,
+          "contextEnrichmentSkipped": 17955,
+          "logObservationsPersisted": 4069,
+          "rpc_budget_waits": 7,
+          "recoveryGaps": 3,
+          "rpc_method_getTransaction": 3,
+          "transactionsProcessed": 3,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 1,
+          "reconnect_count": 1,
+          "rpc_method_getSignaturesForAddress": 2,
+          "rpc_errors": 1,
+          "rpc_retries": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:04:31.053Z",
+          "last_event_received": "2026-11-03T22:04:55.070Z",
+          "current_slot": 465060000,
+          "currentSlot": 465060000,
+          "lastEventReceived": "2026-11-03T22:04:55.070Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:04:55.058Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:04:44.889Z",
+          "storageConsumptionBytes": 40429192,
+          "websocket_disconnected_at": "2026-11-03T22:04:29.162Z",
+          "reconnect_delay_ms": 292.448301819729,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 159,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 194.8
+          },
+          "logObservationLatencyMs": {
+            "count": 3198,
+            "retainedSamples": 3198,
+            "p50": 138,
+            "p95": 297,
+            "p99": 1129,
+            "max": 1150,
+            "mean": 161.60881801125703
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18011.232261,
+            "p95": 30033.698696000003,
+            "p99": 30033.698696000003,
+            "max": 30033.698696000003,
+            "mean": 18762.729853
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 1084,
+            "p95": 1086,
+            "p99": 1086,
+            "max": 1086,
+            "mean": 1083.6666666666667
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 39,
+        "events": 6,
+        "event_observations": 4069,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 3,
+        "errors": 21,
+        "raw_transactions": 3,
+        "pending": 18,
+        "storageBytes": 40429192
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:05.099Z",
+        "uptimeMs": 60446,
+        "counters": {
+          "rpc_requests": 7,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 22201,
+          "notificationsReceived": 22201,
+          "logObservationsDecoded": 5365,
+          "contextEnrichmentSkipped": 22161,
+          "logObservationsPersisted": 5118,
+          "rpc_budget_waits": 8,
+          "recoveryGaps": 3,
+          "rpc_method_getTransaction": 4,
+          "transactionsProcessed": 4,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 1,
+          "reconnect_count": 1,
+          "rpc_method_getSignaturesForAddress": 2,
+          "rpc_errors": 1,
+          "rpc_retries": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 15,
+          "websocket_connected_at": "2026-11-03T22:04:31.053Z",
+          "last_event_received": "2026-11-03T22:05:05.099Z",
+          "current_slot": 465060013,
+          "currentSlot": 465060013,
+          "lastEventReceived": "2026-11-03T22:05:05.099Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:05:05.069Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:04.838Z",
+          "storageConsumptionBytes": 44785664,
+          "websocket_disconnected_at": "2026-11-03T22:04:29.162Z",
+          "reconnect_delay_ms": 292.448301819729,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 182.33333333333334
+          },
+          "logObservationLatencyMs": {
+            "count": 4004,
+            "retainedSamples": 4004,
+            "p50": 139,
+            "p95": 265,
+            "p99": 1097,
+            "max": 1150,
+            "mean": 156.74875124875126
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18011.232261,
+            "p95": 39979.746945,
+            "p99": 39979.746945,
+            "max": 39979.746945,
+            "mean": 24066.984126000003
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 1084,
+            "p95": 1338,
+            "p99": 1338,
+            "max": 1338,
+            "mean": 1147.25
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 40,
+        "events": 6,
+        "event_observations": 5118,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 3,
+        "errors": 23,
+        "raw_transactions": 4,
+        "pending": 16,
+        "storageBytes": 44798056
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:15.099Z",
+        "uptimeMs": 70446,
+        "counters": {
+          "rpc_requests": 8,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 26588,
+          "notificationsReceived": 26588,
+          "logObservationsDecoded": 6336,
+          "contextEnrichmentSkipped": 26548,
+          "logObservationsPersisted": 6062,
+          "rpc_budget_waits": 9,
+          "recoveryGaps": 4,
+          "rpc_method_getTransaction": 4,
+          "transactionsProcessed": 4,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 2,
+          "reconnect_count": 2,
+          "rpc_method_getSignaturesForAddress": 2,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:05:12.773Z",
+          "last_event_received": "2026-11-03T22:05:15.097Z",
+          "current_slot": 465060175,
+          "currentSlot": 465060175,
+          "lastEventReceived": "2026-11-03T22:05:15.097Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:05:15.048Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:04.838Z",
+          "storageConsumptionBytes": 57998816,
+          "websocket_disconnected_at": "2026-11-03T22:05:11.505Z",
+          "reconnect_delay_ms": 295.4395339419574,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 175.28571428571428
+          },
+          "logObservationLatencyMs": {
+            "count": 4744,
+            "retainedSamples": 4096,
+            "p50": 138,
+            "p95": 277,
+            "p99": 1097,
+            "max": 1150,
+            "mean": 153.6954047217538
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18011.232261,
+            "p95": 39979.746945,
+            "p99": 39979.746945,
+            "max": 39979.746945,
+            "mean": 24066.984126000003
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 1084,
+            "p95": 1338,
+            "p99": 1338,
+            "max": 1338,
+            "mean": 1147.25
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 41,
+        "events": 6,
+        "event_observations": 6062,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 4,
+        "errors": 23,
+        "raw_transactions": 4,
+        "pending": 17,
+        "storageBytes": 57998816
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:25.099Z",
+        "uptimeMs": 80446,
+        "counters": {
+          "rpc_requests": 9,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 29715,
+          "notificationsReceived": 29715,
+          "logObservationsDecoded": 6841,
+          "contextEnrichmentSkipped": 29674,
+          "logObservationsPersisted": 6552,
+          "rpc_budget_waits": 10,
+          "recoveryGaps": 4,
+          "rpc_method_getTransaction": 5,
+          "transactionsProcessed": 5,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 2,
+          "reconnect_count": 2,
+          "rpc_method_getSignaturesForAddress": 2,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 15,
+          "websocket_connected_at": "2026-11-03T22:05:12.773Z",
+          "last_event_received": "2026-11-03T22:05:25.052Z",
+          "current_slot": 465060182,
+          "currentSlot": 465060182,
+          "lastEventReceived": "2026-11-03T22:05:25.052Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:05:24.808Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:24.974Z",
+          "storageConsumptionBytes": 62942688,
+          "websocket_disconnected_at": "2026-11-03T22:05:11.505Z",
+          "reconnect_delay_ms": 295.4395339419574,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 8,
+            "retainedSamples": 8,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 185.375
+          },
+          "logObservationLatencyMs": {
+            "count": 5116,
+            "retainedSamples": 4096,
+            "p50": 134,
+            "p95": 277,
+            "p99": 1097,
+            "max": 1150,
+            "mean": 150.38311180609853
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 30033.698696000003,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 27269.104351600003
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 1086,
+            "p95": 1338,
+            "p99": 1338,
+            "max": 1338,
+            "mean": 1185.4
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 42,
+        "events": 6,
+        "event_observations": 6552,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 4,
+        "errors": 24,
+        "raw_transactions": 5,
+        "pending": 16,
+        "storageBytes": 62942688
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:35.099Z",
+        "uptimeMs": 90446,
+        "counters": {
+          "rpc_requests": 10,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 33979,
+          "notificationsReceived": 33979,
+          "logObservationsDecoded": 7724,
+          "contextEnrichmentSkipped": 33937,
+          "logObservationsPersisted": 7408,
+          "rpc_budget_waits": 11,
+          "recoveryGaps": 6,
+          "rpc_method_getTransaction": 5,
+          "transactionsProcessed": 5,
+          "events_processed": 6,
+          "decoderFailures": 0,
+          "websocket_disconnects": 3,
+          "reconnect_count": 3,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:05:32.378Z",
+          "last_event_received": "2026-11-03T22:05:35.068Z",
+          "current_slot": 465060273,
+          "currentSlot": 465060273,
+          "lastEventReceived": "2026-11-03T22:05:35.068Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:05:35.063Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:24.974Z",
+          "storageConsumptionBytes": 69369312,
+          "websocket_disconnected_at": "2026-11-03T22:05:31.472Z",
+          "reconnect_delay_ms": 348.871635066998,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 9,
+            "retainedSamples": 9,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 179
+          },
+          "logObservationLatencyMs": {
+            "count": 5765,
+            "retainedSamples": 4096,
+            "p50": 138,
+            "p95": 277,
+            "p99": 1097,
+            "max": 1150,
+            "mean": 147.29332176929748
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 30033.698696000003,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 27269.104351600003
+          },
+          "eventProcessingLatencyMs": {
+            "count": 3,
+            "retainedSamples": 3,
+            "p50": 18770,
+            "p95": 38803,
+            "p99": 38803,
+            "max": 38803,
+            "mean": 22110.333333333332
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 1086,
+            "p95": 1338,
+            "p99": 1338,
+            "max": 1338,
+            "mean": 1185.4
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 44,
+        "events": 6,
+        "event_observations": 7408,
+        "tokens": 3,
+        "pools": 3,
+        "gaps": 6,
+        "errors": 24,
+        "raw_transactions": 5,
+        "pending": 18,
+        "storageBytes": 69369312
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:45.099Z",
+        "uptimeMs": 100446,
+        "counters": {
+          "rpc_requests": 11,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 37971,
+          "notificationsReceived": 37971,
+          "logObservationsDecoded": 8496,
+          "contextEnrichmentSkipped": 37929,
+          "logObservationsPersisted": 8154,
+          "rpc_budget_waits": 12,
+          "recoveryGaps": 6,
+          "rpc_method_getTransaction": 6,
+          "transactionsProcessed": 6,
+          "events_processed": 7,
+          "decoderFailures": 0,
+          "websocket_disconnects": 3,
+          "reconnect_count": 3,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 15,
+          "websocket_connected_at": "2026-11-03T22:05:32.378Z",
+          "last_event_received": "2026-11-03T22:05:45.061Z",
+          "current_slot": 465060280,
+          "currentSlot": 465060280,
+          "lastEventReceived": "2026-11-03T22:05:45.061Z",
+          "queue_depth": 1,
+          "queue_active": 1,
+          "lastLogObservationPersisted": "2026-11-03T22:05:45.096Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:44.867Z",
+          "storageConsumptionBytes": 75611616,
+          "websocket_disconnected_at": "2026-11-03T22:05:31.472Z",
+          "reconnect_delay_ms": 348.871635066998,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 175.8
+          },
+          "logObservationLatencyMs": {
+            "count": 6342,
+            "retainedSamples": 4096,
+            "p50": 134,
+            "p95": 253,
+            "p99": 407,
+            "max": 1052,
+            "mean": 146.00457269000316
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 30033.698696000003,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 29382.8391965
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 1086,
+            "p95": 1612,
+            "p99": 1612,
+            "max": 1612,
+            "mean": 1256.5
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 1,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 44,
+        "events": 7,
+        "event_observations": 8154,
+        "tokens": 4,
+        "pools": 4,
+        "gaps": 6,
+        "errors": 30,
+        "raw_transactions": 6,
+        "pending": 12,
+        "storageBytes": 75611616
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:05:55.101Z",
+        "uptimeMs": 110448,
+        "counters": {
+          "rpc_requests": 12,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 41764,
+          "notificationsReceived": 41764,
+          "logObservationsDecoded": 9327,
+          "contextEnrichmentSkipped": 41711,
+          "logObservationsPersisted": 8928,
+          "rpc_budget_waits": 13,
+          "recoveryGaps": 6,
+          "rpc_method_getTransaction": 7,
+          "transactionsProcessed": 6,
+          "events_processed": 7,
+          "decoderFailures": 0,
+          "websocket_disconnects": 3,
+          "reconnect_count": 3,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 21,
+          "websocket_connected_at": "2026-11-03T22:05:32.378Z",
+          "last_event_received": "2026-11-03T22:05:55.017Z",
+          "current_slot": 465060288,
+          "currentSlot": 465060288,
+          "lastEventReceived": "2026-11-03T22:05:55.018Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:05:54.948Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:44.867Z",
+          "storageConsumptionBytes": 81976800,
+          "websocket_disconnected_at": "2026-11-03T22:05:31.472Z",
+          "reconnect_delay_ms": 348.871635066998,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 140,
+            "p95": 371,
+            "p99": 371,
+            "max": 371,
+            "mean": 175.8
+          },
+          "logObservationLatencyMs": {
+            "count": 6913,
+            "retainedSamples": 4096,
+            "p50": 132,
+            "p95": 249,
+            "p99": 289,
+            "max": 738,
+            "mean": 146.84218139736728
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 30033.698696000003,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 29382.8391965
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 1086,
+            "p95": 1612,
+            "p99": 1612,
+            "max": 1612,
+            "mean": 1256.5
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 55,
+        "events": 7,
+        "event_observations": 8928,
+        "tokens": 4,
+        "pools": 4,
+        "gaps": 6,
+        "errors": 32,
+        "raw_transactions": 6,
+        "pending": 21,
+        "storageBytes": 81976800
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:08.615Z",
+        "uptimeMs": 123962,
+        "counters": {
+          "rpc_requests": 13,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 45672,
+          "notificationsReceived": 45672,
+          "logObservationsDecoded": 10105,
+          "contextEnrichmentSkipped": 45619,
+          "logObservationsPersisted": 9686,
+          "rpc_budget_waits": 14,
+          "recoveryGaps": 6,
+          "rpc_method_getTransaction": 8,
+          "transactionsProcessed": 7,
+          "events_processed": 7,
+          "decoderFailures": 0,
+          "websocket_disconnects": 3,
+          "reconnect_count": 3,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:05:32.378Z",
+          "last_event_received": "2026-11-03T22:06:07.659Z",
+          "current_slot": 465060297,
+          "currentSlot": 465060297,
+          "lastEventReceived": "2026-11-03T22:06:07.659Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:08.504Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:05:55.870Z",
+          "storageConsumptionBytes": 89802368,
+          "websocket_disconnected_at": "2026-11-03T22:05:31.472Z",
+          "reconnect_delay_ms": 348.871635066998,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 147,
+            "p95": 1143,
+            "p99": 1143,
+            "max": 1143,
+            "mean": 263.72727272727275
+          },
+          "logObservationLatencyMs": {
+            "count": 7478,
+            "retainedSamples": 4096,
+            "p50": 146,
+            "p95": 1129,
+            "p99": 2113,
+            "max": 5428,
+            "mean": 211.67477935276813
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 30891.051431,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 29598.298087142855
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 1338,
+            "p95": 1612,
+            "p99": 1612,
+            "max": 1612,
+            "mean": 1307.2857142857142
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 55,
+        "events": 7,
+        "event_observations": 9686,
+        "tokens": 4,
+        "pools": 4,
+        "gaps": 6,
+        "errors": 34,
+        "raw_transactions": 7,
+        "pending": 18,
+        "storageBytes": 89802368
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:18.615Z",
+        "uptimeMs": 133962,
+        "counters": {
+          "rpc_requests": 14,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 48032,
+          "notificationsReceived": 48032,
+          "logObservationsDecoded": 10560,
+          "contextEnrichmentSkipped": 47979,
+          "logObservationsPersisted": 10138,
+          "rpc_budget_waits": 15,
+          "recoveryGaps": 7,
+          "rpc_method_getTransaction": 8,
+          "transactionsProcessed": 8,
+          "events_processed": 8,
+          "decoderFailures": 0,
+          "websocket_disconnects": 4,
+          "reconnect_count": 4,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 2
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:06:15.313Z",
+          "last_event_received": "2026-11-03T22:06:18.504Z",
+          "current_slot": 465060471,
+          "currentSlot": 465060471,
+          "lastEventReceived": "2026-11-03T22:06:18.506Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:18.272Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:13.778Z",
+          "storageConsumptionBytes": 92449976,
+          "websocket_disconnected_at": "2026-11-03T22:06:13.402Z",
+          "reconnect_delay_ms": 307.4283731946496,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 12,
+            "retainedSamples": 12,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 680.3333333333334
+          },
+          "logObservationLatencyMs": {
+            "count": 7823,
+            "retainedSamples": 4096,
+            "p50": 151,
+            "p95": 1291,
+            "p99": 2882,
+            "max": 5428,
+            "mean": 233.83280071583792
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 8,
+            "retainedSamples": 8,
+            "p50": 30891.051431,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 30763.570342749998
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 1338,
+            "p95": 1612,
+            "p99": 1612,
+            "max": 1612,
+            "mean": 1307.2857142857142
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 55,
+        "events": 8,
+        "event_observations": 10138,
+        "tokens": 5,
+        "pools": 5,
+        "gaps": 7,
+        "errors": 35,
+        "raw_transactions": 8,
+        "pending": 17,
+        "storageBytes": 92449976
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:28.615Z",
+        "uptimeMs": 143962,
+        "counters": {
+          "rpc_requests": 15,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 51524,
+          "notificationsReceived": 51524,
+          "logObservationsDecoded": 11261,
+          "contextEnrichmentSkipped": 51471,
+          "logObservationsPersisted": 10825,
+          "rpc_budget_waits": 16,
+          "recoveryGaps": 7,
+          "rpc_method_getTransaction": 9,
+          "transactionsProcessed": 8,
+          "events_processed": 8,
+          "decoderFailures": 0,
+          "websocket_disconnects": 4,
+          "reconnect_count": 4,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 2
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:06:15.313Z",
+          "last_event_received": "2026-11-03T22:06:28.536Z",
+          "current_slot": 465060479,
+          "currentSlot": 465060479,
+          "lastEventReceived": "2026-11-03T22:06:28.536Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:28.609Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:13.778Z",
+          "storageConsumptionBytes": 97094840,
+          "websocket_disconnected_at": "2026-11-03T22:06:13.402Z",
+          "reconnect_delay_ms": 307.4283731946496,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 13,
+            "retainedSamples": 13,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 637.2307692307693
+          },
+          "logObservationLatencyMs": {
+            "count": 8325,
+            "retainedSamples": 4096,
+            "p50": 153,
+            "p95": 1291,
+            "p99": 2882,
+            "max": 5428,
+            "mean": 227.51387387387388
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 8,
+            "retainedSamples": 8,
+            "p50": 30891.051431,
+            "p95": 40077.585254000005,
+            "p99": 40077.585254000005,
+            "max": 40077.585254000005,
+            "mean": 30763.570342749998
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 1338,
+            "p95": 1612,
+            "p99": 1612,
+            "max": 1612,
+            "mean": 1307.2857142857142
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 55,
+        "events": 8,
+        "event_observations": 10825,
+        "tokens": 5,
+        "pools": 5,
+        "gaps": 7,
+        "errors": 35,
+        "raw_transactions": 8,
+        "pending": 17,
+        "storageBytes": 97094840
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:38.620Z",
+        "uptimeMs": 153967,
+        "counters": {
+          "rpc_requests": 16,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 55498,
+          "notificationsReceived": 55498,
+          "logObservationsDecoded": 12256,
+          "contextEnrichmentSkipped": 55440,
+          "logObservationsPersisted": 11802,
+          "rpc_budget_waits": 17,
+          "recoveryGaps": 8,
+          "rpc_method_getTransaction": 10,
+          "transactionsProcessed": 9,
+          "events_processed": 8,
+          "decoderFailures": 0,
+          "websocket_disconnects": 5,
+          "reconnect_count": 5,
+          "rpc_method_getSignaturesForAddress": 3,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 2
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:06:36.470Z",
+          "last_event_received": "2026-11-03T22:06:38.614Z",
+          "current_slot": 465060568,
+          "currentSlot": 465060568,
+          "lastEventReceived": "2026-11-03T22:06:38.614Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:38.620Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:28.676Z",
+          "storageConsumptionBytes": 105143480,
+          "websocket_disconnected_at": "2026-11-03T22:06:34.910Z",
+          "reconnect_delay_ms": 326.06762858112893,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 14,
+            "retainedSamples": 14,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 603.2857142857143
+          },
+          "logObservationLatencyMs": {
+            "count": 9074,
+            "retainedSamples": 4096,
+            "p50": 161,
+            "p95": 1291,
+            "p99": 2882,
+            "max": 5428,
+            "mean": 220.87657042098303
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 9,
+            "retainedSamples": 9,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 32160.44880444444
+          },
+          "eventProcessingLatencyMs": {
+            "count": 4,
+            "retainedSamples": 4,
+            "p50": 18770,
+            "p95": 98255,
+            "p99": 98255,
+            "max": 98255,
+            "mean": 41146.5
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 8,
+            "retainedSamples": 8,
+            "p50": 1338,
+            "p95": 12923,
+            "p99": 12923,
+            "max": 12923,
+            "mean": 2759.25
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 60,
+        "events": 8,
+        "event_observations": 11802,
+        "tokens": 5,
+        "pools": 5,
+        "gaps": 8,
+        "errors": 38,
+        "raw_transactions": 9,
+        "pending": 18,
+        "storageBytes": 105143480
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:48.626Z",
+        "uptimeMs": 163973,
+        "counters": {
+          "rpc_requests": 17,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 58655,
+          "notificationsReceived": 58655,
+          "logObservationsDecoded": 13193,
+          "contextEnrichmentSkipped": 58595,
+          "logObservationsPersisted": 12712,
+          "rpc_budget_waits": 18,
+          "recoveryGaps": 8,
+          "rpc_method_getTransaction": 10,
+          "transactionsProcessed": 10,
+          "events_processed": 9,
+          "decoderFailures": 0,
+          "websocket_disconnects": 5,
+          "reconnect_count": 5,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 2
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:06:36.470Z",
+          "last_event_received": "2026-11-03T22:06:48.588Z",
+          "current_slot": 465060576,
+          "currentSlot": 465060576,
+          "lastEventReceived": "2026-11-03T22:06:48.588Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:48.626Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:39.003Z",
+          "storageConsumptionBytes": 113282232,
+          "websocket_disconnected_at": "2026-11-03T22:06:34.910Z",
+          "reconnect_delay_ms": 326.06762858112893,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 159,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 595.9333333333333
+          },
+          "logObservationLatencyMs": {
+            "count": 9724,
+            "retainedSamples": 4096,
+            "p50": 171,
+            "p95": 1291,
+            "p99": 2882,
+            "max": 5428,
+            "mean": 216.2978198272316
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 33255.97337559999
+          },
+          "eventProcessingLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 55683.6
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 9,
+            "retainedSamples": 9,
+            "p50": 1338,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 3916.1111111111113
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 62,
+        "events": 9,
+        "event_observations": 12712,
+        "tokens": 6,
+        "pools": 6,
+        "gaps": 8,
+        "errors": 41,
+        "raw_transactions": 10,
+        "pending": 17,
+        "storageBytes": 113282232
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:06:58.627Z",
+        "uptimeMs": 173974,
+        "counters": {
+          "rpc_requests": 18,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 62455,
+          "notificationsReceived": 62455,
+          "logObservationsDecoded": 14145,
+          "contextEnrichmentSkipped": 62395,
+          "logObservationsPersisted": 13615,
+          "rpc_budget_waits": 19,
+          "recoveryGaps": 10,
+          "rpc_method_getTransaction": 11,
+          "transactionsProcessed": 10,
+          "events_processed": 9,
+          "decoderFailures": 0,
+          "websocket_disconnects": 6,
+          "reconnect_count": 6,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 1,
+          "rpc_retries": 1,
+          "rpc_method_getSignatureStatuses": 2
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:06:55.956Z",
+          "last_event_received": "2026-11-03T22:06:58.615Z",
+          "current_slot": 465060660,
+          "currentSlot": 465060660,
+          "lastEventReceived": "2026-11-03T22:06:58.615Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:06:58.391Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:39.003Z",
+          "storageConsumptionBytes": 120118456,
+          "websocket_disconnected_at": "2026-11-03T22:06:54.800Z",
+          "reconnect_delay_ms": 445.7465334980104,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 16,
+            "retainedSamples": 16,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 567.3125
+          },
+          "logObservationLatencyMs": {
+            "count": 10432,
+            "retainedSamples": 4096,
+            "p50": 174,
+            "p95": 1291,
+            "p99": 2882,
+            "max": 5428,
+            "mean": 210.99961656441718
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 33255.97337559999
+          },
+          "eventProcessingLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 55683.6
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 9,
+            "retainedSamples": 9,
+            "p50": 1338,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 3916.1111111111113
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 63,
+        "events": 9,
+        "event_observations": 13615,
+        "tokens": 6,
+        "pools": 6,
+        "gaps": 10,
+        "errors": 41,
+        "raw_transactions": 10,
+        "pending": 18,
+        "storageBytes": 120118456
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:08.658Z",
+        "uptimeMs": 184005,
+        "counters": {
+          "rpc_requests": 19,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 66855,
+          "notificationsReceived": 66855,
+          "logObservationsDecoded": 15360,
+          "contextEnrichmentSkipped": 66791,
+          "logObservationsPersisted": 14749,
+          "rpc_budget_waits": 20,
+          "recoveryGaps": 10,
+          "rpc_method_getTransaction": 12,
+          "transactionsProcessed": 11,
+          "events_processed": 9,
+          "decoderFailures": 0,
+          "websocket_disconnects": 6,
+          "reconnect_count": 6,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 2,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:06:55.956Z",
+          "last_event_received": "2026-11-03T22:07:08.657Z",
+          "current_slot": 465060672,
+          "currentSlot": 465060672,
+          "lastEventReceived": "2026-11-03T22:07:08.657Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:08.395Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:58.645Z",
+          "storageConsumptionBytes": 130505912,
+          "websocket_disconnected_at": "2026-11-03T22:06:54.800Z",
+          "reconnect_delay_ms": 445.7465334980104,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z"
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 17,
+            "retainedSamples": 17,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 541.8823529411765
+          },
+          "logObservationLatencyMs": {
+            "count": 11330,
+            "retainedSamples": 4096,
+            "p50": 159,
+            "p95": 1141,
+            "p99": 2857,
+            "max": 3673,
+            "mean": 205.4036187113857
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 32953.96194927272
+          },
+          "eventProcessingLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 55683.6
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 1338,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 4742.2
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 67,
+        "events": 9,
+        "event_observations": 14749,
+        "tokens": 6,
+        "pools": 6,
+        "gaps": 10,
+        "errors": 44,
+        "raw_transactions": 11,
+        "pending": 18,
+        "storageBytes": 125603840
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:18.660Z",
+        "uptimeMs": 194007,
+        "counters": {
+          "rpc_requests": 20,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 70509,
+          "notificationsReceived": 70509,
+          "logObservationsDecoded": 16312,
+          "contextEnrichmentSkipped": 70445,
+          "logObservationsPersisted": 15768,
+          "rpc_budget_waits": 22,
+          "recoveryGaps": 10,
+          "rpc_method_getTransaction": 12,
+          "transactionsProcessed": 11,
+          "events_processed": 9,
+          "decoderFailures": 0,
+          "websocket_disconnects": 6,
+          "reconnect_count": 6,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:06:55.956Z",
+          "last_event_received": "2026-11-03T22:07:18.597Z",
+          "current_slot": 465060684,
+          "currentSlot": 465060684,
+          "lastEventReceived": "2026-11-03T22:07:18.597Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:18.453Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:58.645Z",
+          "storageConsumptionBytes": 135700832,
+          "websocket_disconnected_at": "2026-11-03T22:06:54.800Z",
+          "reconnect_delay_ms": 445.7465334980104,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z"
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 17,
+            "retainedSamples": 17,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 541.8823529411765
+          },
+          "logObservationLatencyMs": {
+            "count": 12117,
+            "retainedSamples": 4096,
+            "p50": 154,
+            "p95": 250,
+            "p99": 267,
+            "max": 304,
+            "mean": 202.6758273500041
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 32953.96194927272
+          },
+          "eventProcessingLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 55683.6
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 1338,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 4742.2
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 67,
+        "events": 9,
+        "event_observations": 15000,
+        "tokens": 6,
+        "pools": 6,
+        "gaps": 10,
+        "errors": 44,
+        "raw_transactions": 11,
+        "pending": 18,
+        "storageBytes": 135700832
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:28.660Z",
+        "uptimeMs": 204007,
+        "counters": {
+          "rpc_requests": 21,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 73676,
+          "notificationsReceived": 73676,
+          "logObservationsDecoded": 17187,
+          "contextEnrichmentSkipped": 73612,
+          "logObservationsPersisted": 16634,
+          "rpc_budget_waits": 23,
+          "recoveryGaps": 11,
+          "rpc_method_getTransaction": 13,
+          "transactionsProcessed": 11,
+          "events_processed": 9,
+          "decoderFailures": 0,
+          "websocket_disconnects": 7,
+          "reconnect_count": 7,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:07:28.568Z",
+          "last_event_received": "2026-11-03T22:07:28.660Z",
+          "current_slot": 465060807,
+          "currentSlot": 465060807,
+          "lastEventReceived": "2026-11-03T22:07:28.660Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:27.980Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:06:58.645Z",
+          "storageConsumptionBytes": 135700832,
+          "websocket_disconnected_at": "2026-11-03T22:07:27.733Z",
+          "reconnect_delay_ms": 450.5773612373787,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z"
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 18,
+            "retainedSamples": 18,
+            "p50": 147,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 520.2777777777778
+          },
+          "logObservationLatencyMs": {
+            "count": 12796,
+            "retainedSamples": 4096,
+            "p50": 155,
+            "p95": 253,
+            "p99": 273,
+            "max": 304,
+            "mean": 200.55376680212566
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 38920.476131999996,
+            "p95": 43335.476498,
+            "p99": 43335.476498,
+            "max": 43335.476498,
+            "mean": 32953.96194927272
+          },
+          "eventProcessingLatencyMs": {
+            "count": 5,
+            "retainedSamples": 5,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 55683.6
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 10,
+            "retainedSamples": 10,
+            "p50": 1338,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 4742.2
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 67,
+        "events": 9,
+        "event_observations": 15000,
+        "tokens": 6,
+        "pools": 6,
+        "gaps": 11,
+        "errors": 44,
+        "raw_transactions": 11,
+        "pending": 18,
+        "storageBytes": 135700832
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:38.660Z",
+        "uptimeMs": 214007,
+        "counters": {
+          "rpc_requests": 22,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 77656,
+          "notificationsReceived": 77656,
+          "logObservationsDecoded": 18199,
+          "contextEnrichmentSkipped": 77592,
+          "logObservationsPersisted": 17606,
+          "rpc_budget_waits": 24,
+          "recoveryGaps": 11,
+          "rpc_method_getTransaction": 14,
+          "transactionsProcessed": 12,
+          "events_processed": 10,
+          "decoderFailures": 0,
+          "websocket_disconnects": 7,
+          "reconnect_count": 7,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:07:28.568Z",
+          "last_event_received": "2026-11-03T22:07:38.596Z",
+          "current_slot": 465060821,
+          "currentSlot": 465060821,
+          "lastEventReceived": "2026-11-03T22:07:38.596Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:38.582Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:29.474Z",
+          "storageConsumptionBytes": 135700832,
+          "websocket_disconnected_at": "2026-11-03T22:07:27.733Z",
+          "reconnect_delay_ms": 450.5773612373787,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z"
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 19,
+            "retainedSamples": 19,
+            "p50": 153,
+            "p95": 5263,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 535.6842105263158
+          },
+          "logObservationLatencyMs": {
+            "count": 13559,
+            "retainedSamples": 4096,
+            "p50": 152,
+            "p95": 255,
+            "p99": 297,
+            "max": 693,
+            "mean": 199.205103621211
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 12,
+            "retainedSamples": 12,
+            "p50": 38920.476131999996,
+            "p95": 50249.14578200001,
+            "p99": 50249.14578200001,
+            "max": 50249.14578200001,
+            "mean": 34395.22726866666
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 5359.454545454545
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 1,
+            "retainedSamples": 1,
+            "p50": 38933,
+            "p95": 38933,
+            "p99": 38933,
+            "max": 38933,
+            "mean": 38933
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 67,
+        "events": 10,
+        "event_observations": 15000,
+        "tokens": 7,
+        "pools": 7,
+        "gaps": 11,
+        "errors": 45,
+        "raw_transactions": 12,
+        "pending": 17,
+        "storageBytes": 135700832
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:48.661Z",
+        "uptimeMs": 224008,
+        "counters": {
+          "rpc_requests": 23,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 82342,
+          "notificationsReceived": 82342,
+          "logObservationsDecoded": 19479,
+          "contextEnrichmentSkipped": 82278,
+          "logObservationsPersisted": 18834,
+          "rpc_budget_waits": 26,
+          "recoveryGaps": 11,
+          "rpc_method_getTransaction": 15,
+          "transactionsProcessed": 13,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 7,
+          "reconnect_count": 7,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 16,
+          "websocket_connected_at": "2026-11-03T22:07:28.568Z",
+          "last_event_received": "2026-11-03T22:07:48.629Z",
+          "current_slot": 465060839,
+          "currentSlot": 465060839,
+          "lastEventReceived": "2026-11-03T22:07:48.629Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:48.588Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:38.925Z",
+          "storageConsumptionBytes": 135979360,
+          "websocket_disconnected_at": "2026-11-03T22:07:27.733Z",
+          "reconnect_delay_ms": 450.5773612373787,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 20,
+            "retainedSamples": 20,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 522
+          },
+          "logObservationLatencyMs": {
+            "count": 14540,
+            "retainedSamples": 4096,
+            "p50": 163,
+            "p95": 273,
+            "p99": 352,
+            "max": 693,
+            "mean": 198.20591471801924
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 13,
+            "retainedSamples": 13,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 35616.55864084615
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 11,
+            "retainedSamples": 11,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 5359.454545454545
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 67,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 11,
+        "errors": 45,
+        "raw_transactions": 13,
+        "pending": 16,
+        "storageBytes": 135979360
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:07:58.860Z",
+        "uptimeMs": 234207,
+        "counters": {
+          "rpc_requests": 24,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 85827,
+          "notificationsReceived": 85827,
+          "logObservationsDecoded": 20594,
+          "contextEnrichmentSkipped": 85759,
+          "logObservationsPersisted": 19886,
+          "rpc_budget_waits": 27,
+          "recoveryGaps": 12,
+          "rpc_method_getTransaction": 16,
+          "transactionsProcessed": 14,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 8,
+          "reconnect_count": 8,
+          "rpc_method_getSignaturesForAddress": 4,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": false,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:07:28.568Z",
+          "last_event_received": "2026-11-03T22:07:58.842Z",
+          "current_slot": 465060852,
+          "currentSlot": 465060852,
+          "lastEventReceived": "2026-11-03T22:07:58.842Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:07:58.709Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:48.775Z",
+          "storageConsumptionBytes": 136216928,
+          "websocket_disconnected_at": "2026-11-03T22:07:58.846Z",
+          "reconnect_delay_ms": 478.07953650325044,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 21,
+            "retainedSamples": 21,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 502.5238095238095
+          },
+          "logObservationLatencyMs": {
+            "count": 15409,
+            "retainedSamples": 4096,
+            "p50": 178,
+            "p95": 278,
+            "p99": 352,
+            "max": 693,
+            "mean": 197.00214160555518
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 14,
+            "retainedSamples": 14,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36646.004043999994
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 12,
+            "retainedSamples": 12,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 5884.583333333333
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 71,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 12,
+        "errors": 46,
+        "raw_transactions": 14,
+        "pending": 18,
+        "storageBytes": 136216928
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:08.860Z",
+        "uptimeMs": 244207,
+        "counters": {
+          "rpc_requests": 25,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 89445,
+          "notificationsReceived": 89445,
+          "logObservationsDecoded": 21761,
+          "contextEnrichmentSkipped": 89377,
+          "logObservationsPersisted": 21071,
+          "rpc_budget_waits": 28,
+          "recoveryGaps": 12,
+          "rpc_method_getTransaction": 16,
+          "transactionsProcessed": 15,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 8,
+          "reconnect_count": 8,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 3,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 17,
+          "websocket_connected_at": "2026-11-03T22:07:59.869Z",
+          "last_event_received": "2026-11-03T22:08:08.809Z",
+          "current_slot": 465060965,
+          "currentSlot": 465060965,
+          "lastEventReceived": "2026-11-03T22:08:08.809Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:08.726Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:59.518Z",
+          "storageConsumptionBytes": 130774408,
+          "websocket_disconnected_at": "2026-11-03T22:07:58.846Z",
+          "reconnect_delay_ms": 478.07953650325044,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 22,
+            "retainedSamples": 22,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 509.3636363636364
+          },
+          "logObservationLatencyMs": {
+            "count": 16377,
+            "retainedSamples": 4096,
+            "p50": 184,
+            "p95": 290,
+            "p99": 352,
+            "max": 693,
+            "mean": 196.3100689992062
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36205.39624593333
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 13,
+            "retainedSamples": 13,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 6335.923076923077
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 71,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 12,
+        "errors": 46,
+        "raw_transactions": 15,
+        "pending": 17,
+        "storageBytes": 130790888
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:18.865Z",
+        "uptimeMs": 254212,
+        "counters": {
+          "rpc_requests": 26,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 92632,
+          "notificationsReceived": 92632,
+          "logObservationsDecoded": 22851,
+          "contextEnrichmentSkipped": 92564,
+          "logObservationsPersisted": 22103,
+          "rpc_budget_waits": 29,
+          "recoveryGaps": 13,
+          "rpc_method_getTransaction": 16,
+          "transactionsProcessed": 15,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 8,
+          "reconnect_count": 8,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:07:59.869Z",
+          "last_event_received": "2026-11-03T22:08:18.865Z",
+          "current_slot": 465060979,
+          "currentSlot": 465060979,
+          "lastEventReceived": "2026-11-03T22:08:18.865Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:18.477Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:59.518Z",
+          "storageConsumptionBytes": 134354688,
+          "websocket_disconnected_at": "2026-11-03T22:07:58.846Z",
+          "reconnect_delay_ms": 478.07953650325044,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 23,
+            "retainedSamples": 23,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 492.39130434782606
+          },
+          "logObservationLatencyMs": {
+            "count": 17220,
+            "retainedSamples": 4096,
+            "p50": 182,
+            "p95": 281,
+            "p99": 331,
+            "max": 355,
+            "mean": 195.08373983739838
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36205.39624593333
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 13,
+            "retainedSamples": 13,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 6335.923076923077
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 72,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 13,
+        "errors": 46,
+        "raw_transactions": 15,
+        "pending": 18,
+        "storageBytes": 134354688
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:28.867Z",
+        "uptimeMs": 264214,
+        "counters": {
+          "rpc_requests": 27,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 95247,
+          "notificationsReceived": 95247,
+          "logObservationsDecoded": 23815,
+          "contextEnrichmentSkipped": 95179,
+          "logObservationsPersisted": 23047,
+          "rpc_budget_waits": 30,
+          "recoveryGaps": 14,
+          "rpc_method_getTransaction": 17,
+          "transactionsProcessed": 15,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 9,
+          "reconnect_count": 9,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:08:26.892Z",
+          "last_event_received": "2026-11-03T22:08:28.838Z",
+          "current_slot": 465061078,
+          "currentSlot": 465061078,
+          "lastEventReceived": "2026-11-03T22:08:28.838Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:28.695Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:07:59.518Z",
+          "storageConsumptionBytes": 135893304,
+          "websocket_disconnected_at": "2026-11-03T22:08:25.208Z",
+          "reconnect_delay_ms": 441.2270755531682,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 24,
+            "retainedSamples": 24,
+            "p50": 147,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 476.75
+          },
+          "logObservationLatencyMs": {
+            "count": 17980,
+            "retainedSamples": 4096,
+            "p50": 191,
+            "p95": 284,
+            "p99": 334,
+            "max": 367,
+            "mean": 194.49566184649612
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36205.39624593333
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 13,
+            "retainedSamples": 13,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 6335.923076923077
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 72,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 14,
+        "errors": 46,
+        "raw_transactions": 15,
+        "pending": 18,
+        "storageBytes": 135893304
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:38.868Z",
+        "uptimeMs": 274215,
+        "counters": {
+          "rpc_requests": 28,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 98431,
+          "notificationsReceived": 98431,
+          "logObservationsDecoded": 24981,
+          "contextEnrichmentSkipped": 98355,
+          "logObservationsPersisted": 24201,
+          "rpc_budget_waits": 31,
+          "recoveryGaps": 14,
+          "rpc_method_getTransaction": 18,
+          "transactionsProcessed": 16,
+          "events_processed": 12,
+          "decoderFailures": 0,
+          "websocket_disconnects": 9,
+          "reconnect_count": 9,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 20,
+          "websocket_connected_at": "2026-11-03T22:08:26.892Z",
+          "last_event_received": "2026-11-03T22:08:38.664Z",
+          "current_slot": 465061092,
+          "currentSlot": 465061092,
+          "lastEventReceived": "2026-11-03T22:08:38.664Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:38.490Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:08:29.075Z",
+          "storageConsumptionBytes": 135893304,
+          "websocket_disconnected_at": "2026-11-03T22:08:25.208Z",
+          "reconnect_delay_ms": 441.2270755531682,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 25,
+            "retainedSamples": 25,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 466.12
+          },
+          "logObservationLatencyMs": {
+            "count": 18909,
+            "retainedSamples": 4096,
+            "p50": 176,
+            "p95": 280,
+            "p99": 304,
+            "max": 367,
+            "mean": 193.70326299645671
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 16,
+            "retainedSamples": 16,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36459.71020406249
+          },
+          "eventProcessingLatencyMs": {
+            "count": 6,
+            "retainedSamples": 6,
+            "p50": 38803,
+            "p95": 113832,
+            "p99": 113832,
+            "max": 113832,
+            "mean": 63726.666666666664
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 14,
+            "retainedSamples": 14,
+            "p50": 1612,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 6722.785714285715
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 80,
+        "events": 12,
+        "event_observations": 15000,
+        "tokens": 8,
+        "pools": 8,
+        "gaps": 14,
+        "errors": 51,
+        "raw_transactions": 16,
+        "pending": 20,
+        "storageBytes": 135893304
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:48.889Z",
+        "uptimeMs": 284236,
+        "counters": {
+          "rpc_requests": 29,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 101521,
+          "notificationsReceived": 101521,
+          "logObservationsDecoded": 26039,
+          "contextEnrichmentSkipped": 101445,
+          "logObservationsPersisted": 25233,
+          "rpc_budget_waits": 32,
+          "recoveryGaps": 14,
+          "rpc_method_getTransaction": 19,
+          "transactionsProcessed": 17,
+          "events_processed": 13,
+          "decoderFailures": 0,
+          "websocket_disconnects": 9,
+          "reconnect_count": 9,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 19,
+          "websocket_connected_at": "2026-11-03T22:08:26.892Z",
+          "last_event_received": "2026-11-03T22:08:48.811Z",
+          "current_slot": 465061104,
+          "currentSlot": 465061104,
+          "lastEventReceived": "2026-11-03T22:08:48.812Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:48.882Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:08:39.270Z",
+          "storageConsumptionBytes": 136873864,
+          "websocket_disconnected_at": "2026-11-03T22:08:25.208Z",
+          "reconnect_delay_ms": 441.2270755531682,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 26,
+            "retainedSamples": 26,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 463.7692307692308
+          },
+          "logObservationLatencyMs": {
+            "count": 19701,
+            "retainedSamples": 4096,
+            "p50": 174,
+            "p95": 289,
+            "p99": 364,
+            "max": 916,
+            "mean": 193.9157910765951
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 17,
+            "retainedSamples": 17,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36653.02468158823
+          },
+          "eventProcessingLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 98255,
+            "p95": 173401,
+            "p99": 173401,
+            "max": 173401,
+            "mean": 79394.42857142857
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 11532,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 7065.866666666667
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 80,
+        "events": 13,
+        "event_observations": 15000,
+        "tokens": 9,
+        "pools": 9,
+        "gaps": 14,
+        "errors": 52,
+        "raw_transactions": 17,
+        "pending": 19,
+        "storageBytes": 136873864
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:08:58.897Z",
+        "uptimeMs": 294244,
+        "counters": {
+          "rpc_requests": 30,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 104802,
+          "notificationsReceived": 104802,
+          "logObservationsDecoded": 27228,
+          "contextEnrichmentSkipped": 104726,
+          "logObservationsPersisted": 26376,
+          "rpc_budget_waits": 33,
+          "recoveryGaps": 15,
+          "rpc_method_getTransaction": 20,
+          "transactionsProcessed": 18,
+          "events_processed": 13,
+          "decoderFailures": 0,
+          "websocket_disconnects": 10,
+          "reconnect_count": 10,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:08:51.099Z",
+          "last_event_received": "2026-11-03T22:08:58.822Z",
+          "current_slot": 465061196,
+          "currentSlot": 465061196,
+          "lastEventReceived": "2026-11-03T22:08:58.822Z",
+          "queue_depth": 4,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:08:58.895Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:08:49.024Z",
+          "storageConsumptionBytes": 136931208,
+          "websocket_disconnected_at": "2026-11-03T22:08:50.261Z",
+          "reconnect_delay_ms": 310.9501623789661,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.raydium_cpmm": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 27,
+            "retainedSamples": 27,
+            "p50": 153,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 451.7037037037037
+          },
+          "logObservationLatencyMs": {
+            "count": 20640,
+            "retainedSamples": 4096,
+            "p50": 171,
+            "p95": 281,
+            "p99": 364,
+            "max": 916,
+            "mean": 192.64956395348838
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 18,
+            "retainedSamples": 18,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36840.99613283332
+          },
+          "eventProcessingLatencyMs": {
+            "count": 7,
+            "retainedSamples": 7,
+            "p50": 98255,
+            "p95": 173401,
+            "p99": 173401,
+            "max": 173401,
+            "mean": 79394.42857142857
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 15,
+            "retainedSamples": 15,
+            "p50": 11532,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 7065.866666666667
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 80,
+        "events": 13,
+        "event_observations": 15000,
+        "tokens": 9,
+        "pools": 9,
+        "gaps": 15,
+        "errors": 52,
+        "raw_transactions": 18,
+        "pending": 18,
+        "storageBytes": 136931208
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    },
+    {
+      "schemaVersion": 1,
+      "chain": "solana",
+      "network": "mainnet-beta",
+      "mode": "READ_ONLY",
+      "status": "DEGRADED",
+      "startedAt": "2026-11-03T22:04:05.053Z",
+      "programs": [
+        {
+          "protocol": "pump_fun",
+          "programId": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "protocol": "pump_swap",
+          "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        },
+        {
+          "protocol": "raydium_launchlab",
+          "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+        },
+        {
+          "protocol": "raydium_cpmm",
+          "programId": "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+        }
+      ],
+      "metrics": {
+        "startedAt": "2026-11-03T22:04:04.653Z",
+        "measuredAt": "2026-11-03T22:09:08.900Z",
+        "uptimeMs": 304247,
+        "counters": {
+          "rpc_requests": 31,
+          "rpc_method_getGenesisHash": 1,
+          "log_notifications": 108927,
+          "notificationsReceived": 108927,
+          "logObservationsDecoded": 28722,
+          "contextEnrichmentSkipped": 108847,
+          "logObservationsPersisted": 27843,
+          "rpc_budget_waits": 34,
+          "recoveryGaps": 15,
+          "rpc_method_getTransaction": 21,
+          "transactionsProcessed": 19,
+          "events_processed": 15,
+          "decoderFailures": 0,
+          "websocket_disconnects": 10,
+          "reconnect_count": 10,
+          "rpc_method_getSignaturesForAddress": 5,
+          "rpc_errors": 2,
+          "rpc_retries": 2,
+          "rpc_method_getSignatureStatuses": 4,
+          "rate_limit_errors": 1
+        },
+        "gauges": {
+          "mainnetVerified": true,
+          "websocket_connected": true,
+          "durableBacklog": 18,
+          "websocket_connected_at": "2026-11-03T22:08:51.099Z",
+          "last_event_received": "2026-11-03T22:09:08.813Z",
+          "current_slot": 465061205,
+          "currentSlot": 465061205,
+          "lastEventReceived": "2026-11-03T22:09:08.813Z",
+          "queue_depth": 3,
+          "queue_active": 2,
+          "lastLogObservationPersisted": "2026-11-03T22:09:08.806Z",
+          "coverageOverloaded": true,
+          "lastEventProcessed": "2026-11-03T22:08:59.033Z",
+          "storageConsumptionBytes": 132084344,
+          "websocket_disconnected_at": "2026-11-03T22:08:50.261Z",
+          "reconnect_delay_ms": 310.9501623789661,
+          "recovery.pump_fun": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.pump_swap": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "rpc_cooldown_until": "2026-11-03T22:07:18.658Z",
+          "recovery.raydium_launchlab": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          },
+          "recovery.raydium_cpmm": {
+            "pages": 1,
+            "recovered": 1,
+            "selected": 1,
+            "complete": false,
+            "gap": "INITIAL_HISTORY_BOUNDARY",
+            "continuation": false,
+            "checkpointAdvanced": true
+          }
+        },
+        "histograms": {
+          "rpc_latency_ms": {
+            "count": 28,
+            "retainedSamples": 28,
+            "p50": 147,
+            "p95": 1143,
+            "p99": 5263,
+            "max": 5263,
+            "mean": 440.32142857142856
+          },
+          "logObservationLatencyMs": {
+            "count": 21863,
+            "retainedSamples": 4096,
+            "p50": 165,
+            "p95": 280,
+            "p99": 332,
+            "max": 916,
+            "mean": 191.27384165027672
+          },
+          "transactionEnrichmentLatencyMs": {
+            "count": 19,
+            "retainedSamples": 19,
+            "p50": 39951.513420999996,
+            "p95": 50272.535107,
+            "p99": 50272.535107,
+            "max": 50272.535107,
+            "mean": 36461.13848342104
+          },
+          "eventProcessingLatencyMs": {
+            "count": 8,
+            "retainedSamples": 8,
+            "p50": 98255,
+            "p95": 173401,
+            "p99": 173401,
+            "max": 173401,
+            "mean": 86899.75
+          },
+          "onchainToReceiveLatencyMs": {
+            "count": 16,
+            "retainedSamples": 16,
+            "p50": 3596,
+            "p95": 13171,
+            "p99": 13171,
+            "max": 13171,
+            "mean": 6849
+          },
+          "recoveryProcessingLatencyMs": {
+            "count": 2,
+            "retainedSamples": 2,
+            "p50": 38933,
+            "p95": 50279,
+            "p99": 50279,
+            "max": 50279,
+            "mean": 44606
+          }
+        },
+        "rpcRequestsPerMinute": 6,
+        "eventsPerSecond": 0,
+        "histogramWindow": "last 4096 observations per metric"
+      },
+      "storage": {
+        "inbox": 84,
+        "events": 15,
+        "event_observations": 15000,
+        "tokens": 10,
+        "pools": 10,
+        "gaps": 15,
+        "errors": 56,
+        "raw_transactions": 19,
+        "pending": 18,
+        "storageBytes": 132100824
+      },
+      "coverage": "PARTIAL",
+      "latencyScope": "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee"
+    }
+  ],
+  "elapsedSeconds": 304.226
+}
