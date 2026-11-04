@@ -48,5 +48,8 @@ fig.suptitle(f"Duração: {report['elapsedSeconds'] / 60:.2f} min | p95 acumulad
 args.output_prefix.parent.mkdir(parents=True, exist_ok=True)
 for extension in ("png", "svg"):
     fig.savefig(args.output_prefix.with_suffix("." + extension), dpi=170)
+    if extension == "svg":
+        target = args.output_prefix.with_suffix(".svg")
+        target.write_text("\n".join(line.rstrip() for line in target.read_text().splitlines()) + "\n")
 plt.close(fig)
 print(json.dumps({"dataMode": report["dataMode"], "elapsedSeconds": report["elapsedSeconds"], "exports": [str(args.output_prefix.with_suffix("." + e)) for e in ("png", "svg")]}))
