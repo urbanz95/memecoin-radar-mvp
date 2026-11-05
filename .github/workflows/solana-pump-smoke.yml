@@ -1,0 +1,73 @@
+name: Solana Pump focused short Mainnet smoke
+on:
+  push:
+    branches:
+      - feat/solana-pump-focused-profile-20261104
+    paths:
+      - .github/workflows/solana-pump-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pump-smoke:
+    name: Mainnet focused read-only 90s observation
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      SOLANA_DB_PATH: runtime/pump-focused/scanner.sqlite
+      SOLANA_HEALTH_PORT: '8791'
+      SOLANA_RPC_REQUESTS_PER_MINUTE: '12'
+      SOLANA_RPC_CONCURRENCY: '1'
+      SOLANA_QUEUE_CONCURRENCY: '1'
+      SOLANA_MAX_DURABLE_BACKLOG: '64'
+      SOLANA_MAX_OBSERVATION_ROWS: '10000'
+      SOLANA_SECURITY_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install scanner dependencies (no scripts)
+        working-directory: solana
+        run: npm ci --ignore-scripts
+      - name: Observe Mainnet for 90 seconds and save factual report
+        shell: bash
+        working-directory: solana
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "${RUNNER_TEMP}/pump-focused"
+          timeout --signal=TERM --kill-after=10s 160s bash scripts/run-pump-focused.sh >"${RUNNER_TEMP}/pump-focused/scanner.log" 2>&1 &
+          child=$!
+          trap 'kill -TERM "$child" 2>/dev/null || true; wait "$child" 2>/dev/null || true' EXIT
+          ready=false
+          for i in {1..24}; do
+            if curl --silent --fail --max-time 2 "http://127.0.0.1:8791/health" > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then
+            echo "::warning::Scanner local API did not become ready; probe or network may be blocked."
+            tail -n 35 "${RUNNER_TEMP}/pump-focused/scanner.log" || true
+            exit 1
+          fi
+          node scripts/pump-focused-smoke.mjs --seconds 90 --interval 5 --output "${RUNNER_TEMP}/pump-focused/report.json"
+          cat "${RUNNER_TEMP}/pump-focused/report.json"
+      - name: Show scanner startup/shutdown notes
+        if: always()
+        shell: bash
+        run: |
+          if test -f "${RUNNER_TEMP}/pump-focused/scanner.log"; then
+            tail -n 45 "${RUNNER_TEMP}/pump-focused/scanner.log"
+          fi
+      - name: Upload diagnostic reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pump-focused-mainnet-smoke
+          path: ${{ runner.temp }}/pump-focused/
+          if-no-files-found: warn
+          retention-days: 7

@@ -460,9 +460,33 @@ test("log observation fast path remains connected at context capacity, persists 
   assert.equal(store.stats().pools, 0);
   assert.deepEqual(scanner.market().groups, []);
   assert.equal(scanner.metrics.snapshot().counters.contextEnrichmentSkipped, 2);
+  assert.equal(scanner.metrics.snapshot().counters.contextSkippedDurableBacklog, 2);
+  assert.equal(scanner.metrics.snapshot().counters.contextSkippedIngressBuffer ?? 0, 0);
   assert.equal(scanner.metrics.snapshot().counters.logObservationsPersisted, 2);
   assert.equal(calls.length, 0);
   assert.equal(getSocket().stops, 0);
+});
+
+test("context admission attributes ingress pressure separately from durable backlog", async (t) => {
+  const tx = fixture("pump-buy-v3-mainnet.json");
+  const { scanner, observation, calls } = setup(tx, {
+    logObservationsEnabled: true,
+    maxDurableBacklog: 1,
+  });
+  await scanner.start();
+  t.after(() => scanner.stop());
+  scanner.contextBacklog = 0;
+  scanner.buffer.push({ ...observation, signature: "already-buffered" });
+  scanner.receive({
+    ...observation,
+    logs: tx.meta.logMessages,
+    err: tx.meta.err,
+  });
+  scanner.flush();
+  assert.equal(scanner.metrics.snapshot().counters.contextEnrichmentSkipped, 1);
+  assert.equal(scanner.metrics.snapshot().counters.contextSkippedIngressBuffer, 1);
+  assert.equal(scanner.metrics.snapshot().counters.contextSkippedDurableBacklog ?? 0, 0);
+  assert.equal(calls.length, 0);
 });
 
 test("observations API exposes incomplete context explicitly and cannot inflate canonical market data", async (t) => {
