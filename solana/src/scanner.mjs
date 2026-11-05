@@ -50,6 +50,13 @@ export class Scanner {
     });
     this.socketFactory = socketFactory;
     this.priorityScheduler = new PriorityScheduler();
+    if (config.contextPrioritiesEnabled === true) {
+      // Zero-valued counter keys make short smoke cause accounting honest.
+      for (const name of [
+        "contextEnrichmentSkipped", "contextSkippedDurableBacklog",
+        "contextSkippedIngressBuffer", "contextSkippedPriorityReservation",
+      ]) this.metrics.inc(name, 0);
+    }
     this.buffer = [];
     this.stopping = false;
     this.recoveryPending = false;
@@ -239,16 +246,17 @@ export class Scanner {
       this.config.logObservationsEnabled !== false &&
       this.contextBacklog + this.buffer.length >= backlogLimit
     ) {
+      const reservedReason = prioritize && contextPriority !== 0 &&
+        this.contextBacklog + this.buffer.length < maxBacklog;
       if (prioritize) {
         this.metrics.inc(`contextPrioritySkippedP${contextPriority}`);
-        if (contextPriority !== 0 &&
-            this.contextBacklog + this.buffer.length < maxBacklog)
-          this.metrics.inc("contextPriorityReservedAdmissionSkip");
+        if (reservedReason) this.metrics.inc("contextPriorityReservedAdmissionSkip");
       }
       this.metrics.inc("contextEnrichmentSkipped");
       // Distinguish persistent queue pressure from unflushed ingress pressure.
       // These are admission diagnostics, not a count of missing market events.
-      if (this.contextBacklog >= (this.config.maxDurableBacklog ?? 250))
+      if (reservedReason) this.metrics.inc("contextSkippedPriorityReservation");
+      else if (this.contextBacklog >= maxBacklog)
         this.metrics.inc("contextSkippedDurableBacklog");
       else this.metrics.inc("contextSkippedIngressBuffer");
       return;
@@ -384,6 +392,9 @@ export class Scanner {
         return true;
       }
       const started = performance.now();
+      if (this.config.contextPrioritiesEnabled === true &&
+          Number.isInteger(observation.contextPriority))
+        this.metrics.inc(`contextPriorityFetchStartedP${observation.contextPriority}`);
       const tx = await this.rpc.request("getTransaction", [
         observation.signature,
         {
@@ -451,6 +462,12 @@ export class Scanner {
         result.diagnostics,
       );
       this.metrics.inc("transactionsProcessed");
+      if (this.config.contextPrioritiesEnabled === true &&
+          Number.isInteger(observation.contextPriority)) {
+        this.metrics.inc(`contextPriorityTransactionsProcessedP${observation.contextPriority}`);
+        this.metrics.observe(`contextPriorityLiveLatencyP${observation.contextPriority}Ms`,
+          Math.max(0, Date.now() - Date.parse(observation.receivedAt)));
+      }
       this.metrics.inc("events_processed", count);
       this.metrics.inc(
         "decoderFailures",
