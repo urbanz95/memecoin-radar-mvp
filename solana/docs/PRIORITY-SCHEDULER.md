@@ -18,7 +18,7 @@ The **FDV filter runs first**. When a Pump.fun event has sufficiently supported 
 ## Admission / dispatch
 
 - The durable inbox remains capped by `SOLANA_MAX_DURABLE_BACKLOG=64` in the focused mode.
-- `SOLANA_PRIORITY_RESERVED_P0_SLOTS=8` reserves eight of those existing slots for P0 arrivals. Non-P0 admissions stop at 56 combined pending+unflushed entries; P0 may use up to the full 64. No extra slots, RPC budget or memory-intensive parallel jobs are created.
+- Tiered reservations prevent lower priorities from filling the entire inbox: with 64 total slots, P3 may fill 44; P2 may use up to 48, P1 up to 56, and P0 up to the full 64. The resulting reserved capacities are P0=8, P1=8, P2=4, configured by `SOLANA_PRIORITY_RESERVED_P0_SLOTS`, `_P1_SLOTS`, `_P2_SLOTS`. No extra total slots or RPC budget are created.
 - With pending entries in all tiers, queue selection rotates with weights **4:2:1:1**, using the interleaved cycle `[P0,P0,P1,P0,P2,P0,P1,P3]`. This is a bounded fair **dispatch policy** and cannot guarantee 4:2:1:1 actual RPC calls (failed RPC requests, backoff, finality and recovery share the limiter). P3 is not starved merely because P0 is always populated.
 - All admitted signatures remain stored in the same SQLite `inbox` table. The priority is encoded in its existing JSON payload. No database schema migration; old entries naturally fall into P3. The old FIFO `Store.pending()` is unchanged and used when the feature flag is disabled.
 - `Store.pendingByPriority()` selects bounded queries from durable SQLite inbox; asynchronous work still uses the existing bounded queue, retry logic, reconciliation and global request limiter. SQLite durability does not imply that requests never fail or that the market event stream is exhaustive.
@@ -33,7 +33,7 @@ Use `GET http://127.0.0.1:8791/health` and the focused smoke report. New process
 - `contextPriorityAdmittedP0..P3`: notifications placed into the in-memory ingress buffer.
 - `contextPrioritySkippedP0..P3`: notifications denied by durable backlog/reserved admission limit.
 - `contextPriorityScheduledP0..P3`: signatures submitted from the durable SQLite inbox to the bounded async queue.
-- `contextPriorityReservedAdmissionSkip`: non-P0 notifications denied by the P0 reservation when the full limit has not yet been reached.
+- `contextPriorityReservedAdmissionSkip` / `contextSkippedPriorityReservation`: lower-priority notification denied by reservation for a higher priority, separately from full durable backlog and unflushed ingress buffer. Since these are optional metrics, the smoke sampler only asserts cause completeness when all required counters were observed in the sample.
 
 These counters have **different stages and denominators**. `seen` is not a count of successful or supported market trades, `scheduled` is not a count of completed HTTP calls, and `observations` are not enriched transactions.
 
@@ -68,6 +68,12 @@ No keys, trades, paid RPC, Codex credits, merge or deployment.
 - This branch builds upon [the FDV PR #12](https://github.com/urbanz95/memecoin-radar-mvp/pull/12), which is itself stacked upon the [focused profile PR #10](https://github.com/urbanz95/memecoin-radar-mvp/pull/10).
 - The previous short Mainnet FDV test [is here](../reports/fdv-filter-5k-mainnet-90s-20261105.json) and ran **before** the priority scheduler.
 - The 90-second live priority-scheduler run has its own GitHub Actions record; compare only protocol scope and limit-normalized deltas. Different market windows and data distributions cannot prove an actual causal speed improvement. The 90-second run is too short to prove starvation prevention in production.
+
+### First live priority run (before P1/P2 reservation fix)
+
+The [first 90-second focused priority experiment](https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42122178889) is retained in [this exact JSON](../reports/p0-p3-mainnet-90s-20261105.json). It had 56,997 notifications, 23 P0 seen/admitted, 13 P0 dispatched, 75 P1 seen/**zero P1 admitted**, 18 HTTP RPC and 15 enriched transactions. The P1 admission failure was a genuine problem: P3 traffic filled its shared allotment before P1 arrivals. The tiered reserve is the response to this measured issue; the *first* report predates the second revision and must not be presented as its proof. This same early run incorrectly categorized reservation-based skips as ingress buffer pressure. The scanner and sampler have been fixed to distinguish those causes, requiring a new measurement to validate the corrected accounting.
+
+The p95 enriched event time in the first run was not a meaningful proof of speed improvement (short 90s, mixed events and limited completed samples).
 
 ## Follow-up
 
