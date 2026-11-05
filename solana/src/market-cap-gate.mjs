@@ -56,7 +56,9 @@ export class FdvEnrichmentGate {
       const fresh = o && Number.isFinite(Date.parse(o.eventTimestamp)) &&
         Math.abs(this.now() - Date.parse(o.eventTimestamp)) <= 60000;
       const knownProtocol = o?.protocol === 'pump_fun' && o.quoteMint === SOL_MINT;
-      if (knownProtocol && o.eventType === 'TOKEN_CREATED' &&
+      // Verified creation supply is independent of quote-mint attribution.
+      // Capture it even when the log-only context cannot identify SOL/USDC.
+      if (o?.protocol === 'pump_fun' && o.eventType === 'TOKEN_CREATED' &&
           typeof o.tokenMint === 'string' && o.tokenMint) {
         const supply = rawUnsigned(o.totalSupplyRaw);
         if (supply && supply > 0n) {
