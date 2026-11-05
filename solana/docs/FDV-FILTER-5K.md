@@ -65,7 +65,33 @@ npm test
 
 These test exact integer arithmetic, fallback on unknown/stale supply/quotes, the 5% margin, bounded cache, quote refresh interval, isolated configuration and persistence of decoded logs when HTTP enrichment is skipped.
 
-The historical 90-second focused smoke report [lives here](../reports/pump-focused-smoke-20261105.json) and **did not use this filter**. We must rerun the same two-protocol 90-second smoke with a real quote feed and compare skip rates and RPC use, with no claim of speed gain until measured. Compare within equivalent sampling scope and budget.
+### Real Mainnet evidence: 5 November 2026
+
+The [pre-filter focused 90s smoke](../reports/pump-focused-smoke-20261105.json) monitored the same two programs at 12 HTTP RPC requests/minute, but the activity interval was different.
+
+A first **filtered** 90s smoke showed all observations UNKNOWN and **zero** filters. Its [GitHub Actions run](https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42116245455) confirmed the SOL/USD public price was available but the supply cache was empty. We fixed two evidence-handling problems: creation supply can be cached independently of the quote mint; Pump's officially documented native SOL sentinel is recognized for valuation only (without changing the canonical quote field).
+
+The [corrected filtered 90s run](https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42117292875) succeeded and its raw counters and final oracle/cache health are preserved in [this JSON report](../reports/fdv-filter-5k-mainnet-90s-20261105.json):
+
+| Counter / measurement | Corrected filtered run (90.007s) |
+|---|---:|
+| Received notifications | 55,925 |
+| Below-FDV notifications not sent to HTTP inbox | **1,117** (about 2% of received notifications) |
+| Evidence-backed eligible notifications | 277 |
+| Unknown notifications | 54,531 |
+| RPC HTTP requests | 18 (~12/min, configured maximum) |
+| Transactions enriched | 16 |
+| Canonical enriched events | 11 |
+| Persistent inbox backlog at end | 65 |
+| Degraded health snapshots | 19/19 |
+| SOL/USD public quote failures | 0 |
+| Verified creation supplies in process cache at end | 67 |
+| Log observation latency p95 (process reservoir) | 270ms |
+| Enriched event latency p95 (10 samples) | 89,514ms |
+
+This proves the policy can avoid some HTTP admissions. **It does not demonstrate improved throughput or latency:** the pre-filter 90s run also used 18 HTTP RPC requests and enriched 16 transactions. The 90s intervals had different market activity, and the filter did not eliminate the durable backlog. `fdvGateUnknown` includes a mix of missing protocol context, unsupported events and failed logs; it must not be interpreted as a count of coins under or over $5k. No long-lived production reliability is claimed.
+
+**Next:** prioritize a small set of high-value, adequately evidenced creations and migrations within the fixed RPC budget, with starvation and missing-context accounting, then rerun comparable measurements.
 
 ### Protocol / feed sources
 
