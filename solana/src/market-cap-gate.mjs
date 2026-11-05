@@ -5,6 +5,9 @@ import { SOL_MINT } from './protocols/pump.mjs';
 // This is NOT verified circulating market cap, liquidity or sellable value.
 const U64_MAX = (1n << 64n) - 1n;
 const LAMPORTS = 1_000_000_000n;
+// Pump.fun official COIN_CREATION.md documents Pubkey::default() as the
+// native-SOL quote sentinel. Do not change the canonical log quoteMint field.
+const NATIVE_SOL_QUOTE = '11111111111111111111111111111111';
 function rawUnsigned(value) {
   if (typeof value !== 'string' || !/^\d{1,20}$/.test(value)) return null;
   const n = BigInt(value);
@@ -55,7 +58,10 @@ export class FdvEnrichmentGate {
     for (const o of observations) {
       const fresh = o && Number.isFinite(Date.parse(o.eventTimestamp)) &&
         Math.abs(this.now() - Date.parse(o.eventTimestamp)) <= 60000;
-      const knownProtocol = o?.protocol === 'pump_fun' && o.quoteMint === SOL_MINT;
+      const nativeSolQuote = o?.quoteMint == null &&
+        o?.protocolQuoteMint === NATIVE_SOL_QUOTE;
+      const knownProtocol = o?.protocol === 'pump_fun' &&
+        (o.quoteMint === SOL_MINT || nativeSolQuote);
       // Verified creation supply is independent of quote-mint attribution.
       // Capture it even when the log-only context cannot identify SOL/USDC.
       if (o?.protocol === 'pump_fun' && o.eventType === 'TOKEN_CREATED' &&
