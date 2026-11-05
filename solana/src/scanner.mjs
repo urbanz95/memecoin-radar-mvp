@@ -199,6 +199,11 @@ export class Scanner {
         (this.config.maxDurableBacklog ?? 250)
     ) {
       this.metrics.inc("contextEnrichmentSkipped");
+      // Distinguish persistent queue pressure from unflushed ingress pressure.
+      // These are admission diagnostics, not a count of missing market events.
+      if (this.contextBacklog >= (this.config.maxDurableBacklog ?? 250))
+        this.metrics.inc("contextSkippedDurableBacklog");
+      else this.metrics.inc("contextSkippedIngressBuffer");
       return;
     }
     if (this.buffer.length >= (this.config.ingressCapacity ?? 1000)) {
