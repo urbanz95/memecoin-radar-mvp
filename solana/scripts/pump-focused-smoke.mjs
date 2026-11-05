@@ -117,20 +117,26 @@ export function summarizeSamples(samples) {
       skippedTotal: count('contextEnrichmentSkipped'),
       skippedDurableBacklog: count('contextSkippedDurableBacklog'),
       skippedIngressBuffer: count('contextSkippedIngressBuffer'),
-      // Older scanner versions only exposed the aggregate counter.
-      // Never infer a cause from an uninstrumented period.
+      skippedPriorityReservation: count('contextSkippedPriorityReservation'),
+      // New priority versions distinguish reservation from durable overload
+      // and the ingress buffer; older versions may expose only two causes.
       unattributedSkips: Math.max(0,
         count('contextEnrichmentSkipped') -
         count('contextSkippedDurableBacklog') -
-        count('contextSkippedIngressBuffer')),
+        count('contextSkippedIngressBuffer') -
+        count('contextSkippedPriorityReservation')),
       causeAccountingComplete: (
-        ['contextSkippedDurableBacklog', 'contextSkippedIngressBuffer']
+        ['contextSkippedDurableBacklog', 'contextSkippedIngressBuffer',
+          ...(Object.hasOwn(first.metrics.counters, 'contextSkippedPriorityReservation') ||
+               Object.hasOwn(last.metrics.counters, 'contextSkippedPriorityReservation')
+            ? ['contextSkippedPriorityReservation'] : [])]
           .every(key => Object.hasOwn(first.metrics.counters, key) &&
                         Object.hasOwn(last.metrics.counters, key)) &&
         count('contextEnrichmentSkipped') ===
-          count('contextSkippedDurableBacklog') + count('contextSkippedIngressBuffer')
+          count('contextSkippedDurableBacklog') + count('contextSkippedIngressBuffer') +
+          count('contextSkippedPriorityReservation')
       ),
-      interpretation: 'Skipped notifications are not a count of missed trades; cause counters describe admission pressure only.',
+      interpretation: 'Skipped notifications are not a count of missed trades; reservation pressure is distinct from durable and ingress overload.',
     },
     lastGauges: {
       websocket_connected: last.metrics.gauges.websocket_connected ?? null,
