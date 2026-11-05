@@ -65,6 +65,11 @@ test('window counter deltas remain distinct from retained rows and process histo
   assert.equal(report.lastStorage.logObservationsRetained, 50);
   assert.equal(report.latencyAtEnd.logObservationLatencyMs.p95Ms, 300);
   assert.match(report.latencyAtEnd.logObservationLatencyMs.scope, /NOT a per-window/);
+  assert.equal(report.reliability.degradedSamples, 0);
+  assert.equal(report.reliability.overloadedSamples, 0);
+  assert.equal(report.reliability.disconnectedSamples, 0);
+  assert.equal(report.reliability.recoveryGapDelta, 0);
+  assert.equal(report.reliability.decoderFailureDelta, 0);
 });
 
 test('restarts, counter resets and missing samples cannot yield a misleading report', () => {
@@ -86,4 +91,26 @@ test('no enriched transactions produces null rather than infinite cost ratio', (
     summarizeSamples([first, last]).windowRates.rpcRequestsPerEnrichedTransaction,
     null,
   );
+});
+
+test('smoke report counts overload and degraded evidence without claiming full coverage', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const middle = sample('2026-11-05T12:00:10Z');
+  const last = sample('2026-11-05T12:00:20Z');
+  middle.status = 'DEGRADED';
+  middle.metrics.gauges.coverageOverloaded = true;
+  middle.metrics.gauges.websocket_connected = false;
+  last.status = 'DEGRADED';
+  last.metrics.gauges.coverageOverloaded = true;
+  middle.metrics.counters.recoveryGaps = 1;
+  last.metrics.counters.recoveryGaps = 2;
+  middle.metrics.counters.logDecoderFailures = 1;
+  last.metrics.counters.logDecoderFailures = 3;
+  const report = summarizeSamples([first, middle, last]);
+  assert.equal(report.reliability.degradedSamples, 2);
+  assert.equal(report.reliability.overloadedSamples, 2);
+  assert.equal(report.reliability.disconnectedSamples, 1);
+  assert.equal(report.reliability.recoveryGapDelta, 2);
+  assert.equal(report.reliability.decoderFailureDelta, 3);
+  assert.equal(report.coverage, 'PARTIAL');
 });
