@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Store } from '../src/store.mjs';
 import { Scanner } from '../src/scanner.mjs';
 import { loadConfig } from '../src/config.mjs';
@@ -126,5 +128,53 @@ test('when non-P0 reservation is exhausted, verified P0 still admitted and logs 
     assert.equal(p0[0].signature, createTx.transaction.signatures[0]);
     assert.equal(scanner.health().metrics.counters.contextPriorityAdmittedP0, 1);
     assert.ok(store.observations({ signature: createTx.transaction.signatures[0] }).length > 0);
+  } finally { await scanner.stop(); }
+});
+
+test('durable priority survives SQLite restart and remains queryable by rank', (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'solana-priority-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'inbox.sqlite');
+  const first = new Store(path);
+  first.receiveBatch([observed('priority-p0', 0), observed('priority-p3')]);
+  first.close();
+  const reopened = new Store(path);
+  try {
+    assert.equal(reopened.pendingByPriority(0)[0].signature, 'priority-p0');
+    assert.equal(reopened.pendingByPriority(3)[0].signature, 'priority-p3');
+    assert.equal(reopened.stats().pending, 2);
+  } finally { reopened.close(); }
+});
+
+test('processed transaction increments its actual priority counter, not only scheduled', async () => {
+  const tx = JSON.parse(readFileSync(
+    new URL('../fixtures/pump-create-v2-mainnet.json', import.meta.url))).result;
+  const observation = {
+    ...observed(tx.transaction.signatures[0], 0),
+    slot: tx.slot,
+    receivedAt: new Date().toISOString(),
+    evidenceSource: 'rpc:logsSubscribe',
+    confirmationStatus: 'confirmed',
+  };
+  const store = new Store(':memory:');
+  let count = 0;
+  const scanner = new Scanner({
+    ...loadConfig({ SOLANA_PROGRAMS: 'pump_fun', SOLANA_CONTEXT_PRIORITIES_ENABLED: 'true' }),
+    fdvMinimumUsd: 0,
+  }, { store, rpc: {
+    async request(method) {
+      assert.equal(method, 'getTransaction');
+      count++;
+      return tx;
+    },
+    async close() {},
+  }});
+  try {
+    store.receiveBatch([observation]);
+    assert.equal(await scanner.processObservation(observation), true);
+    assert.equal(count, 1);
+    assert.equal(scanner.health().metrics.counters.contextPriorityFetchStartedP0, 1);
+    assert.equal(scanner.health().metrics.counters.contextPriorityTransactionsProcessedP0, 1);
+    assert.ok(scanner.health().metrics.histograms.contextPriorityLiveLatencyP0Ms);
   } finally { await scanner.stop(); }
 });
