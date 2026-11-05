@@ -4,6 +4,7 @@ on:
     branches:
       - feat/solana-pump-focused-profile-20261104
       - feat/solana-fdv-filter-5k-20261105
+      - feat/solana-priority-scheduler-20261105
     paths:
       - .github/workflows/solana-pump-smoke.yml
   workflow_dispatch:
