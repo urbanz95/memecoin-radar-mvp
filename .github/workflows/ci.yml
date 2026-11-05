@@ -24,3 +24,24 @@ jobs:
         if: matrix.node == 24
       - run: npm run cloudflare:probe -- --fixture 3
         if: matrix.node == 24
+  solana-tests:
+    name: Solana scanner tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    defaults:
+      run:
+        working-directory: solana
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install locked Solana dependencies
+        run: npm ci --ignore-scripts
+      - name: Run deterministic Solana scanner tests
+        run: npm test
