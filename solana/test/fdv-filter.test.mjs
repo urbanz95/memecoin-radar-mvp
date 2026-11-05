@@ -5,6 +5,7 @@ import { FdvEnrichmentGate, estimatedFdvUsdCents } from '../src/market-cap-gate.
 import { SolUsdOracle } from '../src/sol-usd-oracle.mjs';
 import { loadConfig } from '../src/config.mjs';
 import { Scanner } from '../src/scanner.mjs';
+import { decodeLogObservation } from '../src/log-observations.mjs';
 import { Store } from '../src/store.mjs';
 import { PROGRAMS } from '../src/protocols/index.mjs';
 import { SOL_MINT } from '../src/protocols/pump.mjs';
@@ -96,6 +97,35 @@ test('oracle staleness and guarded near-boundary FDV do not suppress context', (
     virtualTokenRaw: '1000000000000000',
     virtualQuoteRaw: '30375000000',
   } })]).action, 'ENRICH');
+});
+
+test('creation supply stays cached even when the quote mint is not established', () => {
+  const g = gate();
+  assert.equal(g.evaluate([create({ quoteMint: null })]).action, 'UNKNOWN');
+  assert.equal(g.supplies.get('pump-mint-fixture'), '1000000000000000');
+  // A later SOL-quoted trade can still be evaluated with creation supply.
+  assert.equal(g.evaluate([trade({ reserves: {
+    virtualTokenRaw: '1073000000000000',
+    virtualQuoteRaw: '30000000000',
+  } })]).action, 'SKIP_LOW_FDV');
+});
+
+test('archived real Pump creation exposes its available quote and supply evidence', () => {
+  const tx = JSON.parse(readFileSync(new URL('../fixtures/pump-create-v2-mainnet.json', import.meta.url))).result;
+  const decoded = decodeLogObservation({
+    signature: tx.transaction.signatures[0], slot: tx.slot,
+    logs: tx.meta.logMessages, err: tx.meta.err,
+    receivedAt: new Date(clock).toISOString(), confirmationStatus: 'confirmed',
+  });
+  const created = decoded.observations.find(o => o.eventType === 'TOKEN_CREATED');
+  assert.ok(created);
+  // Observed facts only; do not invent missing quote or supply from the IDL.
+  console.log('ARCHIVED_PUMP_CREATION_EVIDENCE', JSON.stringify({
+    supplyObserved: created.totalSupplyRaw != null,
+    quoteMint: created.quoteMint,
+    protocolQuoteMint: created.protocolQuoteMint ?? null,
+    virtualQuoteReservesObserved: created.reserves?.virtualQuoteRaw != null,
+  }));
 });
 
 test('bounded creation cache evicts old evidence instead of growing indefinitely', () => {
