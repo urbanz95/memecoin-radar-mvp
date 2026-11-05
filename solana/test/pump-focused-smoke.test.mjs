@@ -114,3 +114,26 @@ test('smoke report counts overload and degraded evidence without claiming full c
   assert.equal(report.reliability.decoderFailureDelta, 3);
   assert.equal(report.coverage, 'PARTIAL');
 });
+
+test('smoke rejects changes in subscribed protocols and non-monotonic health snapshots', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const middle = sample('2026-11-05T12:00:10Z');
+  const last = sample('2026-11-05T12:00:20Z');
+  middle.programs = [{ protocol: 'pump_fun' }];
+  assert.throws(
+    () => summarizeSamples([first, middle, last]),
+    /PROGRAM_SCOPE_CHANGED_DURING_SMOKE/,
+  );
+  middle.programs = [...first.programs].reverse();
+  assert.doesNotThrow(() => summarizeSamples([first, middle, last]));
+  middle.metrics.measuredAt = first.metrics.measuredAt;
+  assert.throws(
+    () => summarizeSamples([first, middle, last]),
+    /NON_MONOTONIC_HEALTH_TIMESTAMPS/,
+  );
+  middle.metrics.measuredAt = '2026-11-05T12:00:30Z';
+  assert.throws(
+    () => summarizeSamples([first, middle, last]),
+    /NON_MONOTONIC_HEALTH_TIMESTAMPS/,
+  );
+});
