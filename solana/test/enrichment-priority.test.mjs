@@ -1,0 +1,130 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { Store } from '../src/store.mjs';
+import { Scanner } from '../src/scanner.mjs';
+import { loadConfig } from '../src/config.mjs';
+import { classifyContextPriority, PriorityScheduler } from '../src/enrichment-priority.mjs';
+
+const verified = (eventType, extra = {}) => ({
+  evidenceStatus: 'VERIFIED_RPC_LOG_EVENT',
+  evidenceSource: { kind: 'rpc:logsSubscribe' },
+  tokenMint: 'verified-mint',
+  protocol: 'pump_fun',
+  eventType,
+  ...extra,
+});
+const observed = (signature, contextPriority) => ({
+  signature, slot: 1, receivedAt: new Date(1793900000000).toISOString(),
+  ...(contextPriority === undefined ? {} : { contextPriority }),
+});
+
+test('only evidence-backed lifecycle events reach P0; unknown cannot be upgraded', () => {
+  for (const event of ['TOKEN_CREATED', 'POOL_CREATED', 'TOKEN_MIGRATED', 'TOKEN_GRADUATED'])
+    assert.equal(classifyContextPriority([verified(event)]), 0);
+  assert.equal(classifyContextPriority([verified('TOKEN_CREATED', { tokenMint: null })]), 3);
+  assert.equal(classifyContextPriority([verified('TOKEN_CREATED', { evidenceStatus: null })]), 3);
+  assert.equal(classifyContextPriority([verified('TOKEN_CREATED', { evidenceSource: { kind: 'manual' } })]), 3);
+  assert.equal(classifyContextPriority([], { action: 'ENRICH' }), 3);
+  assert.equal(classifyContextPriority([verified('TOKEN_BOUGHT')], { action: 'ENRICH' }), 1);
+  assert.equal(classifyContextPriority([verified('TOKEN_BOUGHT')], { action: 'UNKNOWN' }), 2);
+  assert.equal(classifyContextPriority([verified('TOKEN_SOLD', { protocol: 'pump_swap' })], { action: 'ENRICH' }), 2);
+  assert.equal(classifyContextPriority([verified('SOMETHING_UNKNOWN')]), 3);
+});
+
+test('durable SQLite inbox sorts P0–P3 without an on-disk schema migration', () => {
+  const store = new Store(':memory:');
+  try {
+    assert.equal(store.receiveBatch([
+      observed('p3-old'), observed('p2', 2),
+      observed('p0a', 0), observed('p1', 1), observed('p0b', 0), observed('p3', 3),
+    ]), 6);
+    assert.deepEqual(store.pendingByPriority(0).map(x => x.signature), ['p0a', 'p0b']);
+    assert.deepEqual(store.pendingByPriority(1).map(x => x.signature), ['p1']);
+    assert.deepEqual(store.pendingByPriority(2).map(x => x.signature), ['p2']);
+    assert.deepEqual(store.pendingByPriority(3).map(x => x.signature), ['p3', 'p3-old']);
+    assert.equal(store.pending(10).length, 6);
+    assert.throws(() => store.receiveBatch([observed('bad', 9)]), /INVALID_CONTEXT_PRIORITY/);
+    assert.equal(store.stats().inbox, 6);
+    assert.throws(() => store.pendingByPriority(9), /INVALID_CONTEXT_PRIORITY_QUERY/);
+  } finally { store.close(); }
+});
+
+test('scheduler gives every continuously backlogged rank a quota without duplicate work', () => {
+  const s = new PriorityScheduler();
+  const buckets = [0, 1, 2, 3].map(p => Array.from({ length: 15 },
+    (_, i) => ({ signature: `P${p}-${i}`, contextPriority: p })));
+  const chosen = s.select(buckets, 16);
+  assert.equal(chosen.length, 16);
+  assert.equal(new Set(chosen.map(x => x.signature)).size, 16);
+  assert.deepEqual([0, 1, 2, 3].map(p => chosen.filter(x => x.contextPriority === p).length),
+    [8, 4, 2, 2]);
+});
+
+test('scheduler rotates fairly even with single-item dispatch and respects blocked signatures', () => {
+  const s = new PriorityScheduler();
+  const buckets = [0, 1, 2, 3].map(p => Array.from({ length: 50 },
+    (_, i) => ({ signature: `P${p}-${i}`, contextPriority: p })));
+  const blocked = new Set(['P0-0']);
+  const selected = [];
+  for (let i = 0; i < 16; i++) {
+    const [x] = s.select(buckets, 1, blocked);
+    assert.ok(x);
+    selected.push(x);
+    blocked.add(x.signature);
+  }
+  assert.ok(!selected.some(x => x.signature === 'P0-0'));
+  assert.deepEqual([0, 1, 2, 3].map(p => selected.filter(x => x.contextPriority === p).length),
+    [8, 4, 2, 2]);
+});
+
+test('focused priority config is opt-in and strictly validated', () => {
+  assert.equal(loadConfig({ SOLANA_PROGRAMS: 'pump_fun' }).contextPrioritiesEnabled, false);
+  assert.equal(loadConfig({
+    SOLANA_PROGRAMS: 'pump_fun',
+    SOLANA_CONTEXT_PRIORITIES_ENABLED: 'true',
+    SOLANA_PRIORITY_RESERVED_P0_SLOTS: '8',
+  }).priorityP0ReservedSlots, 8);
+  assert.throws(() => loadConfig({ SOLANA_CONTEXT_PRIORITIES_ENABLED: 'yes' }),
+    /INVALID_SOLANA_CONTEXT_PRIORITIES_ENABLED/);
+  assert.throws(() => loadConfig({ SOLANA_PRIORITY_RESERVED_P0_SLOTS: '-1' }),
+    /INVALID_CONFIG_SOLANA_PRIORITY_RESERVED_P0_SLOTS/);
+});
+
+test('when non-P0 reservation is exhausted, verified P0 still admitted and logs retained', async () => {
+  const createTx = JSON.parse(readFileSync(
+    new URL('../fixtures/pump-create-v2-mainnet.json', import.meta.url))).result;
+  const buyTx = JSON.parse(readFileSync(
+    new URL('../fixtures/pump-buy-v3-mainnet.json', import.meta.url))).result;
+  const store = new Store(':memory:');
+  const scanner = new Scanner({
+    ...loadConfig({ SOLANA_PROGRAMS: 'pump_fun', SOLANA_CONTEXT_PRIORITIES_ENABLED: 'true' }),
+    fdvMinimumUsd: 0,
+    maxDurableBacklog: 9,
+    priorityP0ReservedSlots: 2,
+  }, {store, rpc:{ close: async () => {} }});
+  const event = tx => ({
+    signature: tx.transaction.signatures[0],
+    slot: tx.slot,
+    logs: tx.meta.logMessages,
+    err: tx.meta.err,
+    receivedAt: new Date().toISOString(),
+    confirmationStatus: 'confirmed',
+  });
+  try {
+    scanner.contextBacklog = 7;  // explicit backpressure fixture; no live calls
+    scanner.receive(event(buyTx));
+    scanner.flush();
+    assert.equal(scanner.metrics.snapshot().counters.contextPriorityReservedAdmissionSkip, 1);
+    assert.equal(scanner.metrics.snapshot().counters.contextPrioritySkippedP2, 1);
+    assert.equal(store.stats().inbox, 0);
+    assert.ok(store.observations({ signature: buyTx.transaction.signatures[0] }).length > 0);
+    scanner.receive(event(createTx));
+    scanner.flush();
+    const p0 = store.pendingByPriority(0);
+    assert.equal(p0.length, 1);
+    assert.equal(p0[0].signature, createTx.transaction.signatures[0]);
+    assert.equal(scanner.health().metrics.counters.contextPriorityAdmittedP0, 1);
+    assert.ok(store.observations({ signature: createTx.transaction.signatures[0] }).length > 0);
+  } finally { await scanner.stop(); }
+});
