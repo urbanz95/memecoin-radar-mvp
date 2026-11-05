@@ -26,6 +26,27 @@ curl 'http://127.0.0.1:8791/events?limit=20'
 curl http://127.0.0.1:8791/gaps
 ```
 
+## Short, read-only diagnostic report
+
+With the focused scanner **already running** in another terminal, sample its **local** health endpoint for three minutes:
+
+```bash
+cd solana
+node scripts/pump-focused-smoke.mjs --seconds 180 --interval 10
+```
+
+This uses only `http://127.0.0.1:8791/health`, so the monitor adds **zero Solana RPC calls**. It writes `runtime/pump-focused-smoke.json` containing the observed-window counter deltas, HTTP RPC usage, enriched transaction rate, context skipped, final backlog, status counts, and end-of-window process latency reservoir. It does **not** claim a full-coverage index or an exact per-window p95.
+
+A scanner restart, disappearing counter, unreachable local endpoint, or invalid response causes the monitor to fail rather than producing a misleading benchmark. The script deliberately does not start the scanner, fetch private RPC URLs, trade, send Telegram messages or use AI APIs. It does not require one-hour live tests.
+
+Run the isolated deterministic tests using:
+
+```bash
+node --test test/pump-focused-smoke.test.mjs
+```
+
+Compare future smoke reports only if both runs have comparable settings, duration and observable program scope. Store missing or ambiguous metrics as unknown, not zero.
+
 The profile uses a separate SQLite path (`runtime/pump-focused/scanner.sqlite`) and local API port (8791), so it does not overwrite a previous experiment. `npm start` invokes the existing `flock` lock. Stop with Ctrl-C; do not delete WAL or lock files from a running process.
 
 ## Budget and limits
