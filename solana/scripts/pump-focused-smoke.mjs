@@ -40,6 +40,14 @@ export function summarizeSamples(samples) {
   if (!Array.isArray(samples) || samples.length < 2)
     throw Error('INSUFFICIENT_HEALTH_SAMPLES');
   const first = samples[0], last = samples.at(-1);
+  // Reject scope drift: comparing deltas across a changed subscription set is misleading.
+  const scope = s => JSON.stringify(
+    [...(s.programs ?? [])].map(p => [p.protocol, p.programId]).sort(
+      (a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))
+    )
+  );
+  const initialScope = scope(first);
+  let previousMeasuredAt = -Infinity;
   for (const s of samples) {
     if (s?.chain !== 'solana' || s.mode !== 'READ_ONLY' ||
         !s?.metrics?.counters || !s?.metrics?.gauges || !s?.storage ||
@@ -48,6 +56,10 @@ export function summarizeSamples(samples) {
     if (s.metrics.startedAt !== first.metrics.startedAt ||
         s.startedAt !== first.startedAt)
       throw Error('SCANNER_RESTARTED_DURING_SMOKE');
+    if (scope(s) !== initialScope) throw Error('PROGRAM_SCOPE_CHANGED_DURING_SMOKE');
+    const measuredAt = Date.parse(s.metrics.measuredAt);
+    if (measuredAt <= previousMeasuredAt) throw Error('NON_MONOTONIC_HEALTH_TIMESTAMPS');
+    previousMeasuredAt = measuredAt;
   }
   const elapsedSeconds =
     (Date.parse(last.metrics.measuredAt) - Date.parse(first.metrics.measuredAt)) / 1000;
