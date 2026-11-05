@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "mode": "LOCAL_READ_ONLY_HEALTH_SAMPLING",
+  "startedAt": "2026-11-05T21:57:47.359Z",
+  "endedAt": "2026-11-05T21:59:17.366Z",
+  "elapsedSeconds": 90.007,
+  "sampleCount": 19,
+  "programs": [
+    "pump_fun",
+    "pump_swap"
+  ],
+  "statuses": {
+    "DEGRADED": 19
+  },
+  "coverage": "PARTIAL",
+  "counterDeltas": {
+    "contextEnrichmentSkipped": 54788,
+    "contextSkippedDurableBacklog": 53432,
+    "contextSkippedIngressBuffer": 1356,
+    "decoderFailures": 0,
+    "events_processed": 11,
+    "fdvGateEligible": 277,
+    "fdvGateSkippedLow": 1117,
+    "fdvGateUnknown": 54531,
+    "logDiagnostic_EVENT_TRAILING_BYTES": 20362,
+    "logDiagnostic_LOG_TRANSACTION_FAILED": 30792,
+    "logDiagnostic_NO_SUPPORTED_LOG_EVENT": 5676,
+    "logObservationsDecoded": 24819,
+    "logObservationsPersisted": 24227,
+    "log_notifications": 55925,
+    "notificationsReceived": 55925,
+    "reconnect_count": 1,
+    "recoveryGaps": 1,
+    "rpc_budget_waits": 22,
+    "rpc_method_getGenesisHash": 0,
+    "rpc_method_getSignatureStatuses": 2,
+    "rpc_method_getTransaction": 16,
+    "rpc_requests": 18,
+    "transactionsProcessed": 16,
+    "websocket_disconnects": 1
+  },
+  "windowRates": {
+    "notificationsPerSecond": 621.3405624007021,
+    "logObservationsPersistedPerSecond": 269.16795360360857,
+    "enrichedTransactionsPerMinute": 10.665837101558767,
+    "rpcRequestsPerMinute": 11.999066739253612,
+    "rpcRequestsPerEnrichedTransaction": 1.125
+  },
+  "contextAdmission": {
+    "skippedTotal": 54788,
+    "skippedDurableBacklog": 53432,
+    "skippedIngressBuffer": 1356,
+    "unattributedSkips": 0,
+    "causeAccountingComplete": true,
+    "interpretation": "Skipped notifications are not a count of missed trades; cause counters describe admission pressure only."
+  },
+  "lastGauges": {
+    "websocket_connected": true,
+    "durableBacklog": 65,
+    "coverageOverloaded": true
+  },
+  "reliability": {
+    "degradedSamples": 19,
+    "overloadedSamples": 19,
+    "disconnectedSamples": 1,
+    "recoveryGapDelta": 1,
+    "decoderFailureDelta": 0,
+    "interpretation": "Diagnostic counts only; neither complete coverage nor a trading readiness verdict."
+  },
+  "lastStorage": {
+    "pending": 65,
+    "deferred": 0,
+    "eventsRetained": 11,
+    "logObservationsRetained": 10000,
+    "gapsRetained": 10,
+    "storageBytes": 96746368
+  },
+  "latencyAtEnd": {
+    "logObservationLatencyMs": {
+      "p50Ms": 180,
+      "p95Ms": 270,
+      "p99Ms": 277,
+      "sampleCountSinceProcessStart": 19669,
+      "retainedSamples": 4096,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "eventProcessingLatencyMs": {
+      "p50Ms": 39660,
+      "p95Ms": 89514,
+      "p99Ms": 89514,
+      "sampleCountSinceProcessStart": 10,
+      "retainedSamples": 10,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "transactionEnrichmentLatencyMs": {
+      "p50Ms": 5012.1707019999885,
+      "p95Ms": 10036.302896999994,
+      "p99Ms": 10036.302896999994,
+      "sampleCountSinceProcessStart": 16,
+      "retainedSamples": 16,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    }
+  },
+  "warnings": [
+    "Notification counts, retained observations, and enriched event counts have different units. They cannot form a coverage fraction.",
+    "Storage row counts reflect retention and are not interval event counts.",
+    "Latency percentiles reflect the process reservoir, not just this sampling window.",
+    "RPC requests include recovery and reconciliation, so RPC calls per enriched transaction are not direct marginal costs.",
+    "Partial observations and unknown fields are not token safety guarantees."
+  ],
+  "oracleAndCacheAtEnd": {
+    "enabled": true,
+    "minimumUsd": 5000,
+    "valuation": "PUMP_FUN_SOL_QUOTED_VIRTUAL_RESERVE_FDV_PROXY_NOT_CIRCULATING_MCAP",
+    "oraclePrice": {
+      "usdCents": 8986,
+      "at": 1793915816000,
+      "source": "coingecko_public_simple_price"
+    },
+    "oracleFailures": 0,
+    "supplyCacheSize": 67,
+    "supplyCacheEvictions": 0
+  },
+  "gateCountersAtEnd": {
+    "fdvGateUnknown": 55322,
+    "fdvGateSkippedLow": 1118,
+    "fdvGateEligible": 277
+  },
+  "provenance": {
+    "runId": 42117292875,
+    "runUrl": "https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42117292875",
+    "jobId": 127560213580,
+    "sourceCommit": "2add435149c10df844e5ad5555767fcec641134b",
+    "protocols": [
+      "pump_fun",
+      "pump_swap"
+    ],
+    "rpcBudgetRequestsPerMinute": 12,
+    "comparedTo": "solana/reports/pump-focused-smoke-20261105.json",
+    "warning": "Two short Mainnet samples with variable activity do not establish a causal performance gain."
+  }
+}
