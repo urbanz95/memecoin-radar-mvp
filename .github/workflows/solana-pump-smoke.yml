@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/solana-pump-focused-profile-20261104
+      - feat/solana-fdv-filter-5k-20261105
     paths:
       - .github/workflows/solana-pump-smoke.yml
   workflow_dispatch:
@@ -55,6 +56,8 @@ jobs:
             exit 1
           fi
           node scripts/pump-focused-smoke.mjs --seconds 90 --interval 5 --output "${RUNNER_TEMP}/pump-focused/report.json"
+          curl --fail --silent --show-error --max-time 5 "http://127.0.0.1:8791/health" > "${RUNNER_TEMP}/pump-focused/final-health.json"
+          node -e "const s=require(process.env.RUNNER_TEMP+'/pump-focused/final-health.json'); console.log('FDV_GATE_HEALTH',JSON.stringify({filter:s.fdvFilter,counters:Object.fromEntries(Object.entries(s.metrics?.counters??{}).filter(([k])=>k.startsWith('fdvGate')))}));"
           cat "${RUNNER_TEMP}/pump-focused/report.json"
       - name: Show scanner startup/shutdown notes
         if: always()

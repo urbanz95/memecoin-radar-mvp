@@ -46,6 +46,9 @@ export function loadConfig(env = process.env) {
     !["true", "false", "1", "0"].includes(env.SOLANA_SECURITY_ENABLED)
   )
     throw Error("INVALID_SOLANA_SECURITY_ENABLED");
+  const solUsdFeed = env.SOLANA_SOL_USD_FEED ?? "off";
+  if (!["off", "coingecko"].includes(solUsdFeed))
+    throw Error("INVALID_SOLANA_SOL_USD_FEED");
   const queueConcurrency = integer(env, "SOLANA_QUEUE_CONCURRENCY", 2, 1, 32);
   const retentionDays = integer(env, "SOLANA_RETENTION_DAYS", 7, 1, 365);
   return {
@@ -54,6 +57,8 @@ export function loadConfig(env = process.env) {
     wsUrl,
     commitment,
     programs: [...new Set(programs)],
+    fdvMinimumUsd: integer(env, "SOLANA_FDV_MINIMUM_USD", 0, 0, 1_000_000_000),
+    solUsdFeedEnabled: solUsdFeed === "coingecko",
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
     logObservationsEnabled: ["true", "1"].includes(
       env.SOLANA_LOG_OBSERVATIONS_ENABLED ?? "true",

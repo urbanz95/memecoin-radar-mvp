@@ -8,6 +8,8 @@ import { recoverProgram } from "./recovery.mjs";
 import { aggregateMarket } from "./market.mjs";
 import { inspectMint } from "./security.mjs";
 import { decodeLogObservation } from "./log-observations.mjs";
+import { FdvEnrichmentGate } from "./market-cap-gate.mjs";
+import { SolUsdOracle } from "./sol-usd-oracle.mjs";
 import { decodeTransaction, PROGRAMS } from "./protocols/index.mjs";
 export class Scanner {
   constructor(
@@ -16,6 +18,7 @@ export class Scanner {
       rpc,
       store,
       metrics,
+      oracle,
       decode = decodeTransaction,
       socketFactory = (opts) => new LogSocket(opts),
     } = {},
@@ -39,6 +42,11 @@ export class Scanner {
         retries: config.rpcRetries ?? 2,
       });
     this.decode = decode;
+    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled });
+    this.fdvGate = new FdvEnrichmentGate({
+      minimumUsd: config.fdvMinimumUsd ?? 0,
+      oracle: this.oracle,
+    });
     this.socketFactory = socketFactory;
     this.buffer = [];
     this.stopping = false;
@@ -79,6 +87,8 @@ export class Scanner {
   }
   async start() {
     await this.rpc.assertMainnet();
+    // Optional external quote feed; failure must never prevent log observation.
+    if (this.config.fdvMinimumUsd > 0) await this.oracle.refresh();
     this.startedAt = new Date().toISOString();
     this.metrics.set("mainnetVerified", true);
     this.socket = this.socketFactory({
@@ -110,6 +120,8 @@ export class Scanner {
       },
     });
     this.socket.start();
+    if (this.config.fdvMinimumUsd > 0)
+      this.every(() => this.oracle.refresh(), 120000);
     this.every(() => this.flush(), 250);
     this.every(() => this.pump(), 250);
     this.every(() => this.tickRecovery(), 5000);
@@ -149,6 +161,7 @@ export class Scanner {
       return;
     }
     const receivedAt = message.receivedAt ?? new Date().toISOString();
+    let logObservations = [];
     if (this.config.logObservationsEnabled !== false) {
       const notification = {
         ...value,
@@ -160,6 +173,7 @@ export class Scanner {
       };
       try {
         const result = decodeLogObservation(notification);
+        logObservations = result.observations;
         for (const d of result.diagnostics) {
           this.metrics.inc(`logDiagnostic_${d.code}`);
           if (/UNKNOWN|INVALID|FAILURE|TRUNCATED/.test(d.code)) {
@@ -193,6 +207,19 @@ export class Scanner {
     this.metrics.set("currentSlot", slot);
     this.metrics.set("lastEventReceived", new Date().toISOString());
     this.metrics.inc("notificationsReceived");
+    if (this.config.logObservationsEnabled !== false &&
+        this.config.fdvMinimumUsd > 0) {
+      // Log observations have already been buffered for durable persistence.
+      // Only suppress expensive HTTP enrichment when an evidence-backed,
+      // fresh SOL-quoted Pump.fun FDV proxy is unambiguously below the floor.
+      const valuation = this.fdvGate.evaluate(logObservations);
+      if (valuation.action === "SKIP_LOW_FDV") {
+        this.metrics.inc("fdvGateSkippedLow");
+        return;
+      }
+      if (valuation.action === "ENRICH") this.metrics.inc("fdvGateEligible");
+      else this.metrics.inc("fdvGateUnknown");
+    }
     if (
       this.config.logObservationsEnabled !== false &&
       this.contextBacklog + this.buffer.length >=
@@ -527,6 +554,15 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      fdvFilter: {
+        enabled: (this.config.fdvMinimumUsd ?? 0) > 0,
+        minimumUsd: this.config.fdvMinimumUsd ?? 0,
+        valuation: "PUMP_FUN_SOL_QUOTED_VIRTUAL_RESERVE_FDV_PROXY_NOT_CIRCULATING_MCAP",
+        oraclePrice: this.oracle.snapshot(),
+        oracleFailures: this.oracle.failures ?? 0,
+        supplyCacheSize: this.fdvGate.supplies.size,
+        supplyCacheEvictions: this.fdvGate.cacheEvictions,
+      },
       latencyScope:
         "logObservationLatencyMs: partial RPC logs; eventProcessingLatencyMs: enriched transactions; no production guarantee",
     };
