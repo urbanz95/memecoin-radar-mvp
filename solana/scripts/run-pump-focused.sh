@@ -32,9 +32,11 @@ export SOLANA_FDV_MINIMUM_USD="${SOLANA_FDV_MINIMUM_USD:-5000}"
 export SOLANA_SOL_USD_FEED="${SOLANA_SOL_USD_FEED:-coingecko}"
 
 # Prioritize verified token creation, pools and migrations within the existing
-# 12 RPC/min shared budget, leaving 8 of 64 durable slots for P0 work.
+# 12 RPC/min shared budget; reserve 8/8/4 of 64 inbox slots for P0/P1/P2.
 export SOLANA_CONTEXT_PRIORITIES_ENABLED="${SOLANA_CONTEXT_PRIORITIES_ENABLED:-true}"
 export SOLANA_PRIORITY_RESERVED_P0_SLOTS="${SOLANA_PRIORITY_RESERVED_P0_SLOTS:-8}"
+export SOLANA_PRIORITY_RESERVED_P1_SLOTS="${SOLANA_PRIORITY_RESERVED_P1_SLOTS:-8}"
+export SOLANA_PRIORITY_RESERVED_P2_SLOTS="${SOLANA_PRIORITY_RESERVED_P2_SLOTS:-4}"
 
 printf '%s\n' '[pump-focused] Read-only: pump_fun,pump_swap; RPC budget 12 requests/min unless overridden.'
 printf '%s\n' '[pump-focused] Log observations are intentionally incomplete; no trade signals or coverage guarantee.'
