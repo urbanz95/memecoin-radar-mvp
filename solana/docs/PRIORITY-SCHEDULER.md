@@ -75,6 +75,29 @@ The [first 90-second focused priority experiment](https://github.com/urbanz95/me
 
 The p95 enriched event time in the first run was not a meaningful proof of speed improvement (short 90s, mixed events and limited completed samples).
 
+### Second live Mainnet run (tiered reservations and corrected attribution)
+
+The [second live run](https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42123286038) sampled **90.035 seconds**, with both Pump.fun and PumpSwap and the same 12 HTTP RPC requests/min ceiling. Its [machine-readable report](../reports/priority-scheduler-tiered-mainnet-90s-20261105.json) records:
+
+| Metric during sampled interval | Value |
+|---|---:|
+| Observed notifications | 53,963 |
+| P0 seen / admitted / selected for async queue | 23 / **23** / 11 |
+| P1 seen / admitted / selected for async queue | 97 / **13** / 6 |
+| P2 seen / admitted / selected for async queue | 3,623 / **1** / 3 |
+| P3 seen / admitted / selected for async queue | 49,651 / 0 / 3 |
+| P0 / P1 / P2 HTTP context transactions processed (counter deltas) | 7 / **4** / 5 |
+| HTTP RPC requests / enriched transactions | **18 / 16** |
+| Skips due specifically to reserved admission capacity | 53,357 |
+| Admission skip cause reconciliation | **Complete**, 0 unexplained |
+| Degraded status samples | 16 / 19 |
+| Pending inbox at end | 59 |
+| Log-observation process-reservoir p95 | 298 ms |
+
+The P3 scheduled work was admitted before the first sample, explaining nonzero P3 scheduling despite zero **new** P3 admissions in this interval. Likewise, completed transaction counts can correspond to HTTP requests started before the sample. The 90-second sample is *not* a controlled comparison of processing speed or market coverage.
+
+**Finding:** the revised reservation policy successfully admitted some P1 and P2 notifications that would otherwise compete with a continuously populated P3 inbox. This shows changed selection, **not** an increase in throughput: RPC is still saturated, the status is mostly degraded, and complete trade coverage is unproven. We must still implement explicit recovery-budget sharing and better token-level selection before trading alert logic.
+
 ## Follow-up
 
 Next small piece: safely measure **time to first complete event by priority**, and separate live RPC from finality/recovery budgets. Prioritize not losing critical creation/migration facts when the 64-row backlog is at maximum; the present reservation reduces pressure but does not eliminate the possibility of missing HTTP context when completely full.
