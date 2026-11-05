@@ -137,3 +137,24 @@ test('smoke rejects changes in subscribed protocols and non-monotonic health sna
     /NON_MONOTONIC_HEALTH_TIMESTAMPS/,
   );
 });
+
+test('context admission reports observed skip causes without inventing uninstrumented data', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const last = sample('2026-11-05T12:01:00Z');
+  first.metrics.counters.contextSkippedDurableBacklog = 10;
+  first.metrics.counters.contextSkippedIngressBuffer = 20;
+  last.metrics.counters.contextEnrichmentSkipped = 50;
+  last.metrics.counters.contextSkippedDurableBacklog = 22;
+  last.metrics.counters.contextSkippedIngressBuffer = 38;
+  const complete = summarizeSamples([first, last]).contextAdmission;
+  assert.equal(complete.skippedTotal, 20);
+  assert.equal(complete.skippedDurableBacklog, 12);
+  assert.equal(complete.skippedIngressBuffer, 18);
+  assert.equal(complete.unattributedSkips, 0);
+  assert.equal(complete.causeAccountingComplete, false); // causes exceed aggregate
+  last.metrics.counters.contextEnrichmentSkipped = 60;
+  assert.equal(summarizeSamples([first, last]).contextAdmission.causeAccountingComplete, true);
+  delete first.metrics.counters.contextSkippedDurableBacklog;
+  delete first.metrics.counters.contextSkippedIngressBuffer;
+  assert.equal(summarizeSamples([first, last]).contextAdmission.causeAccountingComplete, false);
+});
