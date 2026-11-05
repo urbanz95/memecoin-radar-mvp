@@ -9,7 +9,7 @@ The user-requested $5,000 USD market-cap cutoff is approximated conservatively u
 Inputs:
 
 1. A **verified Pump.fun creation log** observed in this process, supplying the token mint and `token_total_supply` in raw units.
-2. A **verified Pump.fun creation/trade log** for the same mint with explicit wrapped SOL quote mint and the virtual SOL/token reserve snapshot.
+2. A **verified Pump.fun creation/trade log** for the same mint with wrapped SOL quote mint, or the Pump protocol's explicit **native-SOL sentinel** (`11111111111111111111111111111111`) and a virtual SOL/token reserve snapshot. The sentinel is documented by Pump as its `Pubkey::default()` SOL quote, and does **not** change the canonical log observation's unknown `quoteMint` into a fabricated mint.
 3. A fresh external SOL/USD quote from CoinGecko's **public** simple-price API. It is fetched *at most once every two minutes*; the provider may refuse or rate-limit requests. It is **not** a Solana RPC request.
 
 The FDV proxy formula (using exact integers) is:
@@ -70,6 +70,7 @@ The historical 90-second focused smoke report [lives here](../reports/pump-focus
 ### Protocol / feed sources
 
 - Official Pump.fun bonding curve explanation: https://pump.fun/docs/bonding-curve
+- Official native-SOL sentinel semantics: https://github.com/pump-fun/pump-public-docs/blob/main/docs/instructions/COIN_CREATION.md
 - Pump's published protocol / event definitions: https://github.com/pump-fun/pump-public-docs
 - CoinGecko public API rate-limit documentation: https://support.coingecko.com/articles/5125303456-what-is-the-rate-limit-for-coingecko-api-public-plan
 
