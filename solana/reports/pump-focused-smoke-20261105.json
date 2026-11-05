@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "mode": "LOCAL_READ_ONLY_HEALTH_SAMPLING",
+  "startedAt": "2026-11-05T18:26:30.239Z",
+  "endedAt": "2026-11-05T18:28:00.247Z",
+  "elapsedSeconds": 90.008,
+  "sampleCount": 19,
+  "programs": [
+    "pump_fun",
+    "pump_swap"
+  ],
+  "statuses": {
+    "DEGRADED": 19
+  },
+  "coverage": "PARTIAL",
+  "counterDeltas": {
+    "contextEnrichmentSkipped": 54573,
+    "decoderFailures": 0,
+    "events_processed": 20,
+    "logDecoderFailures": 5,
+    "logDiagnostic_EVENT_TRAILING_BYTES": 18643,
+    "logDiagnostic_LOGS_TRUNCATED_COVERAGE_PARTIAL": 5,
+    "logDiagnostic_LOG_TRANSACTION_FAILED": 25897,
+    "logDiagnostic_NO_SUPPORTED_LOG_EVENT": 11493,
+    "logObservationsDecoded": 22372,
+    "logObservationsPersisted": 21656,
+    "log_notifications": 54712,
+    "notificationsReceived": 54712,
+    "reconnect_count": 1,
+    "recoveryGaps": 2,
+    "rpc_budget_waits": 24,
+    "rpc_method_getGenesisHash": 0,
+    "rpc_method_getSignatureStatuses": 2,
+    "rpc_method_getTransaction": 16,
+    "rpc_requests": 18,
+    "transactionsProcessed": 16,
+    "websocket_disconnects": 1
+  },
+  "windowRates": {
+    "notificationsPerSecond": 607.8570793707227,
+    "logObservationsPersistedPerSecond": 240.60083548129057,
+    "enrichedTransactionsPerMinute": 10.665718602790864,
+    "rpcRequestsPerMinute": 11.998933428139722,
+    "rpcRequestsPerEnrichedTransaction": 1.125
+  },
+  "lastGauges": {
+    "websocket_connected": true,
+    "durableBacklog": 66,
+    "coverageOverloaded": true
+  },
+  "lastStorage": {
+    "pending": 66,
+    "deferred": 0,
+    "eventsRetained": 20,
+    "logObservationsRetained": 10000,
+    "gapsRetained": 49,
+    "storageBytes": 95716328
+  },
+  "latencyAtEnd": {
+    "logObservationLatencyMs": {
+      "p50Ms": 164,
+      "p95Ms": 268,
+      "p99Ms": 279,
+      "sampleCountSinceProcessStart": 17296,
+      "retainedSamples": 4096,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "eventProcessingLatencyMs": {
+      "p50Ms": 47235,
+      "p95Ms": 86722,
+      "p99Ms": 86722,
+      "sampleCountSinceProcessStart": 12,
+      "retainedSamples": 12,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "transactionEnrichmentLatencyMs": {
+      "p50Ms": 4985.139395999999,
+      "p95Ms": 9549.481696999996,
+      "p99Ms": 9549.481696999996,
+      "sampleCountSinceProcessStart": 16,
+      "retainedSamples": 16,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    }
+  },
+  "warnings": [
+    "Notification counts, retained observations, and enriched event counts have different units. They cannot form a coverage fraction.",
+    "Storage row counts reflect retention and are not interval event counts.",
+    "Latency percentiles reflect the process reservoir, not just this sampling window.",
+    "RPC requests include recovery and reconciliation, so RPC calls per enriched transaction are not direct marginal costs.",
+    "Partial observations and unknown fields are not token safety guarantees."
+  ],
+  "provenance": {
+    "repository": "urbanz95/memecoin-radar-mvp",
+    "branch": "feat/solana-pump-focused-profile-20261104",
+    "workflowRunId": 42084224779,
+    "workflowUrl": "https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42084224779",
+    "artifactId": 13440439981,
+    "runnerNodeVersion": "24.22.1",
+    "runCommit": "def20bf9b3ebb4c8459235bcb5f9174db31e3bc9",
+    "rpcBudgetRequestsPerMinute": 12,
+    "protocols": [
+      "pump_fun",
+      "pump_swap"
+    ]
+  }
+}
