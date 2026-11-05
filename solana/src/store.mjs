@@ -102,6 +102,9 @@ export class Store {
       for (const item of items) {
         if (!item.signature || !Number.isSafeInteger(item.slot))
           throw Error("INVALID_OBSERVATION");
+        if (item.contextPriority !== undefined &&
+            ![0, 1, 2, 3].includes(item.contextPriority))
+          throw Error("INVALID_CONTEXT_PRIORITY");
         count += Number(
           insert.run(
             item.signature,
@@ -267,6 +270,18 @@ export class Store {
             : {}),
         };
       });
+  }
+  // Uses JSON stored in the existing durable inbox payload to avoid changing
+  // the on-disk schema. Old/unprioritized rows default to exploratory P3.
+  // Inbox is capped by admission; this query remains bounded per rank.
+  pendingByPriority(priority, limit = 50, now = Date.now()) {
+    if (![0, 1, 2, 3].includes(priority) ||
+        !Number.isSafeInteger(limit) || limit < 0 || limit > 1000)
+      throw Error("INVALID_CONTEXT_PRIORITY_QUERY");
+    if (limit === 0) return [];
+    return this.db.prepare(
+      "SELECT * FROM inbox WHERE status IN ('PENDING','UNAVAILABLE') AND next_at<=? AND COALESCE(json_extract(payload,'$.contextPriority'),3)=? ORDER BY received_at,signature LIMIT ?",
+    ).all(now, priority, limit).map(row => ({ ...parse(row), attempts: row.attempts }));
   }
   pending(limit = 100, now = Date.now()) {
     return this.db

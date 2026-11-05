@@ -49,6 +49,9 @@ export function loadConfig(env = process.env) {
   const solUsdFeed = env.SOLANA_SOL_USD_FEED ?? "off";
   if (!["off", "coingecko"].includes(solUsdFeed))
     throw Error("INVALID_SOLANA_SOL_USD_FEED");
+  if (env.SOLANA_CONTEXT_PRIORITIES_ENABLED !== undefined &&
+      !["true", "false", "1", "0"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED))
+    throw Error("INVALID_SOLANA_CONTEXT_PRIORITIES_ENABLED");
   const queueConcurrency = integer(env, "SOLANA_QUEUE_CONCURRENCY", 2, 1, 32);
   const retentionDays = integer(env, "SOLANA_RETENTION_DAYS", 7, 1, 365);
   return {
@@ -59,6 +62,10 @@ export function loadConfig(env = process.env) {
     programs: [...new Set(programs)],
     fdvMinimumUsd: integer(env, "SOLANA_FDV_MINIMUM_USD", 0, 0, 1_000_000_000),
     solUsdFeedEnabled: solUsdFeed === "coingecko",
+    contextPrioritiesEnabled: ["true", "1"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED),
+    priorityP0ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P0_SLOTS", 8, 0, 10000),
+    priorityP1ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P1_SLOTS", 8, 0, 10000),
+    priorityP2ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P2_SLOTS", 4, 0, 10000),
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
     logObservationsEnabled: ["true", "1"].includes(
       env.SOLANA_LOG_OBSERVATIONS_ENABLED ?? "true",

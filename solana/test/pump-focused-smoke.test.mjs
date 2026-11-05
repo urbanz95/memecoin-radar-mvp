@@ -158,3 +158,24 @@ test('context admission reports observed skip causes without inventing uninstrum
   delete first.metrics.counters.contextSkippedIngressBuffer;
   assert.equal(summarizeSamples([first, last]).contextAdmission.causeAccountingComplete, false);
 });
+
+test('priority reservation skips are a distinct complete admission cause', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const last = sample('2026-11-05T12:01:00Z');
+  for (const s of [first, last]) {
+    s.metrics.counters.contextSkippedDurableBacklog = 0;
+    s.metrics.counters.contextSkippedIngressBuffer = 0;
+    s.metrics.counters.contextSkippedPriorityReservation = 10;
+  }
+  last.metrics.counters.contextEnrichmentSkipped = 70;
+  last.metrics.counters.contextSkippedPriorityReservation = 50;
+  const report = summarizeSamples([first, last]).contextAdmission;
+  assert.equal(report.skippedTotal, 40);
+  assert.equal(report.skippedPriorityReservation, 40);
+  assert.equal(report.skippedIngressBuffer, 0);
+  assert.equal(report.skippedDurableBacklog, 0);
+  assert.equal(report.unattributedSkips, 0);
+  assert.equal(report.causeAccountingComplete, true);
+  delete first.metrics.counters.contextSkippedPriorityReservation;
+  assert.equal(summarizeSamples([first, last]).contextAdmission.causeAccountingComplete, false);
+});

@@ -10,6 +10,7 @@ import { inspectMint } from "./security.mjs";
 import { decodeLogObservation } from "./log-observations.mjs";
 import { FdvEnrichmentGate } from "./market-cap-gate.mjs";
 import { SolUsdOracle } from "./sol-usd-oracle.mjs";
+import { classifyContextPriority, PriorityScheduler } from "./enrichment-priority.mjs";
 import { decodeTransaction, PROGRAMS } from "./protocols/index.mjs";
 export class Scanner {
   constructor(
@@ -48,6 +49,14 @@ export class Scanner {
       oracle: this.oracle,
     });
     this.socketFactory = socketFactory;
+    this.priorityScheduler = new PriorityScheduler();
+    if (config.contextPrioritiesEnabled === true) {
+      // Zero-valued counter keys make short smoke cause accounting honest.
+      for (const name of [
+        "contextEnrichmentSkipped", "contextSkippedDurableBacklog",
+        "contextSkippedIngressBuffer", "contextSkippedPriorityReservation",
+      ]) this.metrics.inc(name, 0);
+    }
     this.buffer = [];
     this.stopping = false;
     this.recoveryPending = false;
@@ -207,12 +216,13 @@ export class Scanner {
     this.metrics.set("currentSlot", slot);
     this.metrics.set("lastEventReceived", new Date().toISOString());
     this.metrics.inc("notificationsReceived");
+    let valuation = { action: "UNKNOWN" };
     if (this.config.logObservationsEnabled !== false &&
         this.config.fdvMinimumUsd > 0) {
       // Log observations have already been buffered for durable persistence.
       // Only suppress expensive HTTP enrichment when an evidence-backed,
       // fresh SOL-quoted Pump.fun FDV proxy is unambiguously below the floor.
-      const valuation = this.fdvGate.evaluate(logObservations);
+      valuation = this.fdvGate.evaluate(logObservations);
       if (valuation.action === "SKIP_LOW_FDV") {
         this.metrics.inc("fdvGateSkippedLow");
         return;
@@ -220,15 +230,43 @@ export class Scanner {
       if (valuation.action === "ENRICH") this.metrics.inc("fdvGateEligible");
       else this.metrics.inc("fdvGateUnknown");
     }
+    const prioritize = this.config.contextPrioritiesEnabled === true &&
+      this.config.logObservationsEnabled !== false;
+    const contextPriority = prioritize
+      ? classifyContextPriority(logObservations, valuation) : 3;
+    if (prioritize) this.metrics.inc(`contextPrioritySeenP${contextPriority}`);
+    // Reserve a few of the *existing* durable slots for P0 arrivals; no
+    // increase to durable capacity or shared RPC request budget.
+    const maxBacklog = this.config.maxDurableBacklog ?? 250;
+    const reservedP0 = prioritize
+      ? Math.min(maxBacklog, this.config.priorityP0ReservedSlots ?? 8) : 0;
+    const reservedP1 = prioritize
+      ? Math.min(maxBacklog - reservedP0,
+        this.config.priorityP1ReservedSlots ?? 8) : 0;
+    const reservedP2 = prioritize
+      ? Math.min(maxBacklog - reservedP0 - reservedP1,
+        this.config.priorityP2ReservedSlots ?? 4) : 0;
+    const backlogLimit = [
+      maxBacklog,
+      maxBacklog - reservedP0,
+      maxBacklog - reservedP0 - reservedP1,
+      maxBacklog - reservedP0 - reservedP1 - reservedP2,
+    ][contextPriority];
     if (
       this.config.logObservationsEnabled !== false &&
-      this.contextBacklog + this.buffer.length >=
-        (this.config.maxDurableBacklog ?? 250)
+      this.contextBacklog + this.buffer.length >= backlogLimit
     ) {
+      const reservedReason = prioritize && contextPriority !== 0 &&
+        this.contextBacklog + this.buffer.length < maxBacklog;
+      if (prioritize) {
+        this.metrics.inc(`contextPrioritySkippedP${contextPriority}`);
+        if (reservedReason) this.metrics.inc("contextPriorityReservedAdmissionSkip");
+      }
       this.metrics.inc("contextEnrichmentSkipped");
       // Distinguish persistent queue pressure from unflushed ingress pressure.
       // These are admission diagnostics, not a count of missing market events.
-      if (this.contextBacklog >= (this.config.maxDurableBacklog ?? 250))
+      if (reservedReason) this.metrics.inc("contextSkippedPriorityReservation");
+      else if (this.contextBacklog >= maxBacklog)
         this.metrics.inc("contextSkippedDurableBacklog");
       else this.metrics.inc("contextSkippedIngressBuffer");
       return;
@@ -252,7 +290,9 @@ export class Scanner {
       confirmationStatus: this.config.commitment ?? "confirmed",
       evidenceSource: "rpc:logsSubscribe",
       onchainError: value.err ?? null,
+      ...(prioritize ? { contextPriority } : {}),
     });
+    if (prioritize) this.metrics.inc(`contextPriorityAdmittedP${contextPriority}`);
     if (this.buffer.length >= 100) this.flush();
   }
   flushObservations() {
@@ -320,7 +360,16 @@ export class Scanner {
       0,
       (this.config.queueCapacity ?? 500) - this.queue.depth,
     );
-    for (const observation of this.store.pending(Math.min(50, available))) {
+    const selected = this.config.contextPrioritiesEnabled === true &&
+      this.config.logObservationsEnabled !== false
+      ? this.priorityScheduler.select(
+          [0, 1, 2, 3].map(rank => this.store.pendingByPriority(
+            rank, Math.min(100, Math.max(4, available * 4)),
+          )),
+          Math.min(50, available), this.activeSignatures,
+        )
+      : this.store.pending(Math.min(50, available));
+    for (const observation of selected) {
       if (this.activeSignatures.has(observation.signature)) continue;
       this.activeSignatures.add(observation.signature);
       const accepted = this.queue.submit(async () => {
@@ -335,6 +384,9 @@ export class Scanner {
         this.metrics.inc("queueBackpressure");
         break;
       }
+      if (this.config.contextPrioritiesEnabled === true &&
+          Number.isInteger(observation.contextPriority))
+        this.metrics.inc(`contextPriorityScheduledP${observation.contextPriority}`);
     }
   }
   async processObservation(observation) {
@@ -350,6 +402,9 @@ export class Scanner {
         return true;
       }
       const started = performance.now();
+      if (this.config.contextPrioritiesEnabled === true &&
+          Number.isInteger(observation.contextPriority))
+        this.metrics.inc(`contextPriorityFetchStartedP${observation.contextPriority}`);
       const tx = await this.rpc.request("getTransaction", [
         observation.signature,
         {
@@ -417,6 +472,12 @@ export class Scanner {
         result.diagnostics,
       );
       this.metrics.inc("transactionsProcessed");
+      if (this.config.contextPrioritiesEnabled === true &&
+          Number.isInteger(observation.contextPriority)) {
+        this.metrics.inc(`contextPriorityTransactionsProcessedP${observation.contextPriority}`);
+        this.metrics.observe(`contextPriorityLiveLatencyP${observation.contextPriority}Ms`,
+          Math.max(0, Date.now() - Date.parse(observation.receivedAt)));
+      }
       this.metrics.inc("events_processed", count);
       this.metrics.inc(
         "decoderFailures",
@@ -554,6 +615,24 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      contextPriorityScheduler: {
+        enabled: this.config.contextPrioritiesEnabled === true &&
+          this.config.logObservationsEnabled !== false,
+        cycle: "P0:4 P1:2 P2:1 P3:1; weighted admissions, not reserved RPC calls",
+        reservedP0Slots: Math.min(this.config.maxDurableBacklog ?? 250,
+          this.config.priorityP0ReservedSlots ?? 8),
+        reservedP1Slots: Math.min(
+          Math.max(0, (this.config.maxDurableBacklog ?? 250) -
+            (this.config.priorityP0ReservedSlots ?? 8)),
+          this.config.priorityP1ReservedSlots ?? 8),
+        reservedP2Slots: Math.min(
+          Math.max(0, (this.config.maxDurableBacklog ?? 250) -
+            (this.config.priorityP0ReservedSlots ?? 8) -
+            (this.config.priorityP1ReservedSlots ?? 8)),
+          this.config.priorityP2ReservedSlots ?? 4),
+        logObservationsPreservedIndependently: true,
+        backlogCoverage: "PARTIAL",
+      },
       fdvFilter: {
         enabled: (this.config.fdvMinimumUsd ?? 0) > 0,
         minimumUsd: this.config.fdvMinimumUsd ?? 0,

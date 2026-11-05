@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "mode": "LOCAL_READ_ONLY_HEALTH_SAMPLING",
+  "startedAt": "2026-11-05T22:39:18.831Z",
+  "endedAt": "2026-11-05T22:40:48.866Z",
+  "elapsedSeconds": 90.035,
+  "sampleCount": 19,
+  "programs": [
+    "pump_fun",
+    "pump_swap"
+  ],
+  "statuses": {
+    "OBSERVING": 3,
+    "DEGRADED": 16
+  },
+  "coverage": "PARTIAL",
+  "counterDeltas": {
+    "contextEnrichmentSkipped": 53357,
+    "contextPriorityAdmittedP0": 23,
+    "contextPriorityAdmittedP1": 13,
+    "contextPriorityAdmittedP2": 1,
+    "contextPriorityAdmittedP3": 0,
+    "contextPriorityFetchStartedP0": 8,
+    "contextPriorityFetchStartedP1": 4,
+    "contextPriorityFetchStartedP2": 4,
+    "contextPriorityReservedAdmissionSkip": 53357,
+    "contextPriorityScheduledP0": 11,
+    "contextPriorityScheduledP1": 6,
+    "contextPriorityScheduledP2": 3,
+    "contextPriorityScheduledP3": 3,
+    "contextPrioritySeenP0": 23,
+    "contextPrioritySeenP1": 97,
+    "contextPrioritySeenP2": 3623,
+    "contextPrioritySeenP3": 49651,
+    "contextPrioritySkippedP1": 84,
+    "contextPrioritySkippedP2": 3622,
+    "contextPrioritySkippedP3": 49651,
+    "contextPriorityTransactionsProcessedP0": 7,
+    "contextPriorityTransactionsProcessedP1": 4,
+    "contextPriorityTransactionsProcessedP2": 5,
+    "contextSkippedDurableBacklog": 0,
+    "contextSkippedIngressBuffer": 0,
+    "contextSkippedPriorityReservation": 53357,
+    "decoderFailures": 0,
+    "events_processed": 33,
+    "fdvGateEligible": 97,
+    "fdvGateSkippedLow": 569,
+    "fdvGateUnknown": 53297,
+    "logDiagnostic_EVENT_TRAILING_BYTES": 16274,
+    "logDiagnostic_LOG_TRANSACTION_FAILED": 35365,
+    "logDiagnostic_NO_SUPPORTED_LOG_EVENT": 3382,
+    "logObservationsDecoded": 20730,
+    "logObservationsPersisted": 20078,
+    "log_notifications": 53963,
+    "notificationsReceived": 53963,
+    "reconnect_count": 2,
+    "recoveryGaps": 2,
+    "rpc_budget_waits": 22,
+    "rpc_method_getGenesisHash": 0,
+    "rpc_method_getSignatureStatuses": 2,
+    "rpc_method_getTransaction": 16,
+    "rpc_requests": 18,
+    "transactionsProcessed": 16,
+    "websocket_disconnects": 2
+  },
+  "windowRates": {
+    "notificationsPerSecond": 599.3558060754151,
+    "logObservationsPersistedPerSecond": 223.00216582440163,
+    "enrichedTransactionsPerMinute": 10.662520131060143,
+    "rpcRequestsPerMinute": 11.995335147442661,
+    "rpcRequestsPerEnrichedTransaction": 1.125
+  },
+  "contextAdmission": {
+    "skippedTotal": 53357,
+    "skippedDurableBacklog": 0,
+    "skippedIngressBuffer": 0,
+    "skippedPriorityReservation": 53357,
+    "unattributedSkips": 0,
+    "causeAccountingComplete": true,
+    "interpretation": "Skipped notifications are not a count of missed trades; reservation pressure is distinct from durable and ingress overload."
+  },
+  "lastGauges": {
+    "websocket_connected": true,
+    "durableBacklog": 59,
+    "coverageOverloaded": null
+  },
+  "reliability": {
+    "degradedSamples": 16,
+    "overloadedSamples": 0,
+    "disconnectedSamples": 0,
+    "recoveryGapDelta": 2,
+    "decoderFailureDelta": 0,
+    "interpretation": "Diagnostic counts only; neither complete coverage nor a trading readiness verdict."
+  },
+  "lastStorage": {
+    "pending": 59,
+    "deferred": 0,
+    "eventsRetained": 33,
+    "logObservationsRetained": 10000,
+    "gapsRetained": 10,
+    "storageBytes": 93695752
+  },
+  "latencyAtEnd": {
+    "logObservationLatencyMs": {
+      "p50Ms": 187,
+      "p95Ms": 298,
+      "p99Ms": 304,
+      "sampleCountSinceProcessStart": 15316,
+      "retainedSamples": 4096,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "eventProcessingLatencyMs": {
+      "p50Ms": 32204,
+      "p95Ms": 74888,
+      "p99Ms": 74888,
+      "sampleCountSinceProcessStart": 16,
+      "retainedSamples": 16,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "transactionEnrichmentLatencyMs": {
+      "p50Ms": 4970.867797999999,
+      "p95Ms": 10766.888955000002,
+      "p99Ms": 10766.888955000002,
+      "sampleCountSinceProcessStart": 16,
+      "retainedSamples": 16,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    }
+  },
+  "warnings": [
+    "Notification counts, retained observations, and enriched event counts have different units. They cannot form a coverage fraction.",
+    "Storage row counts reflect retention and are not interval event counts.",
+    "Latency percentiles reflect the process reservoir, not just this sampling window.",
+    "RPC requests include recovery and reconciliation, so RPC calls per enriched transaction are not direct marginal costs.",
+    "Partial observations and unknown fields are not token safety guarantees."
+  ],
+  "provenance": {
+    "runId": 42123286038,
+    "runUrl": "https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42123286038",
+    "jobId": 127580898260,
+    "sourceCommit": "693d6e7f96764a3cb91bc4cc02a4ddafefc86718",
+    "protocols": [
+      "pump_fun",
+      "pump_swap"
+    ],
+    "httpRpcLimitPerMinute": 12,
+    "admissionReservations": {
+      "p0": 8,
+      "p1": 8,
+      "p2": 4,
+      "totalInbox": 64
+    },
+    "fdvLimitUsd": 5000
+  },
+  "limitations": [
+    "90-second samples on different market intervals are not controlled causal comparisons.",
+    "HTTP requests can include finality/recovery, not exclusively scanner enrichment.",
+    "Per-rank counters describe stages with different windows and are not guaranteed to sum.",
+    "Log observation retention is bounded and context coverage remains PARTIAL.",
+    "Latency percentiles reflect process reservoirs, not rank-specific latency within this 90-second window."
+  ]
+}

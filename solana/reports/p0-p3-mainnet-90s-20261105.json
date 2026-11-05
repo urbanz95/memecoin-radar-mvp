@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "mode": "LOCAL_READ_ONLY_HEALTH_SAMPLING",
+  "startedAt": "2026-11-05T22:31:28.877Z",
+  "endedAt": "2026-11-05T22:32:58.884Z",
+  "elapsedSeconds": 90.007,
+  "sampleCount": 19,
+  "programs": [
+    "pump_fun",
+    "pump_swap"
+  ],
+  "statuses": {
+    "OBSERVING": 1,
+    "DEGRADED": 18
+  },
+  "coverage": "PARTIAL",
+  "counterDeltas": {
+    "contextEnrichmentSkipped": 56340,
+    "contextPriorityAdmittedP0": 23,
+    "contextPriorityAdmittedP2": 0,
+    "contextPriorityAdmittedP3": 47,
+    "contextPriorityReservedAdmissionSkip": 56340,
+    "contextPriorityScheduledP0": 13,
+    "contextPriorityScheduledP2": 8,
+    "contextPriorityScheduledP3": 8,
+    "contextPrioritySeenP0": 23,
+    "contextPrioritySeenP1": 75,
+    "contextPrioritySeenP2": 3505,
+    "contextPrioritySeenP3": 52807,
+    "contextPrioritySkippedP1": 75,
+    "contextPrioritySkippedP2": 3505,
+    "contextPrioritySkippedP3": 52760,
+    "contextSkippedIngressBuffer": 56340,
+    "decoderFailures": 0,
+    "events_processed": 30,
+    "fdvGateEligible": 75,
+    "fdvGateSkippedLow": 587,
+    "fdvGateUnknown": 56335,
+    "logDecoderFailures": 1,
+    "logDiagnostic_EVENT_TRAILING_BYTES": 24102,
+    "logDiagnostic_LOGS_TRUNCATED_COVERAGE_PARTIAL": 1,
+    "logDiagnostic_LOG_TRANSACTION_FAILED": 21461,
+    "logDiagnostic_NO_SUPPORTED_LOG_EVENT": 13563,
+    "logObservationsDecoded": 28509,
+    "logObservationsPersisted": 26816,
+    "log_notifications": 56997,
+    "notificationsReceived": 56997,
+    "rpc_budget_waits": 19,
+    "rpc_method_getGenesisHash": 0,
+    "rpc_method_getSignatureStatuses": 2,
+    "rpc_method_getTransaction": 16,
+    "rpc_requests": 18,
+    "transactionsProcessed": 15
+  },
+  "windowRates": {
+    "notificationsPerSecond": 633.2507471641094,
+    "logObservationsPersistedPerSecond": 297.9323830368749,
+    "enrichedTransactionsPerMinute": 9.999222282711344,
+    "rpcRequestsPerMinute": 11.999066739253612,
+    "rpcRequestsPerEnrichedTransaction": 1.2
+  },
+  "contextAdmission": {
+    "skippedTotal": 56340,
+    "skippedDurableBacklog": 0,
+    "skippedIngressBuffer": 56340,
+    "unattributedSkips": 0,
+    "causeAccountingComplete": false,
+    "interpretation": "Skipped notifications are not a count of missed trades; cause counters describe admission pressure only."
+  },
+  "lastGauges": {
+    "websocket_connected": true,
+    "durableBacklog": 60,
+    "coverageOverloaded": null
+  },
+  "reliability": {
+    "degradedSamples": 18,
+    "overloadedSamples": 0,
+    "disconnectedSamples": 0,
+    "recoveryGapDelta": 0,
+    "decoderFailureDelta": 1,
+    "interpretation": "Diagnostic counts only; neither complete coverage nor a trading readiness verdict."
+  },
+  "lastStorage": {
+    "pending": 60,
+    "deferred": 0,
+    "eventsRetained": 30,
+    "logObservationsRetained": 10000,
+    "gapsRetained": 6,
+    "storageBytes": 100955112
+  },
+  "latencyAtEnd": {
+    "logObservationLatencyMs": {
+      "p50Ms": 222,
+      "p95Ms": 474,
+      "p99Ms": 537,
+      "sampleCountSinceProcessStart": 21841,
+      "retainedSamples": 4096,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "eventProcessingLatencyMs": {
+      "p50Ms": 35354,
+      "p95Ms": 84942,
+      "p99Ms": 84942,
+      "sampleCountSinceProcessStart": 15,
+      "retainedSamples": 15,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    },
+    "transactionEnrichmentLatencyMs": {
+      "p50Ms": 4967.513455000001,
+      "p95Ms": 10681.219395999993,
+      "p99Ms": 10681.219395999993,
+      "sampleCountSinceProcessStart": 15,
+      "retainedSamples": 15,
+      "scope": "end-of-window process reservoir; NOT a per-window latency percentile"
+    }
+  },
+  "warnings": [
+    "Notification counts, retained observations, and enriched event counts have different units. They cannot form a coverage fraction.",
+    "Storage row counts reflect retention and are not interval event counts.",
+    "Latency percentiles reflect the process reservoir, not just this sampling window.",
+    "RPC requests include recovery and reconciliation, so RPC calls per enriched transaction are not direct marginal costs.",
+    "Partial observations and unknown fields are not token safety guarantees."
+  ],
+  "provenance": {
+    "workflowRun": 42122178889,
+    "jobId": 127577095377,
+    "sourceCommit": "3a9920b1ef246f000fa174f457ceb7983eaf58a8",
+    "protocols": [
+      "pump_fun",
+      "pump_swap"
+    ],
+    "httpRpcLimitPerMinute": 12,
+    "focusedProfileFdvMinimumUsd": 5000,
+    "priorityCycle": [
+      0,
+      0,
+      1,
+      0,
+      2,
+      0,
+      1,
+      3
+    ]
+  },
+  "limitations": [
+    "Counters are process deltas for 90 seconds, not total on-chain coverage.",
+    "This run predates explicit priority-reservation cause attribution; contextSkippedIngressBuffer contains reservation skips and causeAccountingComplete is false as instrumented.",
+    "Queue submitted != request completed. Historical / finality requests share RPC budget.",
+    "This distinct market window cannot establish a causal latency improvement."
+  ]
+}
