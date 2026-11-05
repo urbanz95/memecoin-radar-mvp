@@ -64,6 +64,8 @@ export function loadConfig(env = process.env) {
     solUsdFeedEnabled: solUsdFeed === "coingecko",
     contextPrioritiesEnabled: ["true", "1"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED),
     priorityP0ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P0_SLOTS", 8, 0, 10000),
+    priorityP1ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P1_SLOTS", 8, 0, 10000),
+    priorityP2ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P2_SLOTS", 4, 0, 10000),
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
     logObservationsEnabled: ["true", "1"].includes(
       env.SOLANA_LOG_OBSERVATIONS_ENABLED ?? "true",
