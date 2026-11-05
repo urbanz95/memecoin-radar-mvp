@@ -178,3 +178,54 @@ test('processed transaction increments its actual priority counter, not only sch
     assert.ok(scanner.health().metrics.histograms.contextPriorityLiveLatencyP0Ms);
   } finally { await scanner.stop(); }
 });
+
+test('tiered reservation retains admission slots for P1 and P2 under abundant P3 logs', async () => {
+  const createTx = JSON.parse(readFileSync(new URL('../fixtures/pump-create-v2-mainnet.json', import.meta.url))).result;
+  const buyTx = JSON.parse(readFileSync(new URL('../fixtures/pump-buy-v3-mainnet.json', import.meta.url))).result;
+  const store = new Store(':memory:');
+  const scanner = new Scanner({
+    ...loadConfig({ SOLANA_PROGRAMS: 'pump_fun', SOLANA_CONTEXT_PRIORITIES_ENABLED: 'true' }),
+    fdvMinimumUsd: 5000,
+    maxDurableBacklog: 32,
+    priorityP0ReservedSlots: 4,
+    priorityP1ReservedSlots: 4,
+    priorityP2ReservedSlots: 4,
+  }, {
+    store,
+    rpc: { async close() {} },
+    oracle: { snapshot: () => null },
+  });
+  const data = (tx, suffix = '') => ({
+    signature: tx.transaction.signatures[0] + suffix, slot: tx.slot,
+    logs: tx.meta.logMessages, err: tx.meta.err,
+    receivedAt: new Date().toISOString(),
+    confirmationStatus: 'confirmed',
+  });
+  try {
+    // Isolate priority scheduling from FDV arithmetic (covered by FDV tests).
+    scanner.fdvGate.evaluate = () => ({ action: 'UNKNOWN' });
+    scanner.contextBacklog = 20;
+    scanner.receive({ signature: 'unidentified', slot: 1, logs: [], receivedAt: new Date().toISOString() });
+    assert.equal(scanner.metrics.snapshot().counters.contextPrioritySkippedP3, 1);
+    scanner.receive(data(buyTx));
+    assert.equal(scanner.metrics.snapshot().counters.contextPriorityAdmittedP2, 1);
+    scanner.flush();
+    scanner.contextBacklog = 24;
+    scanner.receive(data(buyTx, '-second'));
+    assert.equal(scanner.metrics.snapshot().counters.contextPrioritySkippedP2, 1);
+    scanner.fdvGate.evaluate = () => ({ action: 'ENRICH' });
+    scanner.receive(data(buyTx, '-eligible'));
+    assert.equal(scanner.metrics.snapshot().counters.contextPriorityAdmittedP1, 1);
+    scanner.flush();
+    scanner.contextBacklog = 28;
+    scanner.receive(data(buyTx, '-eligible-blocked'));
+    assert.equal(scanner.metrics.snapshot().counters.contextPrioritySkippedP1, 1);
+    scanner.receive(data(createTx));
+    assert.equal(scanner.metrics.snapshot().counters.contextPriorityAdmittedP0, 1);
+    scanner.flush();
+    assert.equal(store.pendingByPriority(0).length, 1);
+    assert.equal(store.pendingByPriority(1).length, 1);
+    assert.equal(store.pendingByPriority(2).length, 1);
+    assert.ok(scanner.health().contextPriorityScheduler.reservedP1Slots >= 4);
+  } finally { await scanner.stop(); }
+});
