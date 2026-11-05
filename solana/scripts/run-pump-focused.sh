@@ -24,6 +24,14 @@ export SOLANA_RECOVERY_MAX_PAGES="${SOLANA_RECOVERY_MAX_PAGES:-1}"
 export SOLANA_RECOVERY_BACKLOG_THRESHOLD="${SOLANA_RECOVERY_BACKLOG_THRESHOLD:-10}"
 export SOLANA_SECURITY_ENABLED="${SOLANA_SECURITY_ENABLED:-false}"
 
+# Experimental conservative FDV proxy gate for HTTP enrichment. Not circulating
+# market cap: only fully evidenced, SOL-quoted Pump.fun log events can be skipped.
+# A free public SOL/USD quote is requested at most once per two minutes; on
+# failure/staleness/uncertainty the notification is NOT excluded.
+export SOLANA_FDV_MINIMUM_USD="${SOLANA_FDV_MINIMUM_USD:-5000}"
+export SOLANA_SOL_USD_FEED="${SOLANA_SOL_USD_FEED:-coingecko}"
+
 printf '%s\n' '[pump-focused] Read-only: pump_fun,pump_swap; RPC budget 12 requests/min unless overridden.'
 printf '%s\n' '[pump-focused] Log observations are intentionally incomplete; no trade signals or coverage guarantee.'
+printf '%s\n' '[pump-focused] Experimental FDV gate: thresholds apply only with fresh quote, verified Pump supply and reserves; never assume unknown is below threshold.'
 exec npm start
