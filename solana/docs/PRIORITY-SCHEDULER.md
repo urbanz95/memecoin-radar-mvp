@@ -33,9 +33,11 @@ Use `GET http://127.0.0.1:8791/health` and the focused smoke report. New process
 - `contextPriorityAdmittedP0..P3`: notifications placed into the in-memory ingress buffer.
 - `contextPrioritySkippedP0..P3`: notifications denied by durable backlog/reserved admission limit.
 - `contextPriorityScheduledP0..P3`: signatures submitted from the durable SQLite inbox to the bounded async queue.
+- `contextPriorityCompletedP0..P3`: signatures whose decoded transaction and events were successfully persisted; retries and already-completed signatures do not increment these counters.
+- `contextPriorityCompletionLatencyP0Ms..P3Ms`: elapsed wall-clock milliseconds from initial receipt to successful persistence, measured only on successful context enrichment. Histograms use process lifetime/reservoir, not the short smoke interval.
 - `contextPriorityReservedAdmissionSkip`: non-P0 notifications denied by the P0 reservation when the full limit has not yet been reached.
 
-These counters have **different stages and denominators**. `seen` is not a count of successful or supported market trades, `scheduled` is not a count of completed HTTP calls, and `observations` are not enriched transactions.
+These counters have **different stages and denominators**. `seen` is not a count of successful or supported market trades, `scheduled` is not a count of completed HTTP calls, and `completed` is not a count of all observed trades, and `observations` are not enriched transactions.
 
 The health report includes `contextPriorityScheduler.enabled`, the policy string and P0 reservation. The smoke utility already captures all counter deltas, so it will expose P0–P3 counters without creating new HTTP/RPC calls.
 

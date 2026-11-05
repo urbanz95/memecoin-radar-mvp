@@ -451,6 +451,13 @@ export class Scanner {
         result.diagnostics,
       );
       this.metrics.inc("transactionsProcessed");
+      // Count only successfully persisted enrichment, not queued or retried RPC.
+      if (this.config.contextPrioritiesEnabled === true &&
+          [0, 1, 2, 3].includes(observation.contextPriority)) {
+        this.metrics.inc(`contextPriorityCompletedP${observation.contextPriority}`);
+        this.metrics.observe(`contextPriorityCompletionLatencyP${observation.contextPriority}Ms`,
+          Math.max(0, Date.now() - Date.parse(observation.receivedAt)));
+      }
       this.metrics.inc("events_processed", count);
       this.metrics.inc(
         "decoderFailures",

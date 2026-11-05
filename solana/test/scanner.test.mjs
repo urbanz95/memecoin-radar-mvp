@@ -71,6 +71,32 @@ function setup(tx, overrides = {}) {
   return { scanner, store, calls, observation, rpc, getSocket: () => socket };
 }
 
+test("priority completion counts only successfully persisted enrichment, with measurable latency", async (t) => {
+  const tx = fixture("pump-buy-v3-mainnet.json");
+  const { scanner, store, observation } = setup(tx, { contextPrioritiesEnabled: true });
+  observation.contextPriority = 2;
+  await scanner.start();
+  t.after(() => scanner.stop());
+  store.receiveBatch([observation]);
+  assert.equal(await scanner.processObservation(observation), true);
+  assert.equal(await scanner.processObservation(observation), true);
+  const metrics = scanner.health().metrics;
+  assert.equal(metrics.counters.contextPriorityCompletedP2, 1);
+  assert.equal(metrics.histograms.contextPriorityCompletionLatencyP2Ms.count, 1);
+  assert.equal(metrics.counters.contextPriorityCompletedP0 ?? 0, 0);
+});
+
+test("priority completion is not counted for an unavailable transaction", async (t) => {
+  const { scanner, store, observation } = setup(null, { contextPrioritiesEnabled: true });
+  observation.contextPriority = 0;
+  await scanner.start();
+  t.after(() => scanner.stop());
+  store.receiveBatch([observation]);
+  assert.equal(await scanner.processObservation(observation), false);
+  assert.equal(scanner.health().metrics.counters.contextPriorityCompletedP0 ?? 0, 0);
+  assert.equal(scanner.health().metrics.histograms.contextPriorityCompletionLatencyP0Ms, undefined);
+});
+
 test("scanner persists and decodes a real Pump buy fixture once despite duplicate notifications, then reconciles finality", async (t) => {
   const tx = fixture("pump-buy-v3-mainnet.json");
   const { scanner, store, calls, observation, getSocket } = setup(tx);
