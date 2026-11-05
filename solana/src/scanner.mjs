@@ -238,10 +238,20 @@ export class Scanner {
     // Reserve a few of the *existing* durable slots for P0 arrivals; no
     // increase to durable capacity or shared RPC request budget.
     const maxBacklog = this.config.maxDurableBacklog ?? 250;
-    const reserved = prioritize
+    const reservedP0 = prioritize
       ? Math.min(maxBacklog, this.config.priorityP0ReservedSlots ?? 8) : 0;
-    const backlogLimit = contextPriority === 0
-      ? maxBacklog : Math.max(0, maxBacklog - reserved);
+    const reservedP1 = prioritize
+      ? Math.min(maxBacklog - reservedP0,
+        this.config.priorityP1ReservedSlots ?? 8) : 0;
+    const reservedP2 = prioritize
+      ? Math.min(maxBacklog - reservedP0 - reservedP1,
+        this.config.priorityP2ReservedSlots ?? 4) : 0;
+    const backlogLimit = [
+      maxBacklog,
+      maxBacklog - reservedP0,
+      maxBacklog - reservedP0 - reservedP1,
+      maxBacklog - reservedP0 - reservedP1 - reservedP2,
+    ][contextPriority];
     if (
       this.config.logObservationsEnabled !== false &&
       this.contextBacklog + this.buffer.length >= backlogLimit
@@ -611,6 +621,15 @@ export class Scanner {
         cycle: "P0:4 P1:2 P2:1 P3:1; weighted admissions, not reserved RPC calls",
         reservedP0Slots: Math.min(this.config.maxDurableBacklog ?? 250,
           this.config.priorityP0ReservedSlots ?? 8),
+        reservedP1Slots: Math.min(
+          Math.max(0, (this.config.maxDurableBacklog ?? 250) -
+            (this.config.priorityP0ReservedSlots ?? 8)),
+          this.config.priorityP1ReservedSlots ?? 8),
+        reservedP2Slots: Math.min(
+          Math.max(0, (this.config.maxDurableBacklog ?? 250) -
+            (this.config.priorityP0ReservedSlots ?? 8) -
+            (this.config.priorityP1ReservedSlots ?? 8)),
+          this.config.priorityP2ReservedSlots ?? 4),
         logObservationsPreservedIndependently: true,
         backlogCoverage: "PARTIAL",
       },
