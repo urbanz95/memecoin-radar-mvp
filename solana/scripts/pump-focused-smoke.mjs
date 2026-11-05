@@ -113,6 +113,25 @@ export function summarizeSamples(samples) {
       rpcRequestsPerMinute: 60 * requests / elapsedSeconds,
       rpcRequestsPerEnrichedTransaction: processed ? requests / processed : null,
     },
+    contextAdmission: {
+      skippedTotal: count('contextEnrichmentSkipped'),
+      skippedDurableBacklog: count('contextSkippedDurableBacklog'),
+      skippedIngressBuffer: count('contextSkippedIngressBuffer'),
+      // Older scanner versions only exposed the aggregate counter.
+      // Never infer a cause from an uninstrumented period.
+      unattributedSkips: Math.max(0,
+        count('contextEnrichmentSkipped') -
+        count('contextSkippedDurableBacklog') -
+        count('contextSkippedIngressBuffer')),
+      causeAccountingComplete: (
+        ['contextSkippedDurableBacklog', 'contextSkippedIngressBuffer']
+          .every(key => Object.hasOwn(first.metrics.counters, key) &&
+                        Object.hasOwn(last.metrics.counters, key)) &&
+        count('contextEnrichmentSkipped') ===
+          count('contextSkippedDurableBacklog') + count('contextSkippedIngressBuffer')
+      ),
+      interpretation: 'Skipped notifications are not a count of missed trades; cause counters describe admission pressure only.',
+    },
     lastGauges: {
       websocket_connected: last.metrics.gauges.websocket_connected ?? null,
       durableBacklog: last.metrics.gauges.durableBacklog ?? null,
