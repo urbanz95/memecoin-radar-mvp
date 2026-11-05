@@ -106,6 +106,14 @@ export function summarizeSamples(samples) {
       durableBacklog: last.metrics.gauges.durableBacklog ?? null,
       coverageOverloaded: last.metrics.gauges.coverageOverloaded ?? null,
     },
+    reliability: {
+      degradedSamples: samples.filter(s => s.status === 'DEGRADED').length,
+      overloadedSamples: samples.filter(s => s.metrics.gauges.coverageOverloaded === true).length,
+      disconnectedSamples: samples.filter(s => s.metrics.gauges.websocket_connected === false).length,
+      recoveryGapDelta: count('recoveryGaps'),
+      decoderFailureDelta: count('decoderFailures') + count('logDecoderFailures'),
+      interpretation: 'Diagnostic counts only; neither complete coverage nor a trading readiness verdict.',
+    },
     lastStorage: {
       pending: last.storage.pending ?? null,
       deferred: last.storage.deferred ?? null,
