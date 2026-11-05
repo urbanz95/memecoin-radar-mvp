@@ -128,6 +128,16 @@ test('archived real Pump creation exposes its available quote and supply evidenc
   }));
 });
 
+test('official native SOL quote sentinel is priced; unknown and USDC remain unknown', () => {
+  const native = {
+    quoteMint: null,
+    protocolQuoteMint: '11111111111111111111111111111111',
+  };
+  assert.equal(gate().evaluate([create(native)]).action, 'SKIP_LOW_FDV');
+  assert.equal(gate().evaluate([create({ ...native, quoteMint: 'usdc-mint' })]).action, 'UNKNOWN');
+  assert.equal(gate().evaluate([create({ quoteMint: null, protocolQuoteMint: null })]).action, 'UNKNOWN');
+});
+
 test('bounded creation cache evicts old evidence instead of growing indefinitely', () => {
   const g = new FdvEnrichmentGate({
     minimumUsd: 5000, now: () => clock, oracle, maxMints: 1,
