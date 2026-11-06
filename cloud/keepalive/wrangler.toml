@@ -1,0 +1,12 @@
+name = "solana-radar-keepalive"
+main = "src/index.mjs"
+compatibility_date = "2026-11-05"
+workers_dev = true
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# After first deployment, set the runtime variable RENDER_RADAR_HEALTH_URL in
+# Cloudflare > Workers & Pages > solana-radar-keepalive > Settings > Variables.
+# Example shape: https://your-service.onrender.com/health
+# Never put private keys, CF API tokens or account credentials here.
