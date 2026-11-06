@@ -52,6 +52,9 @@ export function loadConfig(env = process.env) {
   if (env.SOLANA_CONTEXT_PRIORITIES_ENABLED !== undefined &&
       !["true", "false", "1", "0"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED))
     throw Error("INVALID_SOLANA_CONTEXT_PRIORITIES_ENABLED");
+  if (env.SOLANA_PUBLIC_DASHBOARD_ONLY !== undefined &&
+      !["true", "false", "1", "0"].includes(env.SOLANA_PUBLIC_DASHBOARD_ONLY))
+    throw Error("INVALID_SOLANA_PUBLIC_DASHBOARD_ONLY");
   const queueConcurrency = integer(env, "SOLANA_QUEUE_CONCURRENCY", 2, 1, 32);
   const retentionDays = integer(env, "SOLANA_RETENTION_DAYS", 7, 1, 365);
   return {
@@ -63,6 +66,7 @@ export function loadConfig(env = process.env) {
     fdvMinimumUsd: integer(env, "SOLANA_FDV_MINIMUM_USD", 0, 0, 1_000_000_000),
     solUsdFeedEnabled: solUsdFeed === "coingecko",
     contextPrioritiesEnabled: ["true", "1"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED),
+    publicDashboardOnly: ["true", "1"].includes(env.SOLANA_PUBLIC_DASHBOARD_ONLY),
     priorityP0ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P0_SLOTS", 8, 0, 10000),
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
     logObservationsEnabled: ["true", "1"].includes(
