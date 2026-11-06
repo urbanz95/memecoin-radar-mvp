@@ -88,10 +88,12 @@ export function summarizeSamples(samples) {
   const rpcBucketNames = rpcBuckets.map(bucket => `rpc_budget_${bucket}`);
   const attributedAttempts = rpcBucketNames.reduce((sum, key) => sum + count(key), 0);
   // An absent counter may mean zero (new scanner) or missing instrumentation (legacy).
-  // Report completeness only when both endpoints explicitly expose every bucket.
-  const accountingInstrumented = ['rpc_requests', ...rpcBucketNames].every(
-    key => Object.hasOwn(first.metrics.counters, key) &&
-           Object.hasOwn(last.metrics.counters, key)
+  // Every sampled snapshot must expose the buckets: a missing intermediate
+  // value is not evidence of complete instrumentation, even if endpoints agree.
+  const accountingInstrumented = samples.every(s =>
+    ['rpc_requests', ...rpcBucketNames].every(
+      key => Object.hasOwn(s.metrics.counters, key)
+    )
   );
   const rpcAttribution = {
     attempts: requests,
