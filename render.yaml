@@ -1,0 +1,38 @@
+# Isolated Solana radar cloud preview. Render Free may spin down, restart or
+# suspend after quota exhaustion, and its filesystem is EPHEMERAL.
+# No API keys, payment credentials or user wallet keys are required.
+services:
+  - type: web
+    name: solana-pump-radar-mvp
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: solana
+    buildCommand: npm ci --ignore-scripts
+    startCommand: bash scripts/run-cloud.sh
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.13.0
+      - key: SOLANA_RPC_REQUESTS_PER_MINUTE
+        value: "12"
+      - key: SOLANA_RPC_CONCURRENCY
+        value: "1"
+      - key: SOLANA_QUEUE_CONCURRENCY
+        value: "1"
+      - key: SOLANA_QUEUE_CAPACITY
+        value: "8"
+      - key: SOLANA_MAX_DURABLE_BACKLOG
+        value: "64"
+      - key: SOLANA_MAX_OBSERVATION_ROWS
+        value: "3000"
+      - key: SOLANA_MAX_STORAGE_BYTES
+        value: "268435456"
+      - key: SOLANA_SECURITY_ENABLED
+        value: "false"
+      - key: SOLANA_CONTEXT_PRIORITIES_ENABLED
+        value: "true"
+      - key: SOLANA_FDV_MINIMUM_USD
+        value: "5000"
+      - key: SOLANA_SOL_USD_FEED
+        value: coingecko
