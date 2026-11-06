@@ -80,6 +80,29 @@ export function summarizeSamples(samples) {
   }
   const count = name => counterDeltas[name] ?? 0;
   const requests = count('rpc_requests');
+  // Only HTTP attempts belong in this invariant: throttle waits are not requests.
+  const rpcBuckets = [
+    'enrichment_p0', 'enrichment_p1', 'enrichment_p2', 'enrichment_p3',
+    'enrichment_unclassified', 'recovery', 'finality', 'security', 'other',
+  ];
+  const rpcBucketNames = rpcBuckets.map(bucket => `rpc_budget_${bucket}`);
+  const attributedAttempts = rpcBucketNames.reduce((sum, key) => sum + count(key), 0);
+  // An absent counter may mean zero (new scanner) or missing instrumentation (legacy).
+  // Report completeness only when both endpoints explicitly expose every bucket.
+  const accountingInstrumented = ['rpc_requests', ...rpcBucketNames].every(
+    key => Object.hasOwn(first.metrics.counters, key) &&
+           Object.hasOwn(last.metrics.counters, key)
+  );
+  const rpcAttribution = {
+    attempts: requests,
+    byPurpose: Object.fromEntries(rpcBuckets.map(
+      (bucket, index) => [bucket, count(rpcBucketNames[index])]
+    )),
+    attributedAttempts,
+    unattributedAttempts: requests - attributedAttempts,
+    accountingComplete: accountingInstrumented && requests === attributedAttempts,
+    interpretation: 'HTTP attempts including retries; excludes rpc_budget_waits. Missing legacy buckets prevent a complete accounting verdict.',
+  };
   const processed = count('transactionsProcessed');
   const latencyAtEnd = Object.fromEntries(
     ['logObservationLatencyMs', 'eventProcessingLatencyMs',
@@ -106,6 +129,7 @@ export function summarizeSamples(samples) {
     ),
     coverage: 'PARTIAL',
     counterDeltas,
+    rpcAttribution,
     windowRates: {
       notificationsPerSecond: count('notificationsReceived') / elapsedSeconds,
       logObservationsPersistedPerSecond: count('logObservationsPersisted') / elapsedSeconds,
