@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Solana Radar — MVP</title>
+<style>
+:root{color-scheme:dark;font:14px/1.5 system-ui,sans-serif;background:#0b1020;color:#e8ebf4}
+*{box-sizing:border-box}body{max-width:1280px;margin:0 auto;padding:26px 16px}
+h1{font-size:25px;margin:0}h2{font-size:17px;margin:0 0 12px}
+.muted{color:#aab7c9}.sub{font-size:12px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:24px 0}
+.card{border:1px solid #2d3953;border-radius:12px;background:#121b2d;padding:15px}
+.stat{font-size:25px;font-weight:700}.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.pill{display:inline-block;border:1px solid #496080;border-radius:20px;padding:3px 9px;font-size:12px;color:#c6d7ff}
+table{border-collapse:collapse;width:100%;text-align:left}th,td{border-bottom:1px solid #2c3650;padding:11px 9px;vertical-align:top}
+th{color:#b7c4da;font-size:12px}code{font-size:12px;overflow-wrap:anywhere;color:#c8d8fc}
+.good{color:#5ee1ad}.warn{color:#ffd58a}.grey{color:#aab7c9}
+.tablewrap{overflow-x:auto}table{min-width:850px}.small{font-size:12px}
+footer{margin:22px 0;color:#aab7c9;font-size:12px}
+</style>
+</head>
+<body>
+<div class="bar"><div><h1>Solana · Memecoin Radar</h1><div class="muted">Pump.fun / PumpSwap · monitorização experimental, somente leitura</div></div><span class="pill">Cobertura parcial</span></div>
+<div class="stats" id="stats"></div>
+<section class="card">
+<div class="bar"><h2>Tokens acompanhados</h2><span class="muted sub" id="updated"></span></div>
+<div class="tablewrap"><table><thead><tr><th>Token (mint)</th><th>FDV estimado</th><th>Eventos 15 s / 1 min</th><th>Compras / Vendas 1 min</th><th>Última atividade</th><th>Contexto</th></tr></thead><tbody id="tokens"></tbody></table></div>
+<p id="empty" class="muted" hidden>Não foram observados candidatos nesta amostra. Isto não significa que não existam tokens.</p>
+</section>
+<footer><strong>Atenção:</strong> não é aconselhamento financeiro. Os logs são incompletos; FDV não é market cap circulante. O número de eventos não representa tokens únicos nem volume global. Dados desconhecidos não são tratados como zero. <span id="sample"></span></footer>
+<script type="application/json" id="snapshot">__SNAPSHOT_JSON__</script>
+<script>
+(function(){
+let data=JSON.parse(document.getElementById('snapshot').textContent);
+const el=id=>document.getElementById(id);
+const fmt=n=>Number(n??0).toLocaleString('pt-PT');
+const add=(node,tag,value,cls)=>{const child=document.createElement(tag);child.textContent=String(value);if(cls)child.className=cls;node.appendChild(child);return child};
+function render(d){
+ el('stats').replaceChildren();el('tokens').replaceChildren();
+ const counts=[['Tokens distintos observados',d.totals?.observedDistinctMints],['FDV a partir de 5 mil USD',d.totals?.aboveFloor],['FDV desconhecido',d.totals?.unknownFdv],['Eventos de logs verificados',d.sample?.verifiedUniqueEvents]];
+ counts.forEach(([name,n])=>{const box=add(el('stats'),'div','','card');add(box,'div',fmt(n),'stat');add(box,'div',name,'muted small')});
+ el('updated').textContent='Amostra: '+new Date(d.generatedAt).toLocaleString('pt-PT');
+ (d.candidates||[]).forEach(t=>{
+  const tr=document.createElement('tr'),td=(v,cls)=>add(tr,'td',v,cls);
+  const mint=td('');add(mint,'code',t.mint);
+  const fdv=t.estimatedFdvUsd===null?'Desconhecido':t.estimatedFdvUsd.toLocaleString('pt-PT',{style:'currency',currency:'USD',maximumFractionDigits:0});
+  td(fdv,t.fdvStatus==='ABOVE_FLOOR'?'good':t.fdvStatus==='NEAR_FLOOR'?'warn':'grey');
+  td(fmt(t.activity?.['15s']?.events)+' / '+fmt(t.activity?.['60s']?.events));
+  td(fmt(t.activity?.['60s']?.buys)+' / '+fmt(t.activity?.['60s']?.sells));
+  td(new Date(t.lastObservedAt).toLocaleTimeString('pt-PT'));
+  td('Parcial · '+t.protocols.join(', '),'small');
+  el('tokens').appendChild(tr);
+ });
+ el('empty').hidden=(d.candidates||[]).length>0;
+ el('sample').textContent='Máximo: '+fmt(d.sample?.maxRowsRead)+' observações; possível truncagem: '+(d.sample?.possibleTruncation?'sim':'não')+'.';
+}
+render(data);
+if(location.protocol==='http:'||location.protocol==='https:'){
+ setInterval(async()=>{try{const r=await fetch('/radar?limit=50',{cache:'no-store'});if(r.ok)render(await r.json())}catch(_err){}},15000);
+}
+})();
+</script></body>
+</html>
