@@ -42,10 +42,18 @@ test("RPC budget attribution counts retries and every fixed-purpose bucket", asy
     assert.equal(counters.rpc_budget_finality, 1);
     assert.equal(counters.rpc_budget_security, 2);
     assert.equal(counters.rpc_budget_other, 1);
-    const buckets = Object.entries(counters)
-      .filter(([key]) => key.startsWith("rpc_budget_"))
-      .reduce((total, [, count]) => total + count, 0);
-    assert.equal(buckets, counters.rpc_requests);
+    // rpc_budget_waits measures throttle pressure, not HTTP attempts.
+    // Count only the fixed per-attempt attribution buckets.
+    const bucketNames = [
+      "enrichment_p0", "enrichment_p1", "enrichment_p2", "enrichment_p3",
+      "enrichment_unclassified", "recovery", "finality", "security", "other",
+    ];
+    const attributedAttempts = bucketNames.reduce(
+      (total, bucket) => total + (counters[`rpc_budget_${bucket}`] ?? 0),
+      0,
+    );
+    assert.ok(counters.rpc_budget_waits > 0);
+    assert.equal(attributedAttempts, counters.rpc_requests);
   } finally {
     await rpc.close();
   }
