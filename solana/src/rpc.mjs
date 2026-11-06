@@ -66,6 +66,20 @@ export class RpcError extends Error {
     this.retryAfterMs = retryAfterMs;
   }
 }
+// Fixed labels only: metrics never contain signatures, addresses or user input.
+function rpcBudgetBucket(method, context) {
+  if (method === "getTransaction") {
+    const priority = context?.priority;
+    return Number.isInteger(priority) && priority >= 0 && priority <= 3
+      ? `enrichment_p${priority}` : "enrichment_unclassified";
+  }
+  if (method === "getSignaturesForAddress") return "recovery";
+  if (method === "getSignatureStatuses") return "finality";
+  if (method === "getAccountInfo" || method === "getTokenLargestAccounts")
+    return "security";
+  return "other";
+}
+
 export class RpcClient {
   constructor({
     url = "https://api.mainnet-beta.solana.com",
@@ -160,7 +174,7 @@ export class RpcClient {
       release();
     }
   }
-  async request(method, params = []) {
+  async request(method, params = [], context) {
     if (!READ_METHODS.has(method)) throw Error("RPC_READ_ONLY_METHOD_REQUIRED");
     await this.acquire();
     try {
@@ -169,6 +183,7 @@ export class RpcClient {
         const id = ++this.id;
         const started = this.now();
         this.metrics?.inc("rpc_requests");
+        this.metrics?.inc(`rpc_budget_${rpcBudgetBucket(method, context)}`);
         this.metrics?.inc(`rpc_method_${method}`);
         try {
           const response = await this.fetchImpl(this.url, {
