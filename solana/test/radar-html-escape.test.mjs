@@ -24,8 +24,8 @@ test('dashboard embeds untrusted mint as JSON data without creating executable m
   const html = await response.text();
   assert.ok(!html.includes(maliciousMint), 'raw untrusted HTML must not appear');
   assert.ok(!html.includes('</script><script>globalThis.injected=true'));
-  const match = html.match(/<script type="application\\/json" id="snapshot">([^<]*)<\\/script>/);
+  const match = html.match(/<script type="application\/json" id="snapshot">([^<]*)<\/script>/);
   assert.ok(match, 'snapshot must remain in one inert JSON script element');
   assert.equal(JSON.parse(match[1]).candidates[0].mint, maliciousMint);
-  assert.equal((html.match(/<script\\b/g) ?? []).length, 2, 'no injected script tags');
+  assert.equal((html.match(/<script\b/g) ?? []).length, 2, 'no injected script tags');
 });
