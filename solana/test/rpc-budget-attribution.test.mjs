@@ -10,12 +10,14 @@ const reply = (id) => new Response(JSON.stringify({
 test("RPC budget attribution counts retries and every fixed-purpose bucket", async () => {
   const metrics = new Metrics();
   let calls = 0;
+  let now = 0;
   const rpc = new RpcClient({
     metrics,
     requestsPerMinute: 60000,
     retries: 1,
     random: () => 0,
-    sleep: async () => {},
+    now: () => now,
+    sleep: async (ms) => { now += ms; },
     fetchImpl: async (_url, init) => {
       const id = JSON.parse(init.body).id;
       if (++calls === 1) return new Response("", { status: 503 });
