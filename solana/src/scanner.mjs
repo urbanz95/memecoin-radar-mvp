@@ -394,7 +394,9 @@ export class Scanner {
               : "confirmed",
           maxSupportedTransactionVersion: 1,
         },
-      ]);
+      ], {
+        priority: observation.contextPriority,
+      });
       this.metrics.observe(
         "transactionEnrichmentLatencyMs",
         performance.now() - started,
