@@ -102,6 +102,8 @@ export function summarizeSamples(samples) {
     )),
     attributedAttempts,
     unattributedAttempts: requests - attributedAttempts,
+    instrumentationComplete: accountingInstrumented,
+    attributionBalanced: requests === attributedAttempts,
     accountingComplete: accountingInstrumented && requests === attributedAttempts,
     interpretation: 'HTTP attempts including retries; excludes rpc_budget_waits. Missing legacy buckets prevent a complete accounting verdict.',
   };
