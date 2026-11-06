@@ -10,6 +10,7 @@ import { inspectMint } from "./security.mjs";
 import { decodeLogObservation } from "./log-observations.mjs";
 import { FdvEnrichmentGate } from "./market-cap-gate.mjs";
 import { SolUsdOracle } from "./sol-usd-oracle.mjs";
+import { buildRadarSnapshot } from "./radar.mjs";
 import { classifyContextPriority, PriorityScheduler } from "./enrichment-priority.mjs";
 import { decodeTransaction, PROGRAMS } from "./protocols/index.mjs";
 export class Scanner {
@@ -563,6 +564,14 @@ export class Scanner {
     const snapshot = this.health();
     this.store.recordMetrics(snapshot);
     this.metrics.set("storageConsumptionBytes", snapshot.storage.storageBytes);
+  }
+  radar({ limit = 50, now = Date.now() } = {}) {
+    const sampleLimit = Math.min(10000, this.config.maxObservationRows ?? 10000);
+    const rows = this.store.radarObservations({ limit: sampleLimit, now });
+    return buildRadarSnapshot(rows, {
+      now, minimumFdvUsd: this.config.fdvMinimumUsd || 5000,
+      limit, quote: this.oracle.snapshot(), sampleLimit,
+    });
   }
   market() {
     return aggregateMarket(

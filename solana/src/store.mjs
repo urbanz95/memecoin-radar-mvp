@@ -229,6 +229,15 @@ export class Store {
       return count;
     });
   }
+  // Bounded read-only slice for the MVP radar. Uses receivedAt, not an
+  // inferred on-chain timestamp; never claims full history or global volume.
+  radarObservations({ limit = 10000, now = Date.now() } = {}) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 10000 ||
+        !Number.isFinite(now)) throw Error("INVALID_RADAR_QUERY");
+    return this.db.prepare(
+      "SELECT payload FROM event_observations WHERE received_at BETWEEN ? AND ? ORDER BY received_at DESC,id LIMIT ?",
+    ).all(now - 300000, now + 15000, limit).map(parse);
+  }
   observations({ mint, wallet, poolAddress, signature, limit = 100 } = {}) {
     let where = "1=1",
       args = [];

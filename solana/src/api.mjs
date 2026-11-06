@@ -1,4 +1,6 @@
 import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
+const RADAR_HTML = readFileSync(new URL("../static/radar.html", import.meta.url), "utf8");
 export function serve(scanner, { host = "127.0.0.1", port = 8788 } = {}) {
   const server = createServer((req, res) => {
     res.setHeader("content-type", "application/json; charset=utf-8");
@@ -19,6 +21,20 @@ export function serve(scanner, { host = "127.0.0.1", port = 8788 } = {}) {
         wallet = url.searchParams.get("wallet");
       let data;
       switch (url.pathname) {
+        case "/radar":
+          data = scanner.radar({ limit });
+          break;
+        case "/dashboard": {
+          // Snapshot renders without JS/network when downloaded as HTML.
+          // On loopback it refreshes /radar automatically without Solana RPC.
+          const snapshot = JSON.stringify(scanner.radar({ limit: 50 }))
+            .replace(/</g, "\\u003c").replace(/>/g, "\\u003e")
+            .replace(/&/g, "\\u0026");
+          res.setHeader("content-type", "text/html; charset=utf-8");
+          res.setHeader("content-security-policy", "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'");
+          res.end(RADAR_HTML.replace("__SNAPSHOT_JSON__", snapshot));
+          return;
+        }
         case "/health":
           data = scanner.health();
           break;
