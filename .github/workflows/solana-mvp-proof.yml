@@ -1,0 +1,105 @@
+name: Solana MVP — live radar proof
+on:
+  push:
+    branches:
+      - feat/solana-mvp-20261109
+    paths:
+      - .github/workflows/solana-mvp-proof.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prove-radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      SOLANA_DB_PATH: runtime/mvp/scanner.sqlite
+      SOLANA_HEALTH_HOST: '127.0.0.1'
+      SOLANA_HEALTH_PORT: '8791'
+      SOLANA_RPC_REQUESTS_PER_MINUTE: '12'
+      SOLANA_RPC_CONCURRENCY: '1'
+      SOLANA_QUEUE_CONCURRENCY: '1'
+      SOLANA_SECURITY_ENABLED: 'false'
+      SOLANA_MAX_DURABLE_BACKLOG: '64'
+      SOLANA_MAX_OBSERVATION_ROWS: '10000'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install and validate radar tests
+        working-directory: solana
+        run: |
+          npm ci --ignore-scripts
+          node --test test/radar.test.mjs
+      - name: Observe public Mainnet for 90 seconds and capture dashboard
+        working-directory: solana
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p runtime/mvp-artifacts
+          timeout --signal=TERM --kill-after=10s 150s bash scripts/run-pump-focused.sh >runtime/mvp-artifacts/scanner.log 2>&1 &
+          child=$!
+          trap 'kill -TERM "$child" 2>/dev/null || true; wait "$child" 2>/dev/null || true' EXIT
+          ready=false
+          for i in {1..25}; do
+            if curl -fsS --max-time 3 http://127.0.0.1:8791/health >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then
+            echo "::error::Scanner did not expose local /health."
+            tail -n 50 runtime/mvp-artifacts/scanner.log
+            exit 1
+          fi
+          node scripts/pump-focused-smoke.mjs --seconds 90 --interval 5 --output runtime/mvp-artifacts/smoke.json
+          curl -fsS --max-time 20 'http://127.0.0.1:8791/radar?limit=50' >runtime/mvp-artifacts/radar.json
+          curl -fsS --max-time 20 'http://127.0.0.1:8791/dashboard' >runtime/mvp-artifacts/dashboard.html
+          curl -fsS --max-time 10 'http://127.0.0.1:8791/health' >runtime/mvp-artifacts/health.json
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const root = 'runtime/mvp-artifacts/';
+          const snapshot = JSON.parse(readFileSync(root + 'radar.json', 'utf8'));
+          const health = JSON.parse(readFileSync(root + 'health.json', 'utf8'));
+          const smoke = JSON.parse(readFileSync(root + 'smoke.json', 'utf8'));
+          const html = readFileSync(root + 'dashboard.html', 'utf8');
+          if (snapshot.kind !== 'SOLANA_PUMP_RADAR_MVP' || snapshot.coverage !== 'PARTIAL' ||
+              !Number.isSafeInteger(snapshot.totals.observedDistinctMints) ||
+              snapshot.totals.observedDistinctMints < 1 ||
+              snapshot.sample.verifiedUniqueEvents < 1 ||
+              !html.includes('Solana · Memecoin Radar') || html.includes('__SNAPSHOT_JSON__') ||
+              health.mode !== 'READ_ONLY' ||
+              !smoke.programs.includes('pump_fun') || !smoke.programs.includes('pump_swap') ||
+              smoke.windowRates.rpcRequestsPerMinute > 12.5) {
+            throw Error('MVP_ACCEPTANCE_PROOF_FAILED');
+          }
+          console.log('MVP_PROOF', JSON.stringify({
+            observedDistinctMints: snapshot.totals.observedDistinctMints,
+            aboveFloor: snapshot.totals.aboveFloor,
+            unknownFdv: snapshot.totals.unknownFdv,
+            verifiedUniqueEvents: snapshot.sample.verifiedUniqueEvents,
+            samplePossibleTruncation: snapshot.sample.possibleTruncation,
+            rpcRequestsPerMinute: smoke.windowRates.rpcRequestsPerMinute,
+            coverage: snapshot.coverage,
+            health: health.status,
+          }));
+          NODE
+      - name: Log failure diagnostics
+        if: failure()
+        working-directory: solana
+        run: |
+          if test -f runtime/mvp-artifacts/scanner.log; then
+            tail -n 60 runtime/mvp-artifacts/scanner.log
+          fi
+      - name: Upload standalone dashboard and machine-readable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solana-mvp-dashboard-evidence
+          path: solana/runtime/mvp-artifacts/
+          retention-days: 7
+          if-no-files-found: warn
