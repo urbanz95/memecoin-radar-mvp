@@ -158,3 +158,44 @@ test('context admission reports observed skip causes without inventing uninstrum
   delete first.metrics.counters.contextSkippedIngressBuffer;
   assert.equal(summarizeSamples([first, last]).contextAdmission.causeAccountingComplete, false);
 });
+
+test('RPC attribution reconciles exact HTTP attempts, excluding throttle waits', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const last = sample('2026-11-05T12:01:00Z');
+  const purposes = [
+    'enrichment_p0', 'enrichment_p1', 'enrichment_p2', 'enrichment_p3',
+    'enrichment_unclassified', 'recovery', 'finality', 'security', 'other',
+  ];
+  for (const purpose of purposes) {
+    first.metrics.counters[`rpc_budget_${purpose}`] = 0;
+    last.metrics.counters[`rpc_budget_${purpose}`] = 0;
+  }
+  first.metrics.counters.rpc_requests = 10;
+  last.metrics.counters.rpc_requests = 13;
+  last.metrics.counters.rpc_budget_enrichment_p2 = 2;
+  last.metrics.counters.rpc_budget_recovery = 1;
+  last.metrics.counters.rpc_budget_waits = 9;
+  const attribution = summarizeSamples([first, last]).rpcAttribution;
+  assert.equal(attribution.attempts, 3);
+  assert.equal(attribution.attributedAttempts, 3);
+  assert.equal(attribution.unattributedAttempts, 0);
+  assert.equal(attribution.byPurpose.enrichment_p2, 2);
+  assert.equal(attribution.accountingComplete, true);
+  last.metrics.counters.rpc_requests = 14;
+  const mismatch = summarizeSamples([first, last]).rpcAttribution;
+  assert.equal(mismatch.unattributedAttempts, 1);
+  assert.equal(mismatch.accountingComplete, false);
+});
+
+test('legacy RPC counters never imply complete attribution', () => {
+  const first = sample('2026-11-05T12:00:00Z');
+  const last = sample('2026-11-05T12:01:00Z');
+  last.metrics.counters.rpc_requests = 12;
+  const legacy = summarizeSamples([first, last]).rpcAttribution;
+  assert.equal(legacy.attempts, 2);
+  assert.equal(legacy.unattributedAttempts, 2);
+  assert.equal(legacy.accountingComplete, false);
+  first.metrics.counters.rpc_budget_other = 0;
+  last.metrics.counters.rpc_budget_other = 2;
+  assert.equal(summarizeSamples([first, last]).rpcAttribution.accountingComplete, false);
+});
