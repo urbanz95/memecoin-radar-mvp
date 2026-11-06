@@ -1,0 +1,35 @@
+name: Solana cloud hosting smoke tests
+on:
+  push:
+    branches:
+      - feat/solana-cloud-hosting-20261106
+    paths:
+      - cloud/keepalive/**
+      - solana/scripts/run-cloud.sh
+      - solana/src/api.mjs
+      - solana/src/config.mjs
+      - solana/static/radar.html
+      - solana/test/cloud-hosting.test.mjs
+      - render.yaml
+      - .github/workflows/solana-cloud-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cloud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check entry script and Cloudflare heartbeat tests
+        run: |
+          bash -n solana/scripts/run-cloud.sh
+          node --test cloud/keepalive/test/*.test.mjs
+      - name: Check scanner cloud mode and dashboard tests
+        working-directory: solana
+        run: |
+          npm ci --ignore-scripts
+          node --test test/cloud-hosting.test.mjs test/radar.test.mjs
