@@ -33,3 +33,42 @@ jobs:
         run: |
           npm ci --ignore-scripts
           node --test test/cloud-hosting.test.mjs test/radar.test.mjs
+      - name: Cloud launcher HTTP smoke with bounded public RPC
+        working-directory: solana
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p runtime
+          PORT=10000 timeout --signal=TERM --kill-after=5s 50s bash scripts/run-cloud.sh >runtime/cloud-startup.log 2>&1 &
+          child=$!
+          trap 'kill -TERM "$child" 2>/dev/null || true; wait "$child" 2>/dev/null || true' EXIT
+          ready=false
+          for i in {1..20}; do
+            if curl -fsS --max-time 3 http://127.0.0.1:10000/health > runtime/cloud-health.json; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then
+            tail -n 40 runtime/cloud-startup.log
+            exit 1
+          fi
+          curl -fsS --max-time 5 http://127.0.0.1:10000/radar >runtime/cloud-radar.json
+          curl -fsS --max-time 5 http://127.0.0.1:10000/dashboard >runtime/cloud-dashboard.html
+          code=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:10000/observations)
+          test "$code" = 404
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const h=JSON.parse(readFileSync('runtime/cloud-health.json','utf8'));
+          const r=JSON.parse(readFileSync('runtime/cloud-radar.json','utf8'));
+          const page=readFileSync('runtime/cloud-dashboard.html','utf8');
+          if(h.chain!=='solana' || h.mode!=='READ_ONLY' ||
+             r.kind!=='SOLANA_PUMP_RADAR_MVP' || r.coverage!=='PARTIAL' ||
+             !page.includes('Solana · Memecoin Radar') ||
+             !page.includes('SEM LIGAÇÃO')) throw Error('CLOUD_LAUNCHER_PROOF_FAILED');
+          console.log('CLOUD_LAUNCHER_PROOF',JSON.stringify({
+            apiPort:10000,readOnly:true,rawEndpointsBlocked:true,
+            coverage:r.coverage,scannerStatus:h.status
+          }));
+          NODE
