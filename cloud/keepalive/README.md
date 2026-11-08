@@ -61,6 +61,53 @@ In the Cloudflare D1 console, read-only verification:
 Check that buckets grow in subsequent successful Cron runs. Monitor D1
 storage and write quotas before raising the 50-token limit or retention.
 
+## D1 Free retention and capacity budget
+
+The 50-candidate cap is a maximum, not 50 guaranteed unique tokens per run.
+At one run per five minutes there are 288 buckets per day:
+
+| Condition | Approximate volume |
+| --- | ---: |
+| 50 inserted candidates every Cron | 14,400 table rows/day |
+| Seven-day rolling window at steady state | ~100,800 table rows |
+| Expiry at steady state | up to ~14,400 table rows deleted/day |
+
+Cloudflare D1 Workers Free currently includes 100,000 rows written/day
+across the account, 5,000,000 rows read/day and 500 MB per database.
+**Index maintenance counts as additional D1 rows written.** The production
+schema has both a primary-key index and idx_radar_mint_history. Thus,
+the real daily write consumption may be much higher than 14,400 and becomes
+higher still once seven-day-old rows start being deleted. The 100,000/day
+quota cannot be certified from archive row counts alone. On Free, exceeding
+limits yields D1 errors instead of automatic extra paid charges.
+
+Check Cloudflare Dashboard > D1 > solana-radar-archive > Metrics > Row Metrics
+for rows_written, rows_read and database storage. Check account-wide usage.
+An illustrative ~3 index/table row writes per insert and per deletion would
+amount to ~86,400 rows written/day once retention reaches steady state;
+this is NOT an actual D1 measurement or a guaranteed ceiling.
+
+If actual writes approach the daily quota, first consider archiving fewer
+candidate mints per Cron (e.g. 25-30) or sampling less often. Coordinate
+any change with the manually deployed Worker and regression tests. Do not
+drop the secondary index or rebuild the live production table without
+a deliberate migration. This PR changes no production configuration.
+
+Read-only D1 Console queries for occasional checks:
+
+    SELECT COUNT(*) AS rows_archived,
+           COUNT(DISTINCT bucket_at) AS buckets,
+           datetime(MIN(bucket_at)/1000, 'unixepoch') AS oldest_utc,
+           datetime(MAX(bucket_at)/1000, 'unixepoch') AS newest_utc
+    FROM radar_token_samples;
+
+    SELECT COUNT(*) AS expired_rows
+    FROM radar_token_samples
+    WHERE bucket_at < CAST(strftime('%s','now') AS INTEGER) * 1000
+                      - (7 * 86400000);
+
+These counts scan the table and consume some rows-read quota, so run them
+sparingly rather than on every Cron.
 ## Safety
 
 - The Render scanner and Cloudflare Worker must stay independent.
