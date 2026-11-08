@@ -1,0 +1,41 @@
+name: Solana stalled websocket root-cause read-only check
+on:
+  push:
+    branches:
+      - diag/solana-ws-stall-rootcause-20261108
+    paths:
+      - .github/workflows/solana-stall-rootcause-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remote-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Compare safe public health counters twice without Solana RPC
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const target='https://solana-pump-radar-mvp.onrender.com/health';
+          function safe(obj,keys){ const out={}; for(const key of keys)if(obj&&Object.hasOwn(obj,key))out[key]=obj[key];return out;}
+          const gaugeNames=['websocket_connected','websocket_connected_at','websocket_disconnected_at','websocket_last_log_received','websocket_last_disconnect_reason','websocket_last_transport_error_code','websocket_stream_stale','lastEventReceived','currentSlot','durableBacklog','coverageOverloaded','lastLogObservationPersisted','storageConsumptionBytes','reconnect_delay_ms'];
+          const counterNames=['websocket_disconnects','reconnect_count','websocket_silent_reconnects','websocket_callback_errors','websocket_invalid_messages','subscription_errors','persistenceFailures','processingFailures','errors','log_notifications','notificationsReceived','logObservationsDecoded','logObservationsPersisted','recoveryGaps'];
+          for(let i=0;i<2;i++){
+            try{
+              const res=await fetch(target,{headers:{'Accept':'application/json'},signal:AbortSignal.timeout(18000)});
+              const body=await res.json();
+              const m=body.metrics??{};
+              console.log('SOLANA_STALL_DIAG '+JSON.stringify({
+                timestamp:new Date().toISOString(),httpStatus:res.status,
+                status:body.status,startedAt:body.startedAt??null,
+                counters:safe(m.counters,counterNames),gauges:safe(m.gauges,gaugeNames),
+                logStream:safe(body.logStream,['noRecentLogs','lastObservedAt','status']),
+                storage:safe(body.storage,['storageBytes','maxStorageBytes','pending','inbox','gaps'])
+              }));
+            }catch(e){console.log('SOLANA_STALL_DIAG_ERROR '+JSON.stringify({kind:e?.name==='TimeoutError'?'TIMEOUT':'REMOTE_READ_ERROR'}));process.exitCode=1;}
+            if(i===0)await new Promise(resolve=>setTimeout(resolve,12000));
+          }
+          NODE
