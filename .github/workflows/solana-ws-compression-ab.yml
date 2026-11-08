@@ -1,0 +1,77 @@
+name: Solana WS compression A/B (read-only)
+on:
+  push:
+    branches:
+      - diag/solana-ws-reconnect-20261108
+    paths:
+      - .github/workflows/solana-ws-compression-ab.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install locked dependencies
+        run: cd solana && npm ci --ignore-scripts
+      - name: Compare compressed and uncompressed WebSocket subscriptions without HTTP RPC
+        shell: bash
+        working-directory: solana
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import WebSocket from 'ws';
+          const url='wss://api.mainnet.solana.com';
+          const ids=['6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P','pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA'];
+          const safe = code => typeof code==='string' && /^[A-Z][A-Z0-9_]{1,63}$/.test(code) ? code : 'UNKNOWN';
+          async function probe(name, perMessageDeflate) {
+            await new Promise(resolve=>{
+              const start=Date.now();
+              const ws=new WebSocket(url,{handshakeTimeout:12000,maxPayload:2*1024*1024,perMessageDeflate});
+              let settled=false,timer,ping,acked=0,notifications=0,pongs=0,compressed=null,lastLogAt=null;
+              const finish=(outcome,details={})=>{
+                if(settled)return;
+                settled=true;
+                clearTimeout(timer);clearInterval(ping);
+                console.log('SOLANA_WS_COMPRESSION_AB '+JSON.stringify({
+                  mode:name,durationMs:Date.now()-start,outcome,
+                  compressionRequested:perMessageDeflate,
+                  compressionNegotiated:compressed,
+                  subscriptionsAcked:acked,notifications,pongs,
+                  lastNotificationAgeMs:lastLogAt===null?null:Date.now()-lastLogAt,
+                  ...details,
+                }));
+                ws.terminate();resolve();
+              };
+              timer=setTimeout(()=>finish('OBSERVATION_COMPLETED'),60000);
+              ws.on('open',()=>{
+                compressed=ws.extensions.includes('permessage-deflate');
+                ids.forEach((programId,i)=>ws.send(JSON.stringify({
+                  jsonrpc:'2.0',id:i+1,method:'logsSubscribe',
+                  params:[{mentions:[programId]},{commitment:'confirmed'}],
+                })));
+                ping=setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.ping();},15000);
+              });
+              ws.on('pong',()=>{pongs++});
+              ws.on('message',buf=>{
+                let m;
+                try{m=JSON.parse(buf.toString())}catch{return;}
+                if(Object.hasOwn(m,'id')){if(Number.isSafeInteger(m.result))acked++;}
+                if(m.method==='logsNotification'){notifications++;lastLogAt=Date.now();}
+              });
+              ws.on('error',e=>finish('TRANSPORT_ERROR',{code:safe(e?.code)}));
+              ws.on('close',code=>finish('SOCKET_CLOSED',{closeCode:code}));
+              ws.on('unexpected-response',(_req,res)=>finish('HTTP_HANDSHAKE_REJECTED',{statusCode:res?.statusCode??null}));
+            });
+          }
+          console.log('WS_COMPRESSION_SETUP '+JSON.stringify({source:'official_solana_canonical_ws',durationMsPerMode:60000,solanaHttpRpcCalls:0}));
+          await probe('client_default_enabled',true);
+          await probe('compression_disabled',false);
+          NODE
