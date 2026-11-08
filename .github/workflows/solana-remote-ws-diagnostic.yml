@@ -34,7 +34,10 @@ jobs:
             'log_notifications','notificationsReceived','websocket_disconnects',
             'websocket_silent_reconnects','reconnect_count','subscription_errors',
             'websocket_invalid_messages','websocket_callback_errors',
-            'contextEnrichmentSkipped','rpcRequests','logObservationsPersisted'
+            'contextEnrichmentSkipped','contextEnrichmentExcludedByPolicy',
+            'ingressRejected','recoveryGaps','persistenceFailures','errors',
+            'contextSkippedIngressBuffer','contextSkippedDurableBacklog',
+            'rpcRequests','logObservationsPersisted'
           ];
           const counters = Object.fromEntries(keys.map(k => [k, c[k] ?? null]));
           const output = {
