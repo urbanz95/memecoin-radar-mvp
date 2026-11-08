@@ -1,0 +1,135 @@
+name: Solana Shrine owner verification (read-only)
+on:
+  push:
+    branches:
+      - diag/shrine-owner-check-20261108
+    paths:
+      - .github/workflows/solana-shrine-owner-check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install ephemeral unprivileged socket client
+        working-directory: solana
+        run: |
+          npm ci --ignore-scripts
+          npm install --no-save --no-package-lock --ignore-scripts socket.io-client@4.8.1
+      - name: Read account owners, account type and optionally PumpSwap pool
+        working-directory: solana
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import { io } from 'socket.io-client';
+          const rpcEndpoint = 'https://solana-rpc.publicnode.com';
+          const program = {
+            PUMPFUN: '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+            PUMPSWAP: 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA'
+          };
+          const tokenOwners = new Set([
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            'TokenzQdBNbLqP5VEhdkAS6EPFhYU7cpZ5Cy6u8tugV'
+          ]);
+          const valid = s => typeof s === 'string' &&
+            /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
+          const known = {
+            protocol: 'PUMPFUN',
+            mint: '2Fp3yPgsyxVYuTWDifHw5jHzUrTgMvtgk99dLA9Ppump',
+            pool: 'BpLbszoAFi8cq5JPsNQ56NNqKRmGUHy1b7W89doUohZR'
+          };
+          const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+          const feed = io('https://sol.shrine.trade', {
+            transports: ['websocket'], reconnection: false,
+            timeout: 15000, forceNew: true
+          });
+          let swap = null;
+          let feedAck = 'NO_ACK';
+          feed.on('connect', () => {
+            feed.emit('subscribe_new_tokens', { protocols: ['PUMPSWAP'] }, r => {
+              feedAck = r?.ok === true ? 'OK' : 'NOT_OK';
+            });
+          });
+          feed.on('new_token', e => {
+            if (!swap && e?.protocol === 'PUMPSWAP' &&
+                valid(e.mint) && valid(e.pool)) {
+              swap = { protocol: 'PUMPSWAP', mint: e.mint, pool: e.pool };
+            }
+          });
+          await pause(65000);
+          feed.disconnect();
+          console.log('SHRINE_FEED_DISCOVERY ' + JSON.stringify({
+            gotPumpSwapSample: Boolean(swap), ack: feedAck,
+            source: 'third_party_unverified'
+          }));
+
+          let calls = 0;
+          async function account(addr, encoding) {
+            calls++;
+            const body = {
+              jsonrpc: '2.0', id: calls, method: 'getAccountInfo',
+              params: [addr, { commitment: 'confirmed', encoding,
+                ...(encoding === 'base64'
+                  ? {dataSlice: {offset: 0, length: 0}} : {}) }]
+            };
+            try {
+              const response = await fetch(rpcEndpoint, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+                signal: AbortSignal.timeout(15000)
+              });
+              if (!response.ok) return { httpStatus: response.status };
+              const json = await response.json();
+              if (json?.error) return { rpcCode: json.error.code ?? 'UNKNOWN' };
+              return { account: json?.result?.value ?? null,
+                slot: json?.result?.context?.slot ?? null };
+            } catch (e) {
+              return { errorCode: e?.name === 'TimeoutError'
+                ? 'RPC_TIMEOUT' : 'RPC_FAILED' };
+            }
+          }
+          const outputs = [];
+          for (const item of [known, swap].filter(Boolean)) {
+            const m = await account(item.mint, 'jsonParsed');
+            await pause(6500);
+            const p = await account(item.pool, 'base64');
+            await pause(6500);
+            const parsed = m.account?.data?.parsed;
+            outputs.push({
+              protocol: item.protocol, mint: item.mint, pool: item.pool,
+              mintExists: Boolean(m.account),
+              mintOwner: m.account?.owner ?? null,
+              mintOwnerIsTokenProgram: tokenOwners.has(m.account?.owner),
+              mintParsedType: parsed?.type ?? null,
+              mintDecimals: parsed?.info?.decimals ?? null,
+              mintSpace: m.account?.space ?? null,
+              mintSlot: m.slot ?? null,
+              mintHttpStatus: m.httpStatus ?? null,
+              mintRpcCode: m.rpcCode ?? null,
+              mintError: m.errorCode ?? null,
+              poolExists: Boolean(p.account),
+              poolOwner: p.account?.owner ?? null,
+              poolOwnerMatchesProtocol: p.account?.owner === program[item.protocol],
+              poolSlot: p.slot ?? null,
+              poolHttpStatus: p.httpStatus ?? null,
+              poolRpcCode: p.rpcCode ?? null,
+              poolError: p.errorCode ?? null
+            });
+          }
+          console.log('SHRINE_OWNER_CHECK ' + JSON.stringify({
+            results: outputs, solanaHttpRpcCalls: calls,
+            paidServicesUsed: false, tradesExecuted: false,
+            existingRenderCloudflareTouched: false
+          }));
+          if (!outputs[0]?.mintSlot) process.exitCode = 1;
+          NODE
