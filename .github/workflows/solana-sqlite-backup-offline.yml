@@ -5,6 +5,8 @@ on:
       - test/solana-sqlite-restore-offline-20261108
     paths:
       - solana/src/backup-offline.mjs
+      - solana/src/backup-object-store.mjs
+      - solana/test/backup-object-store.test.mjs
       - solana/test/backup-offline.test.mjs
       - .github/workflows/solana-sqlite-backup-offline.yml
 permissions:
@@ -24,7 +26,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Verify SQLite WAL snapshot and restore without internet or RPC
-        run: node --test solana/test/backup-offline.test.mjs
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs
   handoff:
     needs: [restore]
     if: always()
@@ -35,4 +37,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.restore.result }}
         run: |
-          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body "**[CI SQLite OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}. Sem R2, sem HTTP RPC, sem deploy nem alteração a produção. É um teste de roundtrip offline, não garante ainda backup durável em cloud. Workflow: https://github.com/urbanz95/memecoin-radar-mvp/actions/workflows/solana-sqlite-backup-offline.yml ."
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}. Sem R2, sem HTTP RPC, sem deploy nem alteração a produção. É um teste de roundtrip local e transporte simulado, sem ligação nem credenciais R2; não garante backup durável em cloud. Workflow: https://github.com/urbanz95/memecoin-radar-mvp/actions/workflows/solana-sqlite-backup-offline.yml ."
