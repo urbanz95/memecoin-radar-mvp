@@ -239,8 +239,17 @@ export class LogSocket {
         this.reconnect("HANDLER_FAILURE");
       }
     });
-    socket.on("error", () => {
-      if (current()) this.reconnect("TRANSPORT_ERROR");
+    socket.on("error", (error) => {
+      if (!current()) return;
+      // Only expose a bounded machine code, never error.message, URLs or headers.
+      const code = error?.code;
+      this.metrics?.set(
+        "websocket_last_transport_error_code",
+        typeof code === "string" && /^[A-Z][A-Z0-9_]{1,63}$/.test(code)
+          ? code
+          : "UNKNOWN",
+      );
+      this.reconnect("TRANSPORT_ERROR");
     });
     socket.on("close", () => {
       if (current()) this.disconnected("SOCKET_CLOSED", generation);
