@@ -17,6 +17,9 @@ export SOLANA_CONTEXT_MAX_PRIORITY="${SOLANA_CONTEXT_MAX_PRIORITY:-0}"
 # Drop queued live context after 90 seconds rather than enriching stale trades.
 # No effect on the separate event log projection or recovery entries.
 export SOLANA_CONTEXT_MAX_AGE_MS="${SOLANA_CONTEXT_MAX_AGE_MS:-90000}"
+# Use public Kraken last-trade price only if CoinGecko is unavailable;
+# record the source explicitly and never claim exchange trade-timestamp freshness.
+export SOLANA_SOL_USD_FALLBACK="${SOLANA_SOL_USD_FALLBACK:-true}"
 export SOLANA_DB_PATH="${SOLANA_DB_PATH:-runtime/cloud-pump/scanner.sqlite}"
 # Keep the exact same Pump.fun/PumpSwap protocol, RPC and FDV policies.
 exec bash scripts/run-pump-focused.sh
