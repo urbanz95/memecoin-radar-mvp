@@ -44,7 +44,7 @@ export class Scanner {
         retries: config.rpcRetries ?? 2,
       });
     this.decode = decode;
-    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled });
+    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled, fallbackEnabled: config.solUsdFallbackEnabled });
     this.fdvGate = new FdvEnrichmentGate({
       minimumUsd: config.fdvMinimumUsd ?? 0,
       oracle: this.oracle,
@@ -653,6 +653,7 @@ export class Scanner {
         valuation: "PUMP_FUN_SOL_QUOTED_VIRTUAL_RESERVE_FDV_PROXY_NOT_CIRCULATING_MCAP",
         oraclePrice: this.oracle.snapshot(),
         oracleFailures: this.oracle.failures ?? 0,
+        fallbackSuccesses: this.oracle.fallbackSuccesses ?? 0,
         supplyCacheSize: this.fdvGate.supplies.size,
         supplyCacheEvictions: this.fdvGate.cacheEvictions,
       },
