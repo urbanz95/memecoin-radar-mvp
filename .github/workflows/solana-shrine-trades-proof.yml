@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  issues: write
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -23,4 +24,26 @@ jobs:
         run: npm install --no-save --no-package-lock --ignore-scripts socket.io-client@4.8.1
       - name: Compare live Shrine trades to Solana confirmed transaction (no deploy/no trade)
         working-directory: solana
-        run: node scripts/shrine-trades-proof.mjs
+        run: node scripts/shrine-trades-proof.mjs | tee shrine-trades-proof.log
+      - name: Report bounded proof to coordination issue 17
+        if: always()
+        working-directory: solana
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '[ENSAIO ISOLADO — Shrine trade -> Solana getTransaction]'
+            echo 'Branch diag/solana-shrine-trades-proof-20261108; sem deployment, chaves ou trades.'
+            echo
+            echo 'RESULTADO JSON:'
+            if [ -f shrine-trades-proof.log ]; then
+              grep '^SHRINE_TRADE_ONCHAIN_PROOF ' shrine-trades-proof.log | tail -1 | sed 's/^SHRINE_TRADE_ONCHAIN_PROOF //' || true
+            else
+              echo '{"status":"NO_PROOF_LOG","reason":"script failed before completion"}'
+            fi
+            echo
+            echo 'A conclusão SUCCESS do workflow não prova correspondência on-chain: avaliar verifiedWithProgram e verificações individuais.'
+          } > /tmp/shrine-proof-comment.md
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file /tmp/shrine-proof-comment.md
