@@ -119,6 +119,25 @@ test("same five-minute bucket is idempotent; next bucket retains historical rows
   assert.notEqual(first.bucket, nextBucket.bucket);
 });
 
+test("seven-day retention removes only expired buckets and preserves live rows", async () => {
+  const db = fakeD1(), week = 7 * 86400000;
+  // Boundary is inclusive, mirroring SQL WHERE bucket_at < cutoff.
+  db.rows.set("expired", [NOW - week - 1]);
+  db.rows.set("boundary", [NOW - week]);
+  db.rows.set("recent", [NOW - week + 1]);
+  const { fn } = mockFetch();
+  const result = await archiveRadar(env(db), fn, () => NOW);
+  assert.equal(result.inserted, 1);
+  assert.equal(db.rows.has("expired"), false);
+  assert.equal(db.rows.has("boundary"), true);
+  assert.equal(db.rows.has("recent"), true);
+  assert.equal(db.rows.size, 3);
+  assert.equal(db.deletedBefore, NOW - week);
+  // An immediate retry must not alter the retained archive.
+  assert.equal((await archiveRadar(env(db), fn, () => NOW)).inserted, 0);
+  assert.equal(db.rows.size, 3);
+});
+
 test("archive is bounded to 50 tokens and preserves UNKNOWN FDV honestly", async () => {
   const db = fakeD1();
   const candidates = base58.slice(0, 52).split("").map(c => token(c));
