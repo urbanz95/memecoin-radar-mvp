@@ -53,6 +53,13 @@ export class Scanner {
     this.priorityScheduler = new PriorityScheduler();
     this.buffer = [];
     this.stopping = false;
+    // Storage failures must not leave a live HTTP process with a permanently
+    // stopped ingest socket.
+    this.storagePaused = false;
+    this.storagePausedAt = null;
+    this.storageRetryAt = 0;
+    this.storageFailuresInRow = 0;
+    this.metrics.set("websocket_storage_paused", false);
     this.recoveryPending = false;
     this.recovering = false;
     this.activeSignatures = new Set();
@@ -130,6 +137,8 @@ export class Scanner {
     }
     if (this.config.fdvMinimumUsd > 0)
       this.every(() => this.oracle.refresh(), 120000);
+    // Separate from WebSocket heartbeat: a durable-write canary controls recovery.
+    this.every(() => this.storageRecoveryWatchdog(), 5000);
     this.every(() => this.flush(), 250);
     this.every(() => this.pump(), 250);
     this.every(() => this.tickRecovery(), 5000);
@@ -297,6 +306,73 @@ export class Scanner {
     if (prioritize) this.metrics.inc(`contextPriorityAdmittedP${contextPriority}`);
     if (this.buffer.length >= 100) this.flush();
   }
+  pauseForStorageError(error) {
+    if (this.stopping) return;
+    const now = Date.now();
+    if (!this.storagePaused) {
+      this.storagePaused = true;
+      this.storagePausedAt = new Date(now).toISOString();
+      this.disconnectedAt ??= this.storagePausedAt;
+      this.recoveryPending = true;
+      this.metrics.inc("websocket_storage_pauses");
+      this.metrics.set("websocket_storage_paused", true);
+      this.metrics.set("websocket_storage_paused_at", this.storagePausedAt);
+      // Preserve uncommitted buffers; do not keep ingesting while SQLite fails.
+      this.socket?.stop();
+    }
+    const code = error?.code;
+    this.metrics.set("websocket_storage_last_error_code",
+      typeof code === "string" && /^[A-Z][A-Z0-9_]{1,63}$/.test(code)
+        ? code : error?.message === "STORAGE_BUDGET_EXCEEDED"
+          ? "STORAGE_BUDGET_EXCEEDED" : "STORAGE_WRITE_ERROR");
+    this.storageFailuresInRow = Math.min(this.storageFailuresInRow + 1, 16);
+    const delay = Math.min(60000, 5000 * 2 ** Math.min(this.storageFailuresInRow - 1, 4));
+    this.storageRetryAt = now + delay;
+    this.metrics.set("websocket_storage_retry_delay_ms", delay);
+    this.metrics.set("websocket_storage_next_retry_at", new Date(this.storageRetryAt).toISOString());
+  }
+  storageRecoveryWatchdog() {
+    if (this.stopping) return;
+    if (!this.storagePaused) {
+      // start() does nothing when LogSocket already runs or is reconnecting.
+      // Respect deliberate backpressure in profiles without log persistence.
+      if (this.socket?.stopped === true &&
+          (this.config.logObservationsEnabled !== false || !this.overloadRecorded)) {
+        this.metrics.inc("websocket_unexpected_stops");
+        this.socket.start();
+      }
+      return;
+    }
+    if (Date.now() < this.storageRetryAt) return;
+    this.metrics.inc("websocket_storage_recovery_attempts");
+    try {
+      this.store.checkBudget();
+      this.flush({ allowPaused: true });
+      // An actual write verifies recovery; a successful health GET does not.
+      this.store.recordMetrics(this.health());
+      this.store.gap("PERSISTENCE_PAUSE_RECOVERED", {
+        from: this.storagePausedAt,
+        to: new Date().toISOString(),
+      });
+      this.storagePaused = false;
+      this.storagePausedAt = null;
+      this.storageRetryAt = 0;
+      this.storageFailuresInRow = 0;
+      this.metrics.set("websocket_storage_paused", false);
+      this.metrics.set("websocket_storage_next_retry_at", null);
+      this.metrics.inc("websocket_storage_recoveries");
+      this.recoveryPending = true;
+      this.socket?.start();
+      // Only subscriptions and subsequent notifications establish live health.
+    } catch (error) {
+      this.metrics.inc("websocket_storage_recovery_failures");
+      // flush() might already have scheduled retry; do not double the backoff.
+      if (this.storageRetryAt <= Date.now()) {
+        this.metrics.inc("persistenceFailures");
+        this.pauseForStorageError(error);
+      }
+    }
+  }
   flushObservations() {
     if (!this.observationBuffer.length) return;
     const batch = this.observationBuffer.splice(0, 1000);
@@ -318,11 +394,12 @@ export class Scanner {
     } catch (e) {
       this.observationBuffer.unshift(...batch);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseForStorageError(e);
       throw e;
     }
   }
-  flush() {
+  flush({ allowPaused = false } = {}) {
+    if (this.storagePaused && !allowPaused) return;
     this.flushObservations();
     if (!this.buffer.length) return;
     const items = this.buffer.splice(0, 100);
@@ -331,12 +408,12 @@ export class Scanner {
     } catch (e) {
       this.buffer.unshift(...items);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseForStorageError(e);
       throw e;
     }
   }
   pump() {
-    if (this.stopping) return;
+    if (this.stopping || this.storagePaused) return;
     const capacity = this.config.maxDurableBacklog ?? 5000;
     const stats = this.store.stats();
     this.contextBacklog = stats.pending;
@@ -521,15 +598,20 @@ export class Scanner {
       this.metrics.inc("processingFailures");
       if (/STORAGE|SQLITE|EVENT_|RAW_AMOUNT/.test(error.message)) {
         this.metrics.inc("persistenceFailures");
-        this.socket?.stop();
+        this.pauseForStorageError(error);
       }
-      this.store.retry(observation.signature, error.code ?? error.message);
+      try {
+        this.store.retry(observation.signature, error.code ?? error.message);
+      } catch (storageError) {
+        this.metrics.inc("persistenceFailures");
+        this.pauseForStorageError(storageError);
+      }
       this.recordError("PROCESSING_FAILED", error);
       return false;
     }
   }
   async tickRecovery() {
-    if (this.stopping || this.recovering) return;
+    if (this.stopping || this.storagePaused || this.recovering) return;
     // Drain captured live data before using the shared free RPC budget for history.
     if (
       this.recoveryPending &&
@@ -573,6 +655,7 @@ export class Scanner {
     }
   }
   async reconcile() {
+    if (this.storagePaused) return;
     const rows = this.store.nonFinalized();
     if (!rows.length) return;
     try {
@@ -632,7 +715,7 @@ export class Scanner {
       mode: "READ_ONLY",
       status: this.stopping
         ? "STOPPING"
-        : !metrics.gauges.websocket_connected ||
+        : this.storagePaused || !metrics.gauges.websocket_connected ||
             noRecentLogs ||
             metrics.gauges.coverageOverloaded ||
             storage.pending > 50
@@ -680,7 +763,8 @@ export class Scanner {
     this.socket?.stop();
     let failure;
     try {
-      while (this.buffer.length || this.observationBuffer.length) this.flush();
+      while (this.buffer.length || this.observationBuffer.length)
+        this.flush({ allowPaused: true });
     } catch (e) {
       failure = e;
     }
