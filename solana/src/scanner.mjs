@@ -61,6 +61,8 @@ export class Scanner {
     this.observationBuffer = [];
     this.contextBacklog = 0;
     this.logDiagnostics = new Map();
+    // Persist failures must not leave the log socket stopped forever.
+    this.storageSocketPausedAt = null;
     this.queue = new BoundedQueue({
       capacity: config.queueCapacity ?? 500,
       concurrency: config.processingConcurrency ?? 2,
@@ -297,6 +299,13 @@ export class Scanner {
     if (prioritize) this.metrics.inc(`contextPriorityAdmittedP${contextPriority}`);
     if (this.buffer.length >= 100) this.flush();
   }
+  pauseSocketForStorage() {
+    if (this.storageSocketPausedAt === null)
+      this.metrics.inc("websocket_storage_pauses");
+    this.storageSocketPausedAt = Date.now();
+    this.metrics.set("websocket_storage_paused", true);
+    this.socket?.stop();
+  }
   flushObservations() {
     if (!this.observationBuffer.length) return;
     const batch = this.observationBuffer.splice(0, 1000);
@@ -318,7 +327,7 @@ export class Scanner {
     } catch (e) {
       this.observationBuffer.unshift(...batch);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseSocketForStorage();
       throw e;
     }
   }
@@ -331,7 +340,7 @@ export class Scanner {
     } catch (e) {
       this.buffer.unshift(...items);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseSocketForStorage();
       throw e;
     }
   }
@@ -355,7 +364,7 @@ export class Scanner {
     } else if (this.overloadRecorded && stats.pending < capacity / 2) {
       this.overloadRecorded = false;
       this.metrics.set("coverageOverloaded", false);
-      this.socket?.start();
+      if (this.storageSocketPausedAt === null) this.socket?.start();
       this.recoveryPending = true;
     }
     const available = Math.max(
@@ -521,7 +530,7 @@ export class Scanner {
       this.metrics.inc("processingFailures");
       if (/STORAGE|SQLITE|EVENT_|RAW_AMOUNT/.test(error.message)) {
         this.metrics.inc("persistenceFailures");
-        this.socket?.stop();
+        this.pauseSocketForStorage();
       }
       this.store.retry(observation.signature, error.code ?? error.message);
       this.recordError("PROCESSING_FAILED", error);
@@ -592,9 +601,34 @@ export class Scanner {
     }
   }
   persistMetrics() {
-    const snapshot = this.health();
-    this.store.recordMetrics(snapshot);
-    this.metrics.set("storageConsumptionBytes", snapshot.storage.storageBytes);
+    try {
+      const snapshot = this.health();
+      this.store.recordMetrics(snapshot);
+      this.metrics.set("storageConsumptionBytes", snapshot.storage.storageBytes);
+    } catch (e) {
+      this.metrics.inc("persistenceFailures");
+      this.pauseSocketForStorage();
+      throw e;
+    }
+    if (this.stopping || this.storageSocketPausedAt === null ||
+        Date.now() - this.storageSocketPausedAt < 30000) return;
+    // Only resume after a real DB write succeeded, the storage budget is
+    // healthy, and buffered log observations can be persisted. No records
+    // are dropped to force a reconnect.
+    try {
+      this.store.checkBudget();
+      this.flush();
+      this.store.checkBudget();
+    } catch {
+      this.metrics.inc("websocket_storage_resume_deferred");
+      this.storageSocketPausedAt = Date.now();
+      return;
+    }
+    this.storageSocketPausedAt = null;
+    this.metrics.set("websocket_storage_paused", false);
+    this.metrics.inc("websocket_storage_resumes");
+    this.socket?.start();
+    this.recoveryPending = true;
   }
   radar({ limit = 50, now = Date.now() } = {}) {
     const sampleLimit = Math.min(10000, this.config.maxObservationRows ?? 10000);
