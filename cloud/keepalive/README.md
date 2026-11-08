@@ -61,6 +61,24 @@ In the Cloudflare D1 console, read-only verification:
 Check that buckets grow in subsequent successful Cron runs. Monitor D1
 storage and write quotas before raising the 50-token limit or retention.
 
+## Built-in per-Cron D1 metering (prepared for future deploy)
+
+The GitHub Worker source now appends the following `metering` fields to each
+`RADAR_ARCHIVE` log, using metadata returned by the **same D1 INSERT batch
+and DELETE query** (zero extra SQL queries):
+
+- `rowsWritten`: total D1 rows written by that Cron, including indexes
+  and expiry cleanup, if Cloudflare reports the metadata.
+- `rowsRead`: total D1 rows read by those two operations, when reported.
+- `databaseBytes`: `size_after` reported after cleanup, measuring allocated
+  database size, not exact live logical row bytes.
+
+Missing metadata is logged as `null`, **never as zero**. These are per-Cron
+values, not daily/account-wide quotas; the Cloudflare dashboard remains the
+authoritative source for the actual daily allowance and other workloads.
+The currently deployed Worker was edited by hand and does not yet include
+these additional log fields. Do not deploy merely to activate logging
+without first reconciling production source and binding.
 ## D1 Free retention and capacity budget
 
 The 50-candidate cap is a maximum, not 50 guaranteed unique tokens per run.
