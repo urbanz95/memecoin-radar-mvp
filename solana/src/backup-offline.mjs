@@ -2,7 +2,7 @@
 import { backup, DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, mkdtemp, rm, stat, link } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, stat, link, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -64,6 +64,7 @@ export async function createOfflineSnapshot(source, { directory, now = () => Dat
   const workDir = await mkdtemp(join(directory, 'snapshot-'));
   const sqlitePath = join(workDir, 'snapshot.sqlite');
   const archivePath = join(workDir, 'snapshot.sqlite.gz');
+  const manifestPath = join(workDir, 'manifest.json');
   try {
     await backup(source, sqlitePath);
     const info = await stat(sqlitePath);
@@ -79,8 +80,9 @@ export async function createOfflineSnapshot(source, { directory, now = () => Dat
       sha256: await sha256(archivePath), ...schema,
     };
     validateManifest(manifest);
+    await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
     await rm(sqlitePath, { force: true });
-    return { archivePath, manifest, workDir };
+    return { archivePath, manifestPath, manifest, workDir };
   } catch (error) {
     await rm(workDir, { recursive: true, force: true });
     throw error;
