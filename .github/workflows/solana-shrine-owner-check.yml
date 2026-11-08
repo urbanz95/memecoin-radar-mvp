@@ -1,10 +1,8 @@
 name: Solana Shrine owner verification (read-only)
+# The original read-only run (42442917833) exposed the raw on-chain owner
+# and confirmed both examples. The old owner allowlist had a Token-2022 typo.
+# This corrected copy is retained for audit; no second automatic probe.
 on:
-  push:
-    branches:
-      - diag/shrine-owner-check-20261108
-    paths:
-      - .github/workflows/solana-shrine-owner-check.yml
   workflow_dispatch:
 
 permissions:
@@ -38,7 +36,7 @@ jobs:
           };
           const tokenOwners = new Set([
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-            'TokenzQdBNbLqP5VEhdkAS6EPFhYU7cpZ5Cy6u8tugV'
+            'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
           ]);
           const valid = s => typeof s === 'string' &&
             /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
