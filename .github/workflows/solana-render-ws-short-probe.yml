@@ -1,0 +1,45 @@
+name: Solana Render WS short sampled observer (diagnostic only)
+on:
+  push:
+    branches:
+      - diag/solana-shrine-trades-proof-20261108
+    paths:
+      - .github/workflows/solana-render-ws-short-probe.yml
+      - solana/scripts/render-ws-short-probe.mjs
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Observe public Render health for 90 seconds (zero Solana RPC)
+        working-directory: solana
+        run: node scripts/render-ws-short-probe.mjs | tee render-ws-short-probe.log
+      - name: Report measured samples to issue 17
+        if: always()
+        working-directory: solana
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          {
+            echo '**[AMOSTRA DE LACUNAS WS — 90 segundos, read-only, sem deploy]**'
+            echo 'A percentagem descreve amostras de estado desligado, não a perda real de negociações.'
+            echo
+            echo 'RESULTADO JSON:'
+            if [ -f render-ws-short-probe.log ]; then
+              grep '^RENDER_WS_SHORT_PROBE ' render-ws-short-probe.log | tail -1 | sed 's/^RENDER_WS_SHORT_PROBE //' || true
+            else
+              echo '{"status":"NO_PROBE_LOG","reason":"script failed before completion"}'
+            fi
+            echo
+            echo 'Sem acesso à lista completa de assinaturas, não existe denominador on-chain para calcular cobertura absoluta.'
+          } > /tmp/ws-probe-comment.md
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file /tmp/ws-probe-comment.md
