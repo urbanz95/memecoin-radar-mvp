@@ -69,7 +69,7 @@ test("transient SQLite batch error stops ingestion, retains buffered data and re
     assert.equal(scanner.buffer.length, 0);
     assert.equal(socket.starts, 2);
     assert.equal(scanner.health().metrics.counters.websocket_storage_recoveries, 1);
-    assert.equal(store.gaps().some(x => x.reason === "PERSISTENCE_PAUSE_RECOVERED"), true);
+    assert.equal(store.gaps().some(x => x.code === "PERSISTENCE_PAUSE_RECOVERED"), true);
   } finally {
     await scanner.stop();
   }
