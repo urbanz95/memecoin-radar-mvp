@@ -266,6 +266,9 @@ export class LogSocket {
       new Date(this.now()).toISOString(),
     );
     this.metrics?.inc("websocket_disconnects");
+    // Public health exposes the last bounded internal disconnect reason so
+    // transport failures can be distinguished from backpressure or silent WS.
+    this.metrics?.set("websocket_last_disconnect_reason", reason);
     this.invoke(this.onDisconnect, {
       reason,
       receivedAt: new Date(this.now()).toISOString(),
