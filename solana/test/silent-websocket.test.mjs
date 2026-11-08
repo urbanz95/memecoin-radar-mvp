@@ -92,8 +92,10 @@ test('health cannot claim OBSERVING when no events arrive on acknowledged socket
 
 test('transport errors expose only bounded machine code, never raw messages or URLs',async(t)=>{
   const makeSocket = (code) => class extends EventEmitter {
-    constructor(){
+    constructor(_url, options){
       super();
+      // Regression: real scanner must match the compression-free provider probe.
+      assert.equal(options.perMessageDeflate, false);
       queueMicrotask(()=>{
         this.emit('error',Object.assign(new Error('private-provider-url-do-not-expose'),{code}));
       });
