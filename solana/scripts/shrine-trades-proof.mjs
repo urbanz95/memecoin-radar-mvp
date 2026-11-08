@@ -13,7 +13,7 @@ const output = {
   startedAt: new Date().toISOString(), source: "shrine_free_selective",
   rpcEndpoint: "publicnode_read_only", subscriptionAck: "MISSING",
   connects: 0, disconnects: 0, newTokens: { PUMPFUN: 0, PUMPSWAP: 0 },
-  tradeEvents: 0, captured: [], checks: [], rpcHttpCalls: 0,
+  tradeEvents: 0, captured: [], checks: [], tradeSubscriptions: [], rpcHttpCalls: 0,
   accountOrApiKeyUsed: false, transactionsSubmitted: false,
 };
 const targets = { PUMPFUN: new Set(), PUMPSWAP: new Set() };
@@ -53,8 +53,10 @@ const observed = new Promise(resolve => {
     if (targets[p].size >= (p === "PUMPFUN" ? 3 : 2) || targets[p].has(pool))
       return;
     targets[p].add(pool);
+    const subscription = { protocol: p, mint, pool, ack: "PENDING" };
+    output.tradeSubscriptions.push(subscription);
     socket.emit("subscribe_trades", { pool }, ack => {
-      output["tradeAck_" + p] = ack?.ok === true ? "OK" : redact(ack?.error);
+      subscription.ack = ack?.ok === true ? "OK" : redact(ack?.error);
     });
   });
   socket.on("trade", e => {
@@ -147,6 +149,10 @@ for (const trade of output.captured) {
       summarize(trade, query.tx)),
   });
 }
+output.captured.forEach(trade => {
+  const matching = output.tradeSubscriptions.find(sub => sub.pool === trade.pool);
+  trade.matchedPoolSubscriptionAck = matching?.ack ?? "UNKNOWN";
+});
 output.completedAt = new Date().toISOString();
 output.verifiedWithProgram = output.checks.filter(x =>
   x.confirmedTx && x.transactionSuccessful &&
