@@ -96,7 +96,7 @@ async function getConfirmed(signature) {
         method: "getTransaction",
         params: [signature, {
           commitment: "confirmed", encoding: "jsonParsed",
-          maxSupportedTransactionVersion: 0,
+          maxSupportedTransactionVersion: 1,
         }],
       }),
       signal: AbortSignal.timeout(12000),
