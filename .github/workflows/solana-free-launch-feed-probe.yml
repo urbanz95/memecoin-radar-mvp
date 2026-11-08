@@ -1,0 +1,99 @@
+name: Solana free launch feed candidate probe (read-only)
+on:
+  push:
+    branches:
+      - diag/solana-ws-reconnect-20261108
+    paths:
+      - .github/workflows/solana-free-launch-feed-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install fixed scanner and temporary diagnostic Socket.IO client
+        shell: bash
+        working-directory: solana
+        run: |
+          set -Eeuo pipefail
+          npm ci --ignore-scripts
+          npm install --no-save --no-package-lock --ignore-scripts socket.io-client@4.8.1
+      - name: Check unauthenticated free launch, migration and selected-token trade feeds
+        shell: bash
+        working-directory: solana
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import {io} from 'socket.io-client';
+          const start=Date.now();
+          const socket=io('https://sol.shrine.trade',{
+            transports:['websocket'],
+            reconnection:false,
+            timeout:15000,
+            forceNew:true,
+          });
+          let connectedAt=null,disconnectedAt=null,disconnects=0,migrations=0,trades=0,tradeSignaturePresent=0;
+          let tradeSubscribeAttempted=false,tradeSubscriptionResult=null,finished=false;
+          const launches={PUMPFUN:0,PUMPSWAP:0,OTHER:0};
+          const uniqueMints=new Set();
+          const acks={newTokens:null,migrations:null};
+          const errors=[];
+          const safe=v=>typeof v==='string'&&/^[a-z_]{1,40}$/i.test(v)?v:'UNKNOWN';
+          const formatAck=x=>x?.ok===true?'OK':x?.error?safe(x.error):'UNSPECIFIED';
+          const finish=reason=>{
+            if(finished)return;finished=true;
+            const report={
+              outcome:reason,durationMs:Date.now()-start,
+              connected:connectedAt!==null,connectedAt,disconnectedAt,disconnects,
+              acks,launches,uniqueMints:uniqueMints.size,migrations,trades,
+              tradeSignaturePresent,tradeSubscribeAttempted,tradeSubscriptionResult,
+              errors:errors.slice(0,5),solanaHttpRpcCalls:0,accountOrApiKeyUsed:false,
+              tradeExecution:false,
+            };
+            console.log('FREE_LAUNCH_FEED_PROBE '+JSON.stringify(report));
+            socket.disconnect();
+            if(connectedAt===null || uniqueMints.size===0)process.exitCode=1;
+          };
+          const timer=setTimeout(()=>finish('OBSERVATION_COMPLETED'),60000);
+          socket.on('connect',()=>{
+            connectedAt=new Date().toISOString();
+            socket.emit('subscribe_new_tokens',{protocols:['PUMPFUN','PUMPSWAP']},x=>{acks.newTokens=formatAck(x)});
+            socket.emit('subscribe_migrations',{protocols:['PUMPFUN']},x=>{acks.migrations=formatAck(x)});
+          });
+          socket.on('new_token',e=>{
+            const p=typeof e?.protocol==='string'?e.protocol:'OTHER';
+            launches[Object.hasOwn(launches,p)?p:'OTHER']++;
+            if(typeof e?.mint==='string'&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(e.mint))uniqueMints.add(e.mint);
+            if(!tradeSubscribeAttempted&&p==='PUMPFUN'&&typeof e?.mint==='string'){
+              tradeSubscribeAttempted=true;
+              socket.emit('subscribe_trades',{mint:e.mint},ack=>{tradeSubscriptionResult=formatAck(ack)});
+            }
+          });
+          socket.on('migration',()=>{migrations++});
+          socket.on('trade',e=>{
+            trades++;
+            if(typeof e?.signature==='string'&&e.signature.length>=60)tradeSignaturePresent++;
+          });
+          socket.on('subscription_error',e=>{errors.push(safe(e?.error))});
+          socket.on('disconnect',()=>{
+            disconnects++;
+            disconnectedAt=new Date().toISOString();
+            clearTimeout(timer);
+            finish('SOCKET_DISCONNECTED');
+          });
+          socket.on('connect_error',e=>{
+            errors.push(safe(e?.data?.code??e?.code));
+            clearTimeout(timer);
+            finish('CONNECT_ERROR');
+          });
+          NODE
