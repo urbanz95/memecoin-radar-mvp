@@ -31,7 +31,7 @@ const radar = (tokens = [token()]) => ({
   coverage: "PARTIAL", generatedAt: new Date(NOW).toISOString(),
   candidates: tokens,
 });
-function fakeD1() {
+function fakeD1({ withoutUsageMetadata = false } = {}) {
   const rows = new Map();
   const prepared = [];
   let deletedBefore = null;
@@ -46,8 +46,13 @@ function fakeD1() {
         return { bind(cutoff) { return {
           async run() {
             deletedBefore = cutoff;
+            let removed = 0;
             for (const [key, row] of rows)
-              if (row[0] < cutoff) rows.delete(key);
+              if (row[0] < cutoff) { rows.delete(key); removed++; }
+            return { meta: withoutUsageMetadata ? { changes: removed } : {
+              changes: removed, rows_written: removed * 2,
+              rows_read: 0, size_after: 4096 + rows.size * 128,
+            } };
           },
         }; } };
       }
@@ -56,9 +61,12 @@ function fakeD1() {
     async batch(statements) {
       return statements.map(({ args }) => {
         const key = args[0] + ":" + args[1];
-        if (rows.has(key)) return { meta: { changes: 0 } };
-        rows.set(key, args);
-        return { meta: { changes: 1 } };
+        const added = rows.has(key) ? 0 : 1;
+        if (added) rows.set(key, args);
+        return { meta: withoutUsageMetadata ? { changes: added } : {
+          changes: added, rows_written: added * 2, rows_read: 0,
+          size_after: 4096 + rows.size * 128,
+        } };
       });
     },
     get deletedBefore() { return deletedBefore; },
@@ -93,8 +101,12 @@ test("remote URLs are constrained to a Render HTTPS /health sibling", async () =
   assert.equal(checkedRenderHealthUrl(HEALTH), HEALTH);
   const db = fakeD1();
   const { fn, calls } = mockFetch();
-  assert.deepEqual(await archiveRadar(env(db), fn, () => NOW), {
-    bucket: Math.floor(NOW / 300000) * 300000, candidates: 1, inserted: 1,
+  const result = await archiveRadar(env(db), fn, () => NOW);
+  assert.equal(result.bucket, Math.floor(NOW / 300000) * 300000);
+  assert.equal(result.candidates, 1);
+  assert.equal(result.inserted, 1);
+  assert.deepEqual(result.metering, {
+    rowsWritten: 2, rowsRead: 0, databaseBytes: 4096 + 128,
   });
   assert.deepEqual(calls.map(x => x.url), [RADAR]);
   assert.equal(db.rows.size, 1);
@@ -117,6 +129,28 @@ test("same five-minute bucket is idempotent; next bucket retains historical rows
   assert.equal(nextBucket.inserted, 1);
   assert.equal(db.rows.size, 2);
   assert.notEqual(first.bucket, nextBucket.bucket);
+});
+
+test("duplicate mints are skipped before issuing D1 insert queries", async () => {
+  const db = fakeD1();
+  const { fn } = mockFetch({ radarResponse: radar([
+    token(), token(), token("3"), token("3"),
+  ]) });
+  const result = await archiveRadar(env(db), fn, () => NOW);
+  assert.equal(result.candidates, 2);
+  assert.equal(result.inserted, 2);
+  assert.equal(result.metering.rowsWritten, 4);
+  assert.equal(db.rows.size, 2);
+});
+
+test("unknown D1 metadata is reported as unknown, never zero", async () => {
+  const db = fakeD1({ withoutUsageMetadata: true });
+  const { fn } = mockFetch();
+  const result = await archiveRadar(env(db), fn, () => NOW);
+  assert.equal(result.inserted, 1);
+  assert.deepEqual(result.metering, {
+    rowsWritten: null, rowsRead: null, databaseBytes: null,
+  });
 });
 
 test("seven-day retention removes only expired buckets and preserves live rows", async () => {
