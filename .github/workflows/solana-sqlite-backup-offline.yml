@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   issues: write
+  actions: read
 jobs:
   restore:
     strategy:
@@ -37,4 +38,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.restore.result }}
         run: |
-          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}. Sem R2, sem HTTP RPC, sem deploy nem alteração a produção. É um teste de roundtrip local e transporte simulado, sem ligação nem credenciais R2; não garante backup durável em cloud. Workflow: https://github.com/urbanz95/memecoin-radar-mvp/actions/workflows/solana-sqlite-backup-offline.yml ."
+          if [ "$RESULT" != success ]; then
+            gh run view "${{ github.run_id }}" -R urbanz95/memecoin-radar-mvp --log-failed > /tmp/failed-jobs.txt 2>&1 || true
+            tail -n 65 /tmp/failed-jobs.txt > /tmp/failure-excerpt.txt
+            {
+              printf '%s\n\n' "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}; run ${{ github.run_id }}."
+              printf '%s\n' 'Logs finais dos testes falhados:'
+              printf '%s\n' '~~~'
+              cat /tmp/failure-excerpt.txt
+              printf '%s\n' '~~~'
+            } > /tmp/status.md
+          else
+            printf '%s\n' "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: SUCCESS; run ${{ github.run_id }}. Transporte simulado; R2 real, Render e produção intocados." > /tmp/status.md
+          fi
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file /tmp/status.md
