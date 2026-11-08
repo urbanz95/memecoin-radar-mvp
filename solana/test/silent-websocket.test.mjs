@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { once } from 'node:events';
+import { once, EventEmitter } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { WebSocket, WebSocketServer } from 'ws';
 import { LogSocket } from '../src/websocket.mjs';
@@ -87,4 +87,37 @@ test('health cannot claim OBSERVING when no events arrive on acknowledged socket
     const page=readFileSync(new URL('../static/radar.html',import.meta.url),'utf8');
     assert.match(page,/SEM EVENTOS RECENTES/);
   }finally{await scanner.stop()}
+});
+
+
+test('transport errors expose only bounded machine code, never raw messages or URLs',async(t)=>{
+  const makeSocket = (code) => class extends EventEmitter {
+    constructor(){
+      super();
+      queueMicrotask(()=>{
+        this.emit('error',Object.assign(new Error('private-provider-url-do-not-expose'),{code}));
+      });
+    }
+    terminate(){}
+  };
+  for(const [code, expected] of [['ECONNRESET','ECONNRESET'], ['wss://secret.example/token','UNKNOWN']]){
+    const metrics=new Metrics();
+    const ws=new LogSocket({
+      programs:[PROGRAM],
+      WebSocketImpl:makeSocket(code),
+      reconnectBaseMs:30000,
+      reconnectMaxMs:30000,
+      metrics,
+    });
+    ws.start();
+    try{
+      await until(()=>metrics.snapshot().counters.websocket_disconnects===1);
+      const gauges=metrics.snapshot().gauges;
+      assert.equal(gauges.websocket_last_disconnect_reason,'TRANSPORT_ERROR');
+      assert.equal(gauges.websocket_last_transport_error_code,expected);
+      assert.doesNotMatch(JSON.stringify(gauges),/private-provider-url-do-not-expose|secret\.example/);
+    }finally{
+      ws.stop();
+    }
+  }
 });
