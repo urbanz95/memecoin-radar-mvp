@@ -21,7 +21,7 @@ test('successful probe is truthful and never counts a degraded scanner as health
   const result = await checkRadar(async (target, options) => {
     assert.equal(target, url);
     assert.equal(options.method, 'GET');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     called++;
     return { ok: true, json: async () => ({
       chain:'solana', mode:'READ_ONLY', status:'DEGRADED', coverage:'PARTIAL',
