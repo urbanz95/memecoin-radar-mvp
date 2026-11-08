@@ -76,9 +76,11 @@ export async function archiveRadar(env, fetchFn = fetch, now = Date.now) {
   );
   const validCount = value => Number.isSafeInteger(value) && value >= 0;
   const statements = [];
+  const seenMints = new Set();
 
   for (const token of radar.candidates.slice(0, MAX_CANDIDATES)) {
-    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(token?.mint ?? ""))
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(token?.mint ?? "") ||
+        seenMints.has(token.mint))
       continue;
     const buys = token.activity?.["60s"]?.buys;
     const sells = token.activity?.["60s"]?.sells;
@@ -95,6 +97,7 @@ export async function archiveRadar(env, fetchFn = fetch, now = Date.now) {
     const fdvStatus = fdv !== null && statuses.includes(token.fdvStatus)
       ? token.fdvStatus : "FDV_UNKNOWN";
 
+    seenMints.add(token.mint);
     statements.push(insert.bind(
       bucket, token.mint, token.lastObservedAt,
       token.observedEvents, buys, sells, fdv, fdvStatus, "PARTIAL",
@@ -102,19 +105,38 @@ export async function archiveRadar(env, fetchFn = fetch, now = Date.now) {
   }
 
   let inserted = 0;
+  let results = [];
   if (statements.length) {
-    const results = await env.RADAR_DB.batch(statements);
+    results = await env.RADAR_DB.batch(statements);
     inserted = results.reduce(
       (sum, result) => sum + (result.meta?.changes ?? 0), 0,
     );
   }
 
   // Bounded rolling history; idempotent even when a Cron is retried.
-  await env.RADAR_DB.prepare(
+  const cleanup = await env.RADAR_DB.prepare(
     "DELETE FROM radar_token_samples WHERE bucket_at < ?",
   ).bind(at - SEVEN_DAYS).run();
 
-  return { bucket, candidates: statements.length, inserted };
+  // D1 already returns per-query metering. Include INSERT + DELETE (indexes
+  // count as writes), with NO extra SQL queries and no new credentials.
+  // Missing metadata is UNKNOWN, not zero. size_after is allocated DB bytes.
+  const responses = [...results, cleanup];
+  const sumMeta = name => {
+    const values = responses.map(x => x?.meta?.[name]);
+    return values.every(v => Number.isSafeInteger(v) && v >= 0)
+      ? values.reduce((sum, value) => sum + value, 0)
+      : null;
+  };
+  const bytes = cleanup?.meta?.size_after;
+  return {
+    bucket, candidates: statements.length, inserted,
+    metering: {
+      rowsWritten: sumMeta("rows_written"),
+      rowsRead: sumMeta("rows_read"),
+      databaseBytes: Number.isSafeInteger(bytes) && bytes >= 0 ? bytes : null,
+    },
+  };
 }
 
 // Exported to exercise both success and error isolation in deterministic tests.
