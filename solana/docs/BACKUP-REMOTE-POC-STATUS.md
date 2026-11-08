@@ -87,6 +87,54 @@ Requisitos do adapter real:
   externas, objetos recentes, mudanças de ETag, listagem incompleta e
   parâmetros inválidos.
 
+## Adaptador S3 real em sandbox, sem conta nem rede Cloudflare
+
+- `solana/backup-r2/r2-s3-adapter.mjs`: adaptador compatível com
+  `PutObject`, `GetObject`, `ListObjectsV2` e `DeleteObject`;
+  usa o SDK oficial `@aws-sdk/client-s3`, versão `3.1164.0` isolada
+  no package.json de `solana/backup-r2`. Não altera dependências do scanner.
+- Cliente real configurável com endpoint Cloudflare R2, região `auto`,
+  HTTPS, credenciais explícitas e sem descoberta automática; não é
+  inicializado pelo scanner, e nenhuma credencial foi criada.
+- `putText` / `putFile` exigem condição `If-None-Match: *` ou
+  `If-Match`; chaves de acesso estritamente limitadas ao namespace
+  `radar-backups/v1/`. Streams de ficheiros limitados a 512 MiB.
+- `getText` limitado a 64 KiB e `getFile` limitado a 512 MiB;
+  interrompe download acima do limite, deteta truncamento e não
+  sobrescreve destino preexistente. R2 ETag apenas para CAS, nunca
+  para verificar a integridade: usa SHA-256 do arquivo.
+- Listagem que ultrapasse uma página sinaliza `truncated=true`
+  e a limpeza é bloqueada (paginação segura não implementada).
+  Eliminar `latest.json` é explicitamente proibido.
+- Testes adicionais com SDK oficial: escrita condicional, streaming,
+  respostas em partes, limites de bytes, arquivo truncado, destino
+  existente, listagem incompleta, proteção de chaves e criação de
+  cliente S3 sem realizar requests. Teste de protocolo HTTP real
+  contra um servidor em 127.0.0.1, nunca Cloudflare.
+- **Aviso:** não existe prova de transferência para um R2 verdadeiro,
+  nem validação de multipart, integração no arranque, agendamento ou
+  recuperação automática em produção. A ausência de package-lock
+  neste pacote isolado exige fixação de resolução/verificação de
+  dependências antes de qualquer integração operacional.
+
+### Benchmark sintético validado (GitHub Actions, Node 24)
+
+Ensaios de snapshot e restauro com BLOBs pseudoaleatórios **incompressíveis**,
+não dados reais do scanner; sem R2/RPC e sem Render. Medições de
+`snapshotAndCompressMs` e `offlineRestoreMs`:
+
+| Payload | Arquivo comprimido | Snapshot+gzip | Restauro | RSS máximo observado |
+| --- | ---: | ---: | ---: | ---: |
+| 64 MiB | 64,09 MiB | 1.969 ms | 314 ms | 134,03 MiB |
+| 128 MiB | 128,17 MiB | 3.961 ms | 480 ms | 134,82 MiB |
+| 256 MiB | 256,34 MiB | 8.135 ms | 1.168 ms | 141,13 MiB |
+
+Fonte CI: https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42531923648 .
+O RSS é amostrado periodicamente; não representa pico de memória do kernel.
+O bench mostra apenas capacidade do runner GitHub. O fluxo remoto de
+verificação pode exigir simultaneamente original, WAL, snapshot, arquivo
+comprimido, download e base restaurada: não assumir que cabe no Render Free.
+
 ## Bloqueios para ligar R2 real
 
 1. **Capacidade temporária:** a prova remota mantém ao mesmo tempo uma
