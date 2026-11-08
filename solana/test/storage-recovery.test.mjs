@@ -1,6 +1,10 @@
 // Simulated failures: never connect to Mainnet and never create paid requests.
 import test from "node:test";
 import assert from "node:assert/strict";
+import { once } from "node:events";
+import { setTimeout as pause } from "node:timers/promises";
+import { WebSocket, WebSocketServer } from "ws";
+import { LogSocket } from "../src/websocket.mjs";
 import { Scanner } from "../src/scanner.mjs";
 import { Store } from "../src/store.mjs";
 import { loadConfig } from "../src/config.mjs";
@@ -145,4 +149,83 @@ test("watchdog revives an unexpectedly stopped socket but does not restart an in
   await scanner.stop();
   scanner.storageRecoveryWatchdog();
   assert.equal(socket.starts,2);
+});
+
+class LocalWebSocket extends WebSocket {}
+async function waitFor(predicate, timeoutMs = 3000) {
+  const until = Date.now() + timeoutMs;
+  while (!predicate()) {
+    if (Date.now() > until) throw Error("LOCAL_WS_WAIT_TIMEOUT");
+    await pause(10);
+  }
+}
+test("real local WebSocket resumes after transient SQLite write failure and receives a new notification", async (t) => {
+  const server = new WebSocketServer({host:"127.0.0.1",port:0});
+  await once(server,"listening");
+  const connections = [];
+  server.on("connection",client => {
+    connections.push(client);
+    client.on("message",bytes => {
+      const request = JSON.parse(bytes.toString());
+      client.send(JSON.stringify({jsonrpc:"2.0",id:request.id,result:200}));
+    });
+  });
+  const store = new Store(":memory:");
+  const wsUrl = "ws://127.0.0.1:" + server.address().port;
+  const config = loadConfig({
+    SOLANA_PROGRAMS:"pump_fun",
+    SOLANA_LOG_OBSERVATIONS_ENABLED:"true",
+    SOLANA_WS_NO_LOG_TIMEOUT_MS:"0",
+    SOLANA_CONTEXT_PRIORITIES_ENABLED:"true",
+    SOLANA_CONTEXT_MAX_PRIORITY:"0",
+  });
+  const scanner = new Scanner(config,{
+    store,
+    rpc:{
+      async assertMainnet(){},
+      async close(){},
+      async request(){throw Error("UNEXPECTED_REMOTE_RPC");},
+    },
+    socketFactory: opts => new LogSocket({
+      ...opts,url:wsUrl,WebSocketImpl:LocalWebSocket,
+      reconnectBaseMs:20,reconnectMaxMs:100,
+      heartbeatMs:100,idleTimeoutMs:2000,
+    }),
+  });
+  t.after(async () => {
+    await scanner.stop();
+    for(const c of connections) c.terminate();
+    await new Promise(resolve => server.close(resolve));
+  });
+  await scanner.start();
+  await waitFor(() => scanner.metrics.snapshot().gauges.websocket_connected === true);
+  const original = store.receiveBatch.bind(store);
+  let calls = 0;
+  store.receiveBatch = items => {
+    if (++calls === 1) throw Object.assign(Error("simulate transient SQLite lock"),{code:"SQLITE_BUSY"});
+    return original(items);
+  };
+  scanner.buffer.push({
+    signature:"local-integration-sig",slot:100,
+    programId,receivedAt:new Date().toISOString(),
+    confirmationStatus:"confirmed",evidenceSource:"rpc:logsSubscribe",
+  });
+  assert.throws(() => scanner.flush(),/simulate transient SQLite lock/);
+  assert.equal(scanner.storagePaused,true);
+  assert.equal(scanner.metrics.snapshot().gauges.websocket_connected,false);
+  scanner.storageRetryAt=0;
+  scanner.storageRecoveryWatchdog();
+  await waitFor(() => connections.length >= 2 &&
+    scanner.metrics.snapshot().gauges.websocket_connected === true);
+  connections.at(-1).send(JSON.stringify({
+    jsonrpc:"2.0",method:"logsNotification",
+    params:{
+      subscription:200,
+      result:{context:{slot:101},value:{signature:"local-recovery-event",err:null,logs:[]}},
+    },
+  }));
+  await waitFor(() => scanner.metrics.snapshot().counters.log_notifications >= 1);
+  assert.equal(store.stats().inbox >= 1,true);
+  assert.equal(scanner.storagePaused,false);
+  assert.equal(scanner.metrics.snapshot().counters.websocket_storage_recoveries,1);
 });
