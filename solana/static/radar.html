@@ -76,9 +76,16 @@ if(!isHosted){
     throw Error('INVALID_DATA');
    render(latest);
    const ws=health.metrics?.gauges?.websocket_connected===true;
-   status(ws && health.status==='OBSERVING'
-    ? 'Ligado · cobertura parcial · amostra '+snapshotTime()
-    : 'ATENÇÃO: scanner degradado ou sem WebSocket · amostra '+snapshotTime());
+   if (!ws) {
+    status('SEM WEBSOCKET: recolha Solana interrompida · amostra '+snapshotTime());
+   } else if (health.status === 'OBSERVING') {
+    status('WebSocket ligado · cobertura parcial · amostra '+snapshotTime());
+   } else {
+    const saturated = health.metrics?.gauges?.coverageOverloaded === true;
+    status('WebSocket ligado · '+(saturated
+      ? 'enriquecimento RPC sobrecarregado'
+      : 'scanner com cobertura degradada')+' · amostra '+snapshotTime());
+   }
   }catch(_error){
    status('SEM LIGAÇÃO: a apresentar apenas a última fotografia de '+snapshotTime());
   }

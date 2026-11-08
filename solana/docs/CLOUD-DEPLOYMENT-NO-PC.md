@@ -1,5 +1,20 @@
 # Radar Solana sem computador ligado — implantação cloud do MVP
 
+## 8 novembro — perfil para RPC público sobrecarregado
+
+Na amostra real do Render às 00:47 UTC, os logs estavam ativos, mas o contexto HTTP tinha backlog 64/64 e apenas 12 pedidos/min. O perfil **apenas cloud** passa a aplicar:
+
+- `SOLANA_CONTEXT_MAX_PRIORITY=0`: só eventos P0 de ciclo de vida (criação, pool, migração) entram na fila de `getTransaction`; P1/P2/P3 continuam nas observações de logs verificadas e NÃO são transações enriquecidas. Isto reduz trabalho fútil, não aumenta cobertura global.
+- `SOLANA_CONTEXT_MAX_AGE_MS=90000`: fechar pedidos de enriquecimento de logs **ainda não processados** quando passam 90 segundos. A linha do inbox fica como `EXPIRED`; eventos observados e entradas de recuperação independentes NÃO são apagados nem convertidos em trades.
+- `SOLANA_SOL_USD_FALLBACK=true`: se o CoinGecko falhar, tentar uma única consulta ao endpoint público Kraken `SOLUSD` na mesma janela de refrescamento de 120 segundos. O ticker Kraken devolve o **preço do último negócio**, sem timestamp da negociação. O valor fica identificado como `kraken_SOLUSD_last_trade_fetched_not_trade_timestamp` e a data é a hora da consulta, não a hora da transação. Se ambas as fontes falharem, FDV permanece UNKNOWN.
+- No dashboard, `WebSocket ligado` com `scanner degradado` distingue-se claramente de `SEM WEBSOCKET`. O dashboard continua a apresentar amostras limitadas, não sinais de trading.
+
+Estas opções não alteram a configuração local padrão (`maxPriority=3`, TTL desativado e fallback desativado). O orçamento HTTP continua **12/min**, o limite de retenção cloud continua **3000 observações** e a classificação de FDV continua a exigir evidência de criação, reservas e cotação válida. É esperado que a saturação das observações seja visível; o perfil reduz especificamente a sobrecarga do **enriquecimento HTTP**, não promete guardar toda a atividade.
+
+**Não fazer deploy apenas por passar CI**: validar no Render a transição dos contadores, as amostras e a cotação após o deploy. A alteração não melhora a persistência da SQLite efémera no Render Free.
+
+
+
 **Objetivo obrigatório:** dashboard remoto e o scanner Node.js existentes em servidores externos. O HTML guardado pelo GitHub Actions é apenas um snapshot; não substitui o serviço remoto.
 
 ## Arquitetura gratuita — uma só linha de produto

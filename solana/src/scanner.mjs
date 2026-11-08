@@ -44,7 +44,7 @@ export class Scanner {
         retries: config.rpcRetries ?? 2,
       });
     this.decode = decode;
-    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled });
+    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled, fallbackEnabled: config.solUsdFallbackEnabled });
     this.fdvGate = new FdvEnrichmentGate({
       minimumUsd: config.fdvMinimumUsd ?? 0,
       oracle: this.oracle,
@@ -123,6 +123,10 @@ export class Scanner {
       },
     });
     this.socket.start();
+    if ((this.config.contextMaxAgeMs ?? 0) > 0) {
+      this.expireStaleContext();
+      this.every(() => this.expireStaleContext(), 10000);
+    }
     if (this.config.fdvMinimumUsd > 0)
       this.every(() => this.oracle.refresh(), 120000);
     this.every(() => this.flush(), 250);
@@ -135,6 +139,13 @@ export class Scanner {
     this.every(() => this.persistMetrics(), 10000);
     this.every(() => this.store.retain(), 60000);
     this.pump();
+  }
+  expireStaleContext() {
+    const n = this.store.expireStaleLogContext({
+      maxAgeMs: this.config.contextMaxAgeMs,
+    });
+    if (n > 0) this.metrics.inc("contextEnrichmentExpired", n);
+    return n;
   }
   every(fn, ms) {
     let running = false;
@@ -229,6 +240,13 @@ export class Scanner {
     const contextPriority = prioritize
       ? classifyContextPriority(logObservations, valuation) : 3;
     if (prioritize) this.metrics.inc(`contextPrioritySeenP${contextPriority}`);
+    // Under a constrained HTTP budget, focus only on opted-in priorities.
+    // This never discards or downgrades the separately persisted log events.
+    if (prioritize && contextPriority > (this.config.contextMaxPriority ?? 3)) {
+      this.metrics.inc(`contextPrioritySkippedP${contextPriority}`);
+      this.metrics.inc("contextEnrichmentExcludedByPolicy");
+      return;
+    }
     // Reserve a few of the *existing* durable slots for P0 arrivals; no
     // increase to durable capacity or shared RPC request budget.
     const maxBacklog = this.config.maxDurableBacklog ?? 250;
@@ -375,6 +393,18 @@ export class Scanner {
   async processObservation(observation) {
     if (this.stopping) return false;
     if (this.store.isDone(observation.signature)) return true;
+    // Avoid wasting scarce RPC on an observation that aged while queued.
+    if ((this.config.contextMaxAgeMs ?? 0) > 0 &&
+        observation.evidenceSource === "rpc:logsSubscribe" &&
+        Number.isFinite(Date.parse(observation.receivedAt)) &&
+        Date.now() - Date.parse(observation.receivedAt) > this.config.contextMaxAgeMs) {
+      const expired = this.store.expireStaleLogContext({
+        maxAgeMs: this.config.contextMaxAgeMs,
+        signature: observation.signature,
+      });
+      if (expired) this.metrics.inc("contextEnrichmentExpired", expired);
+      return false;
+    }
     if (!this.store.claim(observation.signature)) return false;
     try {
       if (
@@ -614,6 +644,8 @@ export class Scanner {
           this.config.priorityP0ReservedSlots ?? 8),
         logObservationsPreservedIndependently: true,
         backlogCoverage: "PARTIAL",
+        maxHttpPriority: this.config.contextMaxPriority ?? 3,
+        maxAgeMs: this.config.contextMaxAgeMs ?? 0,
       },
       fdvFilter: {
         enabled: (this.config.fdvMinimumUsd ?? 0) > 0,
@@ -621,6 +653,7 @@ export class Scanner {
         valuation: "PUMP_FUN_SOL_QUOTED_VIRTUAL_RESERVE_FDV_PROXY_NOT_CIRCULATING_MCAP",
         oraclePrice: this.oracle.snapshot(),
         oracleFailures: this.oracle.failures ?? 0,
+        fallbackSuccesses: this.oracle.fallbackSuccesses ?? 0,
         supplyCacheSize: this.fdvGate.supplies.size,
         supplyCacheEvictions: this.fdvGate.cacheEvictions,
       },
