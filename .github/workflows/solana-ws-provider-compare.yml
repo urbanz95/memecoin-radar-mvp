@@ -1,0 +1,94 @@
+name: Solana WebSocket provider short comparison (read-only)
+on:
+  push:
+    branches:
+      - diag/solana-ws-reconnect-20261108
+    paths:
+      - .github/workflows/solana-ws-provider-compare.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Compare Pump WebSocket feeds from GitHub runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install fixed scanner dependencies (without scripts)
+        working-directory: solana
+        run: npm ci --ignore-scripts
+      - name: Compare combined vs individual read-only WebSocket subscriptions
+        working-directory: solana
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import WebSocket from 'ws';
+          const ENDPOINT = 'wss://api.mainnet-beta.solana.com';
+          const PROGRAMS = {
+            pump_fun: '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+            pump_swap: 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA',
+          };
+          const DURATION_MS = 40000;
+          const classify = value => typeof value === 'string' && /^[A-Z][A-Z0-9_]{1,63}$/.test(value) ? value : 'UNKNOWN';
+          async function sample(label, programs) {
+            return new Promise(resolve => {
+              const started = Date.now();
+              let acks = 0, notifications = 0, invalidMessages = 0, pongs = 0, lastLogAt = null, maxGapMs = 0;
+              let settled = false, timer, ping;
+              const ws = new WebSocket(ENDPOINT,{handshakeTimeout:12000,maxPayload:2*1024*1024,perMessageDeflate:false});
+              const done = (outcome, more = {}) => {
+                if(settled) return;
+                settled = true;
+                clearTimeout(timer);
+                clearInterval(ping);
+                console.log('WS_PROVIDER_COMPARE '+JSON.stringify({
+                  mode:label, durationMs:Date.now()-started, outcome,
+                  subscriptionsRequested:programs.length, subscriptionAcks:acks,
+                  notifications, invalidMessages, pongs,
+                  lastNotificationAgeMs:lastLogAt===null?null:Date.now()-lastLogAt,
+                  maxGapMs, ...more,
+                }));
+                ws.terminate();
+                resolve();
+              };
+              timer = setTimeout(()=>done('OBSERVATION_COMPLETED'),DURATION_MS);
+              ws.on('open',()=>{
+                programs.forEach((programId,i)=>ws.send(JSON.stringify({
+                  jsonrpc:'2.0',id:i+1,method:'logsSubscribe',
+                  params:[{mentions:[programId]},{commitment:'confirmed'}],
+                })));
+                ping=setInterval(()=>{if(ws.readyState===WebSocket.OPEN) ws.ping();},15000);
+              });
+              ws.on('pong',()=>{pongs++});
+              ws.on('message',buf=>{
+                let msg;
+                try {msg=JSON.parse(buf.toString())} catch {invalidMessages++;return;}
+                if(Object.hasOwn(msg,'id')){if(Number.isSafeInteger(msg.result))acks++;else invalidMessages++;return;}
+                if(msg.method==='logsNotification'){
+                  const now=Date.now();
+                  if(lastLogAt!==null)maxGapMs=Math.max(maxGapMs,now-lastLogAt);
+                  lastLogAt=now;notifications++;
+                }
+              });
+              ws.on('error',e=>done('TRANSPORT_ERROR',{errorCode:classify(e?.code)}));
+              ws.on('close',code=>done('SOCKET_CLOSED',{closeCode:Number.isSafeInteger(code)?code:null}));
+              ws.on('unexpected-response',(_req,res)=>done('HTTP_HANDSHAKE_REJECTED',{statusCode:res?.statusCode??null}));
+            });
+          }
+          console.log('WS_PROVIDER_COMPARE_SETUP '+JSON.stringify({
+            remote:'official_solana_public_ws',durationMsPerCase:DURATION_MS,
+            cases:['both','pump_fun','pump_swap'],solanaHttpRpcCalls:0,
+          }));
+          await sample('both',[PROGRAMS.pump_fun,PROGRAMS.pump_swap]);
+          await sample('pump_fun',[PROGRAMS.pump_fun]);
+          await sample('pump_swap',[PROGRAMS.pump_swap]);
+          NODE
