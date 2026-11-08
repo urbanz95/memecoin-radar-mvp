@@ -101,6 +101,7 @@ export class Scanner {
       metrics: this.metrics,
       reconnectMaxMs: this.config.reconnectMaxMs,
       idleTimeoutMs: this.config.idleTimeoutMs,
+      noLogTimeoutMs: this.config.wsNoLogTimeoutMs ?? 0,
       onLog: (message, programId) => this.receive(message, programId),
       onConnect: () => {
         if (this.disconnectedAt)
@@ -619,6 +620,11 @@ export class Scanner {
   health() {
     const metrics = this.metrics.snapshot();
     const storage = this.store.stats();
+    const noLogTimeoutMs = this.config.wsNoLogTimeoutMs ?? 0;
+    const lastLogAt = Date.parse(metrics.gauges.lastEventReceived ?? "");
+    const noRecentLogs = noLogTimeoutMs > 0 &&
+      (!Number.isFinite(lastLogAt) ||
+        Date.parse(metrics.measuredAt) - lastLogAt >= noLogTimeoutMs);
     return {
       schemaVersion: 1,
       chain: "solana",
@@ -627,6 +633,7 @@ export class Scanner {
       status: this.stopping
         ? "STOPPING"
         : !metrics.gauges.websocket_connected ||
+            noRecentLogs ||
             metrics.gauges.coverageOverloaded ||
             storage.pending > 50
           ? "DEGRADED"
@@ -636,6 +643,12 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      logStream: {
+        noRecentLogs,
+        timeoutMs: noLogTimeoutMs,
+        lastObservedAt: Number.isFinite(lastLogAt)
+          ? new Date(lastLogAt).toISOString() : null,
+      },
       contextPriorityScheduler: {
         enabled: this.config.contextPrioritiesEnabled === true &&
           this.config.logObservationsEnabled !== false,
