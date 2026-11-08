@@ -32,7 +32,7 @@ jobs:
           set -Eeuo pipefail
           node --input-type=module <<'NODE'
           import WebSocket from 'ws';
-          const ENDPOINT = 'wss://api.mainnet-beta.solana.com';
+          const ENDPOINT = 'wss://api.mainnet.solana.com';
           const PROGRAMS = {
             pump_fun: '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
             pump_swap: 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA',
@@ -85,7 +85,7 @@ jobs:
             });
           }
           console.log('WS_PROVIDER_COMPARE_SETUP '+JSON.stringify({
-            remote:'official_solana_public_ws',durationMsPerCase:DURATION_MS,
+            remote:'official_solana_canonical_ws',durationMsPerCase:DURATION_MS,
             cases:['both','pump_fun','pump_swap'],solanaHttpRpcCalls:0,
           }));
           await sample('both',[PROGRAMS.pump_fun,PROGRAMS.pump_swap]);
