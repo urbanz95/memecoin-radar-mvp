@@ -1,0 +1,105 @@
+name: Solana keyless discovery onchain crosscheck (read-only)
+on:
+  push:
+    branches:
+      - diag/solana-ws-reconnect-20261108
+    paths:
+      - .github/workflows/solana-free-feed-onchain-verify.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: solana/package-lock.json
+      - name: Install read-only temporary feed client
+        working-directory: solana
+        run: |
+          npm ci --ignore-scripts
+          npm install --no-save --no-package-lock --ignore-scripts socket.io-client@4.8.1
+      - name: Check two sample launch events against confirmed Solana accounts
+        working-directory: solana
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import {io} from 'socket.io-client';
+          import {setTimeout as pause} from 'node:timers/promises';
+          const rpc='https://solana-rpc.publicnode.com';
+          const programs={
+            PUMPFUN:'6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+            PUMPSWAP:'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA',
+          };
+          const tokenOwners=new Set([
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            'TokenzQdBNbLqP5VEhdkAS6EPFhYU7cpZ5Cy6u8tugV', 
+          ]);
+          const validKey=s=>typeof s==='string'&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
+          const feed=io('https://sol.shrine.trade',{transports:['websocket'],reconnection:false,timeout:15000,forceNew:true});
+          const first={};let newEvents=0,connected=false,disconnects=0,ack='UNKNOWN';
+          feed.on('connect',()=>{
+            connected=true;
+            feed.emit('subscribe_new_tokens',{protocols:['PUMPFUN','PUMPSWAP']},a=>{ack=a?.ok===true?'OK':'NOT_OK'});
+          });
+          feed.on('new_token',e=>{
+            newEvents++;
+            if(!Object.hasOwn(programs,e?.protocol)||!validKey(e?.mint)||!validKey(e?.pool))return;
+            if(!first[e.protocol]) first[e.protocol]={
+              protocol:e.protocol,mint:e.mint,pool:e.pool,
+              timestamp:typeof e.timestamp==='number'?e.timestamp:null,
+              quote:validKey(e.quote)?e.quote:null,
+              decimals:Number.isInteger(e.decimals)?e.decimals:null,
+            };
+          });
+          feed.on('disconnect',()=>{disconnects++});
+          await pause(40000);
+          feed.disconnect();
+          const candidates=[first.PUMPFUN,first.PUMPSWAP].filter(Boolean);
+          if(candidates.length===1){console.log('CROSSCHECK_LIMITATION only_one_protocol_seen');}
+          async function getInfo(address,id) {
+            const body={jsonrpc:'2.0',id,method:'getAccountInfo',
+              params:[address,{encoding:'base64',commitment:'confirmed',dataSlice:{offset:0,length:0}}]};
+            const res=await fetch(rpc,{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify(body),
+              signal:AbortSignal.timeout(15000)
+            });
+            if(!res.ok)return {httpStatus:res.status,owner:null,accountExists:null};
+            const json=await res.json();
+            if(json.error)return {rpcErrorCode:json.error.code??null,owner:null,accountExists:null};
+            return {owner:json.result?.value?.owner??null,accountExists:json.result?.value!==null};
+          }
+          let count=0;const checked=[];
+          for(const c of candidates.slice(0,2)){
+            try{
+              const mint=await getInfo(c.mint,++count);await pause(6500);
+              const pool=await getInfo(c.pool,++count);await pause(6500);
+              checked.push({
+                protocol:c.protocol,mint:c.mint,pool:c.pool,
+                feedTimestamp:c.timestamp,feedDecimals:c.decimals,
+                mintAccountExists:mint.accountExists,
+                mintOwnerIsTokenProgram:tokenOwners.has(mint.owner),
+                poolAccountExists:pool.accountExists,
+                poolOwnerMatchesProtocol:pool.owner===programs[c.protocol],
+                mintRpcHttpStatus:mint.httpStatus??null,poolRpcHttpStatus:pool.httpStatus??null,
+                mintRpcError:mint.rpcErrorCode??null,poolRpcError:pool.rpcErrorCode??null
+              });
+            }catch(e){checked.push({protocol:c.protocol,errorCode:e?.name==='TimeoutError'?'RPC_TIMEOUT':'RPC_FAILED'});}
+          }
+          const output={connected,ack,newEvents,disconnects,checked,solanaHttpRpcCalls:count,
+            paidAccountUsed:false,tradesExecuted:false};
+          console.log('FREE_LAUNCH_ONCHAIN_CROSSCHECK '+JSON.stringify(output));
+          if(!connected||checked.length===0||!checked.some(x=>x.mintAccountExists===true)){
+            process.exitCode=1;
+          }
+          NODE
