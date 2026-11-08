@@ -1,0 +1,62 @@
+name: Solana WebSocket remote diagnostics (read-only)
+on:
+  push:
+    branches:
+      - diag/solana-ws-reconnect-20261108
+    paths:
+      - .github/workflows/solana-remote-ws-diagnostic.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Sample only public Render health and radar endpoints
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          base="https://solana-pump-radar-mvp.onrender.com"
+          for i in 1 2 3 4; do
+            curl --fail --silent --show-error --retry 2 --retry-delay 2 --max-time 40 "$base/health" -o "$RUNNER_TEMP/health-$i.json"
+            curl --fail --silent --show-error --retry 2 --retry-delay 2 --max-time 40 "$base/radar?limit=5" -o "$RUNNER_TEMP/radar-$i.json"
+            HEALTH_FILE="$RUNNER_TEMP/health-$i.json" RADAR_FILE="$RUNNER_TEMP/radar-$i.json" node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const h = JSON.parse(readFileSync(process.env.HEALTH_FILE, 'utf8'));
+          const r = JSON.parse(readFileSync(process.env.RADAR_FILE, 'utf8'));
+          if (h.chain !== 'solana' || h.mode !== 'READ_ONLY') throw Error('NOT_SOLANA_READ_ONLY');
+          const c = h.metrics?.counters || {};
+          const g = h.metrics?.gauges || {};
+          const keys = [
+            'log_notifications','notificationsReceived','websocket_disconnects',
+            'websocket_silent_reconnects','reconnect_count','subscription_errors',
+            'websocket_invalid_messages','websocket_callback_errors',
+            'contextEnrichmentSkipped','rpcRequests','logObservationsPersisted'
+          ];
+          const counters = Object.fromEntries(keys.map(k => [k, c[k] ?? null]));
+          const output = {
+            measuredAt: h.metrics?.measuredAt ?? null,
+            startedAt: h.startedAt ?? null,
+            status: h.status ?? null,
+            websocketConnected: g.websocket_connected ?? null,
+            websocketConnectedAt: g.websocket_connected_at ?? null,
+            websocketDisconnectedAt: g.websocket_disconnected_at ?? null,
+            websocketStreamStale: g.websocket_stream_stale ?? null,
+            reconnectDelayMs: g.reconnect_delay_ms ?? null,
+            lastEventReceived: g.last_event_received ?? g.lastEventReceived ?? h.logStream?.lastObservedAt ?? null,
+            noRecentLogs: h.logStream?.noRecentLogs ?? null,
+            coverageOverloaded: g.coverageOverloaded ?? null,
+            rpcRequestsPerMinute: h.metrics?.rpcRequestsPerMinute ?? null,
+            storedGaps: h.storage?.gaps ?? null,
+            storedPending: h.storage?.pending ?? null,
+            radarMints: r.totals?.observedDistinctMints ?? null,
+            radarEvents: r.sample?.verifiedUniqueEvents ?? null,
+            counters
+          };
+          console.log('REMOTE_WS_DIAGNOSTIC ' + JSON.stringify(output));
+          NODE
+            if [ "$i" != 4 ]; then sleep 15; fi
+          done
