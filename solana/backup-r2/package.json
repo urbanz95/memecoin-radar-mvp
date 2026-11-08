@@ -1,0 +1,13 @@
+{
+  "name": "solana-radar-r2-backup-proof",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated R2 adapter proof; never imported by production scanner",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1164.0"
+  }
+}
