@@ -57,7 +57,7 @@ function parseIndex(text) {
   return doc;
 }
 
-async function readIndex(store) {
+export async function readVerifiedBackupIndex(store) {
   const result = await store.getText(BACKUP_INDEX_KEY, { maxBytes: MAX_INDEX_BYTES });
   if (result === null) return null;
   if (typeof result?.etag !== 'string' || !result.etag ||
@@ -77,7 +77,7 @@ export async function publishVerifiedBackup({
       !Number.isSafeInteger(maxBytes) || maxBytes < 1)
     throw Error('BACKUP_ARGUMENTS_INVALID');
   // Read pointer before starting. Never overwrite a corrupt index.
-  const prior = await readIndex(store);
+  const prior = await readVerifiedBackupIndex(store);
   const snap = await createOfflineSnapshot(source, { directory, maxBytes, now });
   const scratch = await mkdtemp(join(directory, 'verify-'));
   const id = randomUUID();
@@ -131,7 +131,7 @@ export async function restoreLatestVerifiedBackup({
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
-  const index = await readIndex(store);
+  const index = await readVerifiedBackupIndex(store);
   if (!index) throw Error('RESTORE_INDEX_NOT_FOUND');
   const scratch = await mkdtemp(join(directory, 'download-'));
   const attempts = [];
