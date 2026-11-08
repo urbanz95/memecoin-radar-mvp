@@ -63,6 +63,7 @@ test('acknowledged but silent WebSocket reconnects despite healthy ping/pong',as
   await until(()=>disconnects.includes('NO_LOG_NOTIFICATIONS'));
   assert.equal(metrics.snapshot().counters.log_notifications??0,0);
   assert.equal(metrics.snapshot().counters.websocket_silent_reconnects,1);
+  assert.equal(metrics.snapshot().gauges.websocket_last_disconnect_reason,'NO_LOG_NOTIFICATIONS');
 });
 
 test('health cannot claim OBSERVING when no events arrive on acknowledged socket',async()=>{
