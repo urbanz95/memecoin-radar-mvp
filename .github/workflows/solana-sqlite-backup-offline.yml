@@ -6,6 +6,8 @@ on:
     paths:
       - solana/src/backup-offline.mjs
       - solana/src/backup-object-store.mjs
+      - solana/src/backup-retention.mjs
+      - solana/test/backup-retention.test.mjs
       - solana/test/backup-object-store.test.mjs
       - solana/test/backup-offline.test.mjs
       - .github/workflows/solana-sqlite-backup-offline.yml
@@ -27,7 +29,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Verify SQLite WAL snapshot and restore without internet or RPC
-        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs
   handoff:
     needs: [restore]
     if: always()
