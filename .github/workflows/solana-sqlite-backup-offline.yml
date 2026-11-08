@@ -8,6 +8,9 @@ on:
       - solana/src/backup-object-store.mjs
       - solana/src/backup-retention.mjs
       - solana/test/backup-retention.test.mjs
+      - solana/backup-r2/r2-s3-adapter.mjs
+      - solana/backup-r2/r2-s3-adapter.test.mjs
+      - solana/backup-r2/package.json
       - solana/test/backup-object-store.test.mjs
       - solana/test/backup-offline.test.mjs
       - .github/workflows/solana-sqlite-backup-offline.yml
@@ -28,8 +31,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Verify SQLite WAL snapshot and restore without internet or RPC
-        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs
+      - name: Install isolated pinned official AWS S3 SDK (no scanner dependency)
+        run: npm install --prefix solana/backup-r2 --ignore-scripts --no-package-lock --no-audit --no-fund
+      - name: Verify SQLite, mocked R2, and official S3 SDK adapter without credentials
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs solana/backup-r2/r2-s3-adapter.test.mjs
   handoff:
     needs: [restore]
     if: always()
