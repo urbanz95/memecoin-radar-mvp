@@ -84,6 +84,8 @@ export class LogSocket {
       socket = new this.WebSocketImpl(this.url, {
         agent: this.agent,
         handshakeTimeout: this.ackTimeoutMs,
+        // Match the no-compression provider probe and avoid unnecessary zlib work.
+        perMessageDeflate: false,
         maxPayload: 2 * 1024 * 1024,
       });
     } catch {
