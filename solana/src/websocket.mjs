@@ -16,6 +16,7 @@ export class LogSocket {
     reconnectBaseMs = 500,
     reconnectMaxMs = 30000,
     idleTimeoutMs = 60000,
+    noLogTimeoutMs = 0,
     ackTimeoutMs = 15000,
     heartbeatMs = 15000,
     random = Math.random,
@@ -25,6 +26,8 @@ export class LogSocket {
       throw Error("INVALID_WEBSOCKET_URL");
     if (!["processed", "confirmed", "finalized"].includes(commitment))
       throw Error("INVALID_COMMITMENT");
+    if (!Number.isSafeInteger(noLogTimeoutMs) || noLogTimeoutMs < 0 || noLogTimeoutMs > 600000)
+      throw Error("INVALID_NO_LOG_TIMEOUT");
     const ids = [
       ...new Set(
         (programs ?? []).map((p) =>
@@ -49,6 +52,7 @@ export class LogSocket {
       reconnectBaseMs,
       reconnectMaxMs,
       idleTimeoutMs,
+      noLogTimeoutMs,
       ackTimeoutMs,
       heartbeatMs,
       random,
@@ -90,6 +94,7 @@ export class LogSocket {
     this.pending = new Map();
     this.subscriptions = new Map();
     this.lastFrameAt = this.now();
+    this.lastLogAt = this.now();
     this.awaitingPongAt = null;
     this.ready = false;
     const current = () => !this.stopped && this.generation === generation;
@@ -116,6 +121,16 @@ export class LogSocket {
       this.heartbeat = setInterval(() => {
         if (!current()) return;
         const now = this.now();
+        // A successful ping/pong proves the socket is reachable, NOT that
+        // the subscription is forwarding logs. Pump.fun is high activity,
+        // so an opted-in no-log threshold can identify a silent provider.
+        if (this.ready && this.noLogTimeoutMs > 0 &&
+            now - this.lastLogAt >= this.noLogTimeoutMs) {
+          this.metrics?.inc("websocket_silent_reconnects");
+          this.metrics?.set("websocket_stream_stale", true);
+          this.reconnect("NO_LOG_NOTIFICATIONS");
+          return;
+        }
         if (
           this.awaitingPongAt !== null &&
           now - this.awaitingPongAt > this.idleTimeoutMs
@@ -166,6 +181,8 @@ export class LogSocket {
           this.ready = true;
           this.attempt = 0;
           this.everConnected = true;
+          this.lastLogAt = this.now();
+          this.metrics?.set("websocket_stream_stale", false);
           this.metrics?.set("websocket_connected", true);
           this.metrics?.set(
             "websocket_connected_at",
@@ -195,6 +212,9 @@ export class LogSocket {
         return;
       }
       const receivedAt = new Date(this.now()).toISOString();
+      this.lastLogAt = this.now();
+      this.metrics?.set("websocket_last_log_received", receivedAt);
+      this.metrics?.set("websocket_stream_stale", false);
       this.metrics?.inc("log_notifications");
       this.metrics?.set("last_event_received", receivedAt);
       this.metrics?.set("current_slot", slot);

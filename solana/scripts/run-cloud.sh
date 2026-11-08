@@ -20,6 +20,8 @@ export SOLANA_CONTEXT_MAX_AGE_MS="${SOLANA_CONTEXT_MAX_AGE_MS:-90000}"
 # Use public Kraken last-trade price only if CoinGecko is unavailable;
 # record the source explicitly and never claim exchange trade-timestamp freshness.
 export SOLANA_SOL_USD_FALLBACK="${SOLANA_SOL_USD_FALLBACK:-true}"
+# Close acknowledged-but-silent Pump subscriptions; websocket pong alone is not data.
+export SOLANA_WS_NO_LOG_TIMEOUT_MS="${SOLANA_WS_NO_LOG_TIMEOUT_MS:-45000}"
 export SOLANA_DB_PATH="${SOLANA_DB_PATH:-runtime/cloud-pump/scanner.sqlite}"
 # Keep the exact same Pump.fun/PumpSwap protocol, RPC and FDV policies.
 exec bash scripts/run-pump-focused.sh

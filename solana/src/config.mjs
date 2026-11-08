@@ -142,5 +142,7 @@ export function loadConfig(env = process.env) {
       1000,
       600000,
     ),
+    // Disabled by default for quiet programs; Pump.fun cloud can opt in.
+    wsNoLogTimeoutMs: integer(env, "SOLANA_WS_NO_LOG_TIMEOUT_MS", 0, 0, 600000),
   };
 }
