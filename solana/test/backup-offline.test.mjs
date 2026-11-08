@@ -22,7 +22,9 @@ test('consistent WAL snapshot restores original event and checkpoint rows', asyn
   const snap = await createOfflineSnapshot(db, { directory: join(dir, 'snapshots') });
   db.prepare('INSERT INTO evidence VALUES (?,?)').run('later', 8);
   const dest = join(dir, 'restored.sqlite');
-  const result = await restoreOfflineSnapshot({ archivePath: snap.archivePath, manifest: snap.manifest, destinationPath: dest });
+  const manifest = JSON.parse(await readFile(snap.manifestPath, 'utf8'));
+  assert.deepEqual(manifest, snap.manifest);
+  const result = await restoreOfflineSnapshot({ archivePath: snap.archivePath, manifest, destinationPath: dest });
   assert.deepEqual(result.tables, { checkpoints: 1, evidence: 1 });
   const restored = new DatabaseSync(dest, { readOnly: true });
   assert.equal(restored.prepare('SELECT slot FROM checkpoints WHERE program=?').get('pump').slot, 7);
