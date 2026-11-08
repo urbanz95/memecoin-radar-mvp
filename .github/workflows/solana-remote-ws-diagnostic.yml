@@ -48,6 +48,7 @@ jobs:
             websocketConnectedAt: g.websocket_connected_at ?? null,
             websocketDisconnectedAt: g.websocket_disconnected_at ?? null,
             websocketLastDisconnectReason: g.websocket_last_disconnect_reason ?? null,
+            websocketLastTransportErrorCode: g.websocket_last_transport_error_code ?? null,
             websocketStreamStale: g.websocket_stream_stale ?? null,
             reconnectDelayMs: g.reconnect_delay_ms ?? null,
             lastEventReceived: g.last_event_received ?? g.lastEventReceived ?? h.logStream?.lastObservedAt ?? null,
