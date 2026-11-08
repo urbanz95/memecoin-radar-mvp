@@ -1,0 +1,47 @@
+name: Probe deployed Solana radar metrics
+on:
+  push:
+    branches:
+      - fix/solana-cloud-enrichment-backpressure-20261108
+    paths:
+      - .github/workflows/solana-render-metrics-probe.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Read two remote health samples with a gap
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for n in 1 2; do
+            curl --fail --show-error --silent --retry 2 --max-time 45 'https://solana-pump-radar-mvp.onrender.com/health' -o health.json
+            curl --fail --show-error --silent --retry 2 --max-time 45 'https://solana-pump-radar-mvp.onrender.com/radar?limit=5' -o radar.json
+            node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const h=JSON.parse(fs.readFileSync('health.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('radar.json','utf8'));
+          const c=h.metrics?.counters||{};
+          console.log('REMOTE_METRICS_PROBE',JSON.stringify({
+            measuredAt:h.metrics?.measuredAt,startedAt:h.startedAt,
+            status:h.status,ws:h.metrics?.gauges?.websocket_connected,
+            wsConnectedAt:h.metrics?.gauges?.websocket_connected_at,
+            notificationsReceived:c.notificationsReceived,
+            logNotifications:c.log_notifications,
+            decoded:c.logObservationsDecoded,persisted:c.logObservationsPersisted,
+            lastEventReceived:h.metrics?.gauges?.lastEventReceived,
+            durableBacklog:h.metrics?.gauges?.durableBacklog,
+            policyExcluded:c.contextEnrichmentExcludedByPolicy,
+            contextExpired:c.contextEnrichmentExpired,
+            rpcRequests:c.rpc_requests,
+            oracle:h.fdvFilter?.oraclePrice,oracleFailures:h.fdvFilter?.oracleFailures,
+            oracleFallbackSuccesses:h.fdvFilter?.fallbackSuccesses,
+            radarMints:r.totals?.observedDistinctMints,
+            radarEvents:r.sample?.verifiedUniqueEvents,
+          }));
+          NODE
+            if [ "$n" = 1 ]; then sleep 25; fi
+          done
