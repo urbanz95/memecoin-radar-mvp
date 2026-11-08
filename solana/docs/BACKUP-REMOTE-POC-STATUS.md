@@ -64,6 +64,29 @@ Requisitos do adapter real:
 - Descarregamento e restauro repetido devem rejeitar ficheiros existentes,
   links simbólicos de destino e base com schema inesperado.
 
+## Protótipo adicional: retenção física segura (manual, ainda não ativada)
+
+- `src/backup-retention.mjs` é **opcional** e não corre num timer;
+  por omissão apenas produz um **dry-run** das chaves candidatas.
+- Exige lista completa (`listObjects`) limitada a 1.000 entradas;
+  listagem incompleta, índice inválido ou ausente abortam sem apagar.
+- Nunca apaga `latest.json` nem o arquivo/manifesto de nenhum snapshot
+  presente no índice de três versões.
+- Só considera chaves de backup com UUID válido e antiguidade **pelo
+  menos 48 horas** (mínimo configurável 24 h), com limite de 10
+  eliminações por chamada (máximo permitido 20).
+- Para executar, é necessário passar tanto `execute: true` como
+  `acknowledgeDataDeletion: true`; relê o ETag do índice antes de cada
+  tentativa de eliminação e aborta se mudar.
+- A futura implementação R2 deve acrescentar lock/coordenação para
+  evitar concorrência entre publicação e limpeza, prova de que objetos
+  órfãos não estão em uploads inacabados e paginação segura para mais
+  de 1.000 objetos. **Não utilizar já esta função em produção.**
+- `test/backup-retention.test.mjs`: oito cenários simulados que
+  exercitam dry-run, opt-in obrigatório, proteção do índice, chaves
+  externas, objetos recentes, mudanças de ETag, listagem incompleta e
+  parâmetros inválidos.
+
 ## Bloqueios para ligar R2 real
 
 1. **Capacidade temporária:** a prova remota mantém ao mesmo tempo uma
@@ -71,12 +94,12 @@ Requisitos do adapter real:
    da base original do scanner. Fazer ensaios de 64/128/256 MiB em
    CI isolada e medir disco/CPU/latência e tempo de upload; não assumir
    que cabe no disco efémero ou que é compatível com o Render Free.
-2. **Retenção física:** o índice guarda três versões, mas as chaves
-   antigas e uploads órfãos **continuam a ocupar R2**. Não ativar
-   backups recorrentes sem implementação de limpeza segura após
-   publicação bem-sucedida, com salvaguarda do último backup válido
-   e contabilização de espaço/conta. Não interpretar «3 versões no
-   índice» como retenção física ou limite de cobrança.
+2. **Retenção física:** o índice guarda três versões, mas chaves antigas
+   e uploads órfãos continuam a ocupar R2. O limpador manual simulado
+   já existe, mas falta validar listagem paginada, locking entre
+   processos, efeitos de delete real e quotas em R2. Não ativar
+   backups recorrentes sem estes testes nem interpretar três entradas
+   no índice como limite real de armazenamento/cobrança.
 3. **Orçamento:** franquia gratuita R2 Standard de 10 GB-mês,
    1 milhão de operações Classe A e 10 milhões Classe B mensais,
    sujeita a cobrança acima da franquia. Confirmar conta,
