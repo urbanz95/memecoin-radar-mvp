@@ -106,6 +106,9 @@ Requisitos do adapter real:
 - Listagem que ultrapasse uma página sinaliza `truncated=true`
   e a limpeza é bloqueada (paginação segura não implementada).
   Eliminar `latest.json` é explicitamente proibido.
+- **CI: 36/36 testes PASS em Node 22/24**, incluindo um teste de
+  pedidos AWS SigV4 HTTP reais para 127.0.0.1, sem qualquer R2 externo.
+  Run: https://github.com/urbanz95/memecoin-radar-mvp/actions/runs/42532052633 .
 - Testes adicionais com SDK oficial: escrita condicional, streaming,
   respostas em partes, limites de bytes, arquivo truncado, destino
   existente, listagem incompleta, proteção de chaves e criação de
@@ -139,9 +142,11 @@ comprimido, download e base restaurada: não assumir que cabe no Render Free.
 
 1. **Capacidade temporária:** a prova remota mantém ao mesmo tempo uma
    cópia gzip local, outra gzip descarregada e uma DB restaurada, além
-   da base original do scanner. Fazer ensaios de 64/128/256 MiB em
-   CI isolada e medir disco/CPU/latência e tempo de upload; não assumir
-   que cabe no disco efémero ou que é compatível com o Render Free.
+   da base original do scanner. Os ensaios **offline** de 64/128/256 MiB
+   já passaram no runner GitHub, sem medições de upload externo.
+   É obrigatório dimensionar o espaço livre, CPU/I/O e a latência de
+   integração no Render Free antes de qualquer ativação; não extrapolar
+   os recursos do GitHub para a instância ativa.
 2. **Retenção física:** o índice guarda três versões, mas chaves antigas
    e uploads órfãos continuam a ocupar R2. O limpador manual simulado
    já existe, mas falta validar listagem paginada, locking entre
