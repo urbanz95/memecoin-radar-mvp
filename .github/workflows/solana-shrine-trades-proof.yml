@@ -1,0 +1,26 @@
+name: Solana Shrine trade on-chain proof (diagnostic only)
+on:
+  push:
+    branches:
+      - diag/solana-shrine-trades-proof-20261108
+    paths:
+      - .github/workflows/solana-shrine-trades-proof.yml
+      - solana/scripts/shrine-trades-proof.mjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install ephemeral keyless Socket.IO client
+        working-directory: solana
+        run: npm install --no-save --no-package-lock --ignore-scripts socket.io-client@4.8.1
+      - name: Compare live Shrine trades to Solana confirmed transaction (no deploy/no trade)
+        working-directory: solana
+        run: node scripts/shrine-trades-proof.mjs
