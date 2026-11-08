@@ -1,0 +1,38 @@
+name: Solana SQLite offline restore proof (branch only)
+on:
+  push:
+    branches:
+      - test/solana-sqlite-restore-offline-20261108
+    paths:
+      - solana/src/backup-offline.mjs
+      - solana/test/backup-offline.test.mjs
+      - .github/workflows/solana-sqlite-backup-offline.yml
+permissions:
+  contents: read
+  issues: write
+jobs:
+  restore:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify SQLite WAL snapshot and restore without internet or RPC
+        run: node --test solana/test/backup-offline.test.mjs
+  handoff:
+    needs: [restore]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write offline test result to issue 17
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.restore.result }}
+        run: |
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body "**[CI SQLite OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}. Sem R2, sem HTTP RPC, sem deploy nem alteração a produção. É um teste de roundtrip offline, não garante ainda backup durável em cloud. Workflow: https://github.com/urbanz95/memecoin-radar-mvp/actions/workflows/solana-sqlite-backup-offline.yml ."
