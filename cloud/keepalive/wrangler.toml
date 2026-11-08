@@ -10,3 +10,12 @@ crons = ["*/5 * * * *"]
 # Cloudflare > Workers & Pages > solana-radar-keepalive > Settings > Variables.
 # Example shape: https://your-service.onrender.com/health
 # Never put private keys, CF API tokens or account credentials here.
+
+# Existing production D1, created and bound manually on 8 November 2026.
+# Sync this binding in Wrangler BEFORE any CLI or GitHub deployment:
+# omitting it could remove the existing live RADAR_DB binding.
+[[d1_databases]]
+binding = "RADAR_DB"
+database_name = "solana-radar-archive"
+database_id = "fa193e87-526d-42b3-bb27-64fe63e588a1"
+migrations_dir = "migrations"
