@@ -78,7 +78,7 @@ test('complete upload->download->integrity restore->commit->restore with WAL', a
   assert.deepEqual(restored.tables, { checkpoints: 1, events: 1 });
   const db = new DatabaseSync(join(f.dir, 'restored.sqlite'), { readOnly: true });
   try {
-    assert.deepEqual(db.prepare('SELECT id FROM events ORDER BY id').all(), [{ id: 'sig-A' }]);
+    assert.deepEqual(db.prepare('SELECT id FROM events ORDER BY id').all().map(row => row.id), ['sig-A']);
     assert.equal(db.prepare('SELECT slot FROM checkpoints WHERE program=?').get('pump').slot, 1);
   } finally { db.close(); }
 });
