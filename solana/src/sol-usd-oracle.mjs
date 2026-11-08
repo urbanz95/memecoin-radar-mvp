@@ -7,7 +7,7 @@ const COINGECKO_URL =
 const KRAKEN_URL = "https://api.kraken.com/0/public/Ticker?pair=SOLUSD";
 
 function positiveCents(price) {
-  const value = typeof price === "string" && /^\\d+(?:\\.\\d+)?$/.test(price)
+  const value = typeof price === "string" && /^\d+(?:\.\d+)?$/.test(price)
     ? Number(price) : price;
   if (typeof value !== "number" || !Number.isFinite(value) ||
       value <= 0 || value > 1000000)
