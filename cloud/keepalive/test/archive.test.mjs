@@ -108,7 +108,10 @@ test("same five-minute bucket is idempotent; next bucket retains historical rows
   const { fn } = mockFetch();
   const first = await archiveRadar(env(db), fn, () => NOW);
   const repeated = await archiveRadar(env(db), fn, () => NOW + 10000);
-  const nextBucket = await archiveRadar(env(db), fn, () => NOW + 5 * 60000);
+  const newerFetch = mockFetch({ radarResponse: {
+    ...radar(), generatedAt: new Date(NOW + 5 * 60000).toISOString(),
+  } });
+  const nextBucket = await archiveRadar(env(db), newerFetch.fn, () => NOW + 5 * 60000);
   assert.equal(first.inserted, 1);
   assert.equal(repeated.inserted, 0);
   assert.equal(nextBucket.inserted, 1);
