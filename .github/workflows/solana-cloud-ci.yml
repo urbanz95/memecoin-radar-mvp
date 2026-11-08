@@ -12,6 +12,10 @@ on:
       - solana/test/cloud-hosting.test.mjs
       - render.yaml
       - .github/workflows/solana-cloud-ci.yml
+  pull_request:
+    paths:
+      - cloud/keepalive/**
+      - .github/workflows/solana-cloud-ci.yml
   workflow_dispatch:
 permissions:
   contents: read
