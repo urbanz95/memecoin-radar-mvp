@@ -1,5 +1,14 @@
 # Radar Solana sem computador ligado — implantação cloud do MVP
 
+## 8 novembro — WebSocket ligado mas silencioso
+
+Após o primeiro patch de controlo HTTP, duas medições feitas externamente em 8 de novembro (01:21:21 e 01:21:47 UTC) confirmaram `websocket_connected=true`, fila HTTP de 0–1 pedidos e cotação SOL/USD obtida via fallback Kraken; porém **0 notificações de logs e 0 tokens observados** apesar da subscription reconhecida. Portanto `websocket_connected=true` não é prova de atividade real.
+
+O perfil Cloud passou a usar `SOLANA_WS_NO_LOG_TIMEOUT_MS=45000`: num programa altamente ativo como Pump.fun, se uma subscrição recebida e confirmada passar 45 segundos sem `logsNotification`, o cliente reconecta explicitamente com motivo `NO_LOG_NOTIFICATIONS`. Ping/pong sozinho não reinicia este relógio. O estado `/health` passa a apresentar `logStream.noRecentLogs`, `logStream.lastObservedAt` e `status=DEGRADED` mesmo que a ligação permaneça aberta sem dados. O dashboard mostra `SEM EVENTOS RECENTES` nesse caso.
+
+Esta política está **desligada por padrão** fora do perfil cloud para não provocar reconexões em programas pouco movimentados. O timeout não cria logs nem garante que um provedor público sem capacidade volte a transmitir; o passo seguinte é validar a receção real e, se necessário, diagnosticar o RPC WS público sem aumentar gastos.
+
+
 ## 8 novembro — perfil para RPC público sobrecarregado
 
 Na amostra real do Render às 00:47 UTC, os logs estavam ativos, mas o contexto HTTP tinha backlog 64/64 e apenas 12 pedidos/min. O perfil **apenas cloud** passa a aplicar:
