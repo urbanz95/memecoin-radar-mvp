@@ -229,6 +229,21 @@ export class Store {
       return count;
     });
   }
+  // Close only stale, *unclaimed* live-log enrichment in the durable queue.
+  // Observations in event_observations are independent and remain untouched.
+  // Recovery entries or actively-processing rows are never modified.
+  expireStaleLogContext({ maxAgeMs, now = Date.now(), signature = null } = {}) {
+    if (!Number.isSafeInteger(maxAgeMs) || maxAgeMs < 1 || maxAgeMs > 3600000 ||
+        !Number.isFinite(now) ||
+        (signature !== null && (typeof signature !== "string" || !signature)))
+      throw Error("INVALID_CONTEXT_EXPIRY");
+    const base = "UPDATE inbox SET status='EXPIRED' WHERE status IN ('PENDING','UNAVAILABLE')" +
+      " AND received_at < ? AND json_extract(payload,'$.evidenceSource')='rpc:logsSubscribe'";
+    const stmt = signature === null ? base : base + " AND signature=?";
+    return Number(this.db.prepare(stmt).run(
+      now - maxAgeMs, ...(signature === null ? [] : [signature]),
+    ).changes);
+  }
   // Bounded read-only slice for the MVP radar. Uses receivedAt, not an
   // inferred on-chain timestamp; never claims full history or global volume.
   radarObservations({ limit = 10000, now = Date.now() } = {}) {
