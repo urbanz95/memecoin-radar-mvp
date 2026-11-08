@@ -66,6 +66,10 @@ export function loadConfig(env = process.env) {
     fdvMinimumUsd: integer(env, "SOLANA_FDV_MINIMUM_USD", 0, 0, 1_000_000_000),
     solUsdFeedEnabled: solUsdFeed === "coingecko",
     contextPrioritiesEnabled: ["true", "1"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED),
+    // Opt-in context policy: only ranks <= maxPriority enter the scarce HTTP
+    // queue. Decoded RPC-log observations are always buffered independently.
+    contextMaxPriority: integer(env, "SOLANA_CONTEXT_MAX_PRIORITY", 3, 0, 3),
+    contextMaxAgeMs: integer(env, "SOLANA_CONTEXT_MAX_AGE_MS", 0, 0, 3600000),
     publicDashboardOnly: ["true", "1"].includes(env.SOLANA_PUBLIC_DASHBOARD_ONLY),
     priorityP0ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P0_SLOTS", 8, 0, 10000),
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
