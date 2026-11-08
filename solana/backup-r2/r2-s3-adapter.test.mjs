@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
+import { createServer } from 'node:http';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -226,4 +227,81 @@ test('official S3 client builds without making any network requests', async () =
   assert.equal(typeof adapter.getFile, 'function');
   assert.equal(typeof client.send, 'function');
   client.destroy();
+});
+
+
+test('actual signed AWS HTTP requests reach a loopback S3 emulator, not Cloudflare', async t => {
+  const objects = new Map();
+  const requests = [];
+  const server = createServer(async (req, res) => {
+    try {
+      const url = new URL(req.url, 'http://localhost');
+      const expectedPrefix = '/' + bucket + '/';
+      if (!url.pathname.startsWith(expectedPrefix)) {
+        res.writeHead(404); res.end(); return;
+      }
+      const key = decodeURIComponent(url.pathname.slice(expectedPrefix.length));
+      requests.push({
+        method: req.method, key,
+        signed: String(req.headers.authorization ?? '').startsWith('AWS4-HMAC-SHA256 '),
+        condition: req.headers['if-none-match'] ?? req.headers['if-match'] ?? null,
+      });
+      if (req.method === 'PUT') {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(Buffer.from(chunk));
+        const content = Buffer.concat(chunks);
+        if (req.headers['if-none-match'] === '*' && objects.has(key)) {
+          res.writeHead(412, { 'Content-Type': 'application/xml' });
+          res.end('<Error><Code>PreconditionFailed</Code></Error>');
+          return;
+        }
+        objects.set(key, content);
+        res.writeHead(200, { ETag: '"loopback-etag"' });
+        res.end(); return;
+      }
+      if (req.method === 'GET') {
+        if (!objects.has(key)) {
+          res.writeHead(404, { 'Content-Type': 'application/xml' });
+          res.end('<Error><Code>NoSuchKey</Code></Error>');
+          return;
+        }
+        const payload = objects.get(key);
+        res.writeHead(200, {
+          ETag: '"loopback-etag"', 'Content-Length': payload.length,
+          'Content-Type': 'application/octet-stream',
+        });
+        res.end(payload); return;
+      }
+      res.writeHead(405); res.end();
+    } catch (e) { res.writeHead(500); res.end('LOCAL_MOCK_ERROR'); }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const port = server.address().port;
+  const client = new S3.S3Client({
+    region: 'auto', forcePathStyle: true,
+    endpoint: 'http://127.0.0.1:' + port,
+    credentials: { accessKeyId: 'fake-access', secretAccessKey: 'fake-secret' },
+    maxAttempts: 1, requestChecksumCalculation: 'WHEN_REQUIRED',
+  });
+  t.after(() => client.destroy());
+  const store = createR2S3Adapter({ client, commands: S3, bucket });
+  const saved = await store.putText(indexKey, '{"signed":true}',
+    { ifNoneMatch: '*' });
+  assert.equal(saved.etag, '"loopback-etag"');
+  assert.equal((await store.getText(indexKey)).body, '{"signed":true}');
+  const dir = await workspace(t);
+  const archive = Buffer.alloc(8192, 0x73);
+  const source = join(dir, 'wire-input.gz');
+  const destination = join(dir, 'wire-output.gz');
+  await writeFile(source, archive);
+  await store.putFile(archiveKey, source, { ifNoneMatch: '*' });
+  await store.getFile(archiveKey, destination);
+  assert.deepEqual(await readFile(destination), archive);
+  assert.ok(requests.length >= 4);
+  assert.ok(requests.every(x => x.signed));
+  assert.ok(requests.some(x => x.method === 'PUT' &&
+    x.key === indexKey && x.condition === '*'));
+  assert.ok(requests.some(x => x.method === 'PUT' &&
+    x.key === archiveKey && x.condition === '*'));
 });
