@@ -78,8 +78,10 @@ if(!isHosted){
    const ws=health.metrics?.gauges?.websocket_connected===true;
    if (!ws) {
     status('SEM WEBSOCKET: recolha Solana interrompida · amostra '+snapshotTime());
+   } else if (health.logStream?.noRecentLogs) {
+    status('SEM EVENTOS RECENTES: WebSocket ligado, mas o fornecedor não está a enviar logs · amostra '+snapshotTime());
    } else if (health.status === 'OBSERVING') {
-    status('WebSocket ligado · cobertura parcial · amostra '+snapshotTime());
+    status('WebSocket ligado e a receber logs · cobertura parcial · amostra '+snapshotTime());
    } else {
     const saturated = health.metrics?.gauges?.coverageOverloaded === true;
     status('WebSocket ligado · '+(saturated
