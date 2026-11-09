@@ -1,6 +1,6 @@
 // Opt-in durable backup orchestration. Intentionally separated from the
 // scanner's read-only RPC/WebSocket processing and HTTP public API.
-import { lstat, mkdir, statfs } from 'node:fs/promises';
+import { lstat, mkdir, stat, statfs } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { publishVerifiedBackup, restoreLatestVerifiedBackup } from './backup-object-store.mjs';
 import { pruneUnreferencedBackupObjects } from './backup-retention.mjs';
@@ -146,10 +146,18 @@ export class R2BackupAgent {
   async checkCapacity() {
     const fs = await this.statfsFn(this.directory);
     const free = Number(fs.bavail) * Number(fs.bsize);
-    // Copy, gzip, redownload, and restored proof coexist during publish.
-    // Fail closed on unknown filesystem information.
-    const required = 3 * this.settings.maxObjectBytes +
-      this.settings.minSpareBytes;
+    // Estimate the temporary copies from CURRENT SQLite size, not the
+    // maximum permitted archive size. Reserving 3 x 512 MiB even for a 40 MiB
+    // database would permanently disable backup on smaller cloud disks.
+    const db = await stat(this.dbPath);
+    if (!db.isFile() || db.size < 1 ||
+        db.size > this.settings.maxObjectBytes)
+      throw Error('R2_BACKUP_SQLITE_SIZE_INVALID');
+    // Existing SQLite and its WAL are already counted against free space.
+    // Snapshot, archive, remote download and verified restored DB coexist.
+    // Allow extra space for compression headers/pages and other writes.
+    const required = 3 * Math.max(16 * MIB, db.size) +
+      this.settings.minSpareBytes + 16 * MIB;
     if (!Number.isFinite(free) || free < required)
       throw Error('R2_BACKUP_LOCAL_SPACE_INSUFFICIENT');
     const listing = await this.store.listObjects({
@@ -197,7 +205,8 @@ export class R2BackupAgent {
         return result;
       } catch (error) {
         this.lastErrorCode = [
-          'R2_BACKUP_LOCAL_SPACE_INSUFFICIENT', 'R2_BACKUP_REMOTE_OBJECT_LIMIT',
+          'R2_BACKUP_SQLITE_SIZE_INVALID', 'R2_BACKUP_LOCAL_SPACE_INSUFFICIENT',
+          'R2_BACKUP_REMOTE_OBJECT_LIMIT',
           'R2_BACKUP_REMOTE_BYTE_BUDGET',
         ].includes(error.message) ? error.message : 'R2_BACKUP_TRANSFER_FAILED';
         throw Error(this.lastErrorCode, { cause: error });
