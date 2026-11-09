@@ -6,6 +6,7 @@ import { appendFile } from 'node:fs/promises';
 
 const targets=[
   ['solana_public','wss://api.mainnet-beta.solana.com'],
+  ['solana_canonical','wss://api.mainnet.solana.com'],
   ['publicnode','wss://solana-rpc.publicnode.com']
 ];
 const PUMP_FUN='6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P';
