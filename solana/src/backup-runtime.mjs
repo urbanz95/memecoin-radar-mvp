@@ -61,7 +61,7 @@ export function loadR2BackupSettings(env = process.env) {
     firstDelaySeconds: number(env, 'SOLANA_R2_FIRST_DELAY_SECONDS', 120, 5, 3600),
     maxObjectBytes: number(env, 'SOLANA_R2_MAX_OBJECT_BYTES', 512 * MIB,
       2 * MIB, 512 * MIB),
-    maxRemoteBytes: number(env, 'SOLANA_R2_MAX_REMOTE_BYTES', 4 * GIB,
+    maxRemoteBytes: number(env, 'SOLANA_R2_MAX_REMOTE_BYTES', 6 * GIB,
       256 * MIB, 9 * GIB),
     maxRemoteObjects: number(env, 'SOLANA_R2_MAX_REMOTE_OBJECTS', 64, 6, 500),
     minSpareBytes: number(env, 'SOLANA_R2_MIN_SPARE_BYTES', 128 * MIB,
@@ -196,6 +196,20 @@ export class R2BackupAgent {
     const operation = (async () => {
       this.attempts++;
       try {
+        // Reclaim objects which are >48h old and no longer in latest.json
+        // BEFORE the quota check. Otherwise the budget could prevent new
+        // backups and the cleanup would never execute again.
+        if (this.settings.autoPrune) {
+          try {
+            await pruneUnreferencedBackupObjects({
+              store: this.store, now: this.now,
+              execute: true, acknowledgeDataDeletion: true,
+            });
+          } catch (e) {
+            if (e.message !== 'BACKUP_RETENTION_INDEX_MISSING')
+              throw Error('R2_BACKUP_RETENTION_FAILED', { cause: e });
+          }
+        }
         await this.checkCapacity();
         const result = await publishVerifiedBackup({
           source: databaseConnection, directory: this.directory,
@@ -219,7 +233,8 @@ export class R2BackupAgent {
         return result;
       } catch (error) {
         this.lastErrorCode = [
-          'R2_BACKUP_SQLITE_SIZE_INVALID', 'R2_BACKUP_LOCAL_SPACE_INSUFFICIENT',
+          'R2_BACKUP_SQLITE_SIZE_INVALID', 'R2_BACKUP_RETENTION_FAILED',
+          'R2_BACKUP_LOCAL_SPACE_INSUFFICIENT',
           'R2_BACKUP_REMOTE_OBJECT_LIMIT',
           'R2_BACKUP_REMOTE_BYTE_BUDGET',
         ].includes(error.message) ? error.message : 'R2_BACKUP_TRANSFER_FAILED';
