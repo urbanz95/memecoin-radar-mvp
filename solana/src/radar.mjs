@@ -157,6 +157,11 @@ export function buildRadarSnapshot(observations, {
     (b.activity['60s'].events - a.activity['60s'].events) ||
     b.lastObservedAt.localeCompare(a.lastObservedAt) || a.mint.localeCompare(b.mint));
   const candidates = all.filter(x => x.fdvStatus !== 'BELOW_FLOOR');
+  const possibleTruncation = observations.length >= sampleLimit;
+  // Earliest retained *verified* event is only an evidence bound, never proof
+  // that all events up to this age arrived from the network.
+  const sampledLookbackSeconds = oldest === null ? null
+    : Math.min(300, Math.max(0, Math.floor((now - oldest) / 1000)));
   return {
     schemaVersion: 1,
     kind: 'SOLANA_PUMP_RADAR_MVP',
@@ -174,7 +179,12 @@ export function buildRadarSnapshot(observations, {
       verifiedUniqueEvents: accepted,
       oldestRetainedObservationInWindow: oldest === null ? null : new Date(oldest).toISOString(),
       maxRowsRead: sampleLimit,
-      possibleTruncation: observations.length >= sampleLimit,
+      possibleTruncation,
+      sampledLookbackSeconds,
+      window60sPotentiallyTruncated: possibleTruncation &&
+        (sampledLookbackSeconds === null || sampledLookbackSeconds < 60),
+      window300sPotentiallyTruncated: possibleTruncation &&
+        (sampledLookbackSeconds === null || sampledLookbackSeconds < 300),
       timeWindowSeconds: 300,
     },
     totals: {
@@ -188,6 +198,7 @@ export function buildRadarSnapshot(observations, {
     candidates: candidates.slice(0, limit),
     warnings: [
       'Only bounded retained RPC log observations are included; missing events and historical completeness are unknown.',
+      ...(possibleTruncation ? ['The radar hit its row cap; activity windows can contain substantially less than the nominal 60 or 300 seconds.'] : []),
       'Event windows use local receivedAt, not authoritative on-chain execution time.',
       'Observed wallet counts and volumes are partial; no inference of global buyers, holders or profitability.',
       'FDV is a reserve-based proxy when evidenced, not circulating market cap, liquidity or sellable proceeds.',
