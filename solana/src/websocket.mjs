@@ -5,6 +5,8 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 export class LogSocket {
   constructor({
     url = "wss://api.mainnet-beta.solana.com",
+    fallbackUrl = null,
+    stableConnectionMs = 20000,
     programs,
     commitment = "confirmed",
     onLog = () => {},
@@ -24,6 +26,16 @@ export class LogSocket {
   } = {}) {
     if (!["ws:", "wss:"].includes(new URL(url).protocol))
       throw Error("INVALID_WEBSOCKET_URL");
+    // Fail over only between the two official Solana public hostnames unless
+    // the caller opts in to another endpoint. Never print endpoint URLs.
+    const alternative = fallbackUrl ??
+      (url === "wss://api.mainnet-beta.solana.com"
+        ? "wss://api.mainnet.solana.com" : null);
+    if (alternative && !["ws:", "wss:"].includes(new URL(alternative).protocol))
+      throw Error("INVALID_WEBSOCKET_FALLBACK_URL");
+    if (!Number.isSafeInteger(stableConnectionMs) ||
+        stableConnectionMs < 1000 || stableConnectionMs > 120000)
+      throw Error("INVALID_STABLE_CONNECTION_WINDOW");
     if (!["processed", "confirmed", "finalized"].includes(commitment))
       throw Error("INVALID_COMMITMENT");
     if (!Number.isSafeInteger(noLogTimeoutMs) || noLogTimeoutMs < 0 || noLogTimeoutMs > 600000)
@@ -57,6 +69,7 @@ export class LogSocket {
       heartbeatMs,
       random,
       now,
+      stableConnectionMs,
     });
     const proxy = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
     this.agent =
@@ -65,6 +78,10 @@ export class LogSocket {
         ? new HttpsProxyAgent(proxy)
         : undefined);
     this.stopped = true;
+    this.urls = alternative && alternative !== url ? [url, alternative] : [url];
+    this.activeUrlIndex = 0;
+    this.malformedCloseCount = 0;
+    this.readyAt = null;
     this.attempt = 0;
     this.requestId = 0;
     this.everConnected = false;
@@ -81,7 +98,7 @@ export class LogSocket {
     const generation = ++this.generation;
     let socket;
     try {
-      socket = new this.WebSocketImpl(this.url, {
+      socket = new this.WebSocketImpl(this.urls[this.activeUrlIndex], {
         agent: this.agent,
         handshakeTimeout: this.ackTimeoutMs,
         maxPayload: 2 * 1024 * 1024,
@@ -97,6 +114,7 @@ export class LogSocket {
     this.lastLogAt = this.now();
     this.awaitingPongAt = null;
     this.ready = false;
+    this.readyAt = null;
     const current = () => !this.stopped && this.generation === generation;
     this.ackTimer = setTimeout(() => {
       if (current() && !this.ready) this.reconnect("SUBSCRIPTION_TIMEOUT");
@@ -179,7 +197,9 @@ export class LogSocket {
         if (!this.pending.size && !this.ready) {
           clearTimeout(this.ackTimer);
           this.ready = true;
-          this.attempt = 0;
+          // An ACK alone is not a healthy stream. Do not reset retry backoff
+          // until confirmed log notifications have flowed for a sustained time.
+          this.readyAt = this.now();
           this.everConnected = true;
           this.lastLogAt = this.now();
           this.metrics?.set("websocket_stream_stale", false);
@@ -213,6 +233,13 @@ export class LogSocket {
       }
       const receivedAt = new Date(this.now()).toISOString();
       this.lastLogAt = this.now();
+      if (this.readyAt !== null &&
+          this.now() - this.readyAt >= this.stableConnectionMs &&
+          this.attempt > 0) {
+        this.attempt = 0;
+        this.malformedCloseCount = 0;
+        this.metrics?.inc("websocket_stable_backoff_resets");
+      }
       this.metrics?.set("websocket_last_log_received", receivedAt);
       this.metrics?.set("websocket_stream_stale", false);
       this.metrics?.inc("log_notifications");
@@ -249,6 +276,17 @@ export class LogSocket {
           ? code
           : "UNKNOWN",
       );
+      if (code === "WS_ERR_INVALID_CLOSE_CODE") {
+        this.malformedCloseCount++;
+        if (this.malformedCloseCount >= 3 && this.urls.length > 1) {
+          this.activeUrlIndex = (this.activeUrlIndex + 1) % this.urls.length;
+          this.malformedCloseCount = 0;
+          this.metrics?.inc("websocket_official_endpoint_failovers");
+          this.metrics?.set("websocket_endpoint_slot", this.activeUrlIndex);
+        }
+      } else {
+        this.malformedCloseCount = 0;
+      }
       this.reconnect("TRANSPORT_ERROR");
     });
     socket.on("close", () => {
