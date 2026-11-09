@@ -136,3 +136,24 @@ test('cross-restart counts are not subtracted and stale/no activity is marked', 
   assert.ok(summary.warnings.includes('RADAR_WINDOW_MAY_BE_TRUNCATED'));
   assert.equal(summary.observedCoveragePercent, null);
 });
+
+test('radar row-cap warning reports effective window without claiming completeness', () => {
+  const input = {
+    ...radar,
+    generatedAt: '2026-11-09T01:20:00.000Z',
+    sample: { ...radar.sample,
+      rowsInspected: 3000,
+      maxRowsRead: 3000,
+      possibleTruncation: true,
+      oldestRetainedObservationInWindow: '2026-11-09T01:18:20.000Z',
+    },
+  };
+  const sample = summarizeRadar(input);
+  assert.equal(sample.observedWindowSeconds, 100);
+  assert.equal(sample.maxRowsRead, 3000);
+  const a = summarizeHealth(makeHealth());
+  const report = analyzeSnapshots(a, a, sample, sample);
+  assert.ok(report.warnings.includes('RADAR_WINDOW_MAY_BE_TRUNCATED'));
+  assert.ok(report.warnings.includes('OBSERVED_RADAR_WINDOW_SHORTER_THAN_300_SECONDS'));
+  assert.equal(report.observedCoveragePercent, null);
+});
