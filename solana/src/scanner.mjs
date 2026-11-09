@@ -712,6 +712,7 @@ export class Scanner {
     const raw = buildRadarSnapshot(rows, {
       now, minimumFdvUsd: this.config.fdvMinimumUsd || 5000,
       limit, quote: this.oracle.snapshot(), sampleLimit,
+      includeAllEvidence: true,
     });
     // Aggregate activity covers observed log events independently of the
     // 3,000-row raw evidence retention cap. Raw logs remain FDV evidence only.
