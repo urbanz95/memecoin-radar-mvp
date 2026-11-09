@@ -226,6 +226,12 @@ export async function run() {
     report.second ? '- R2 latest success in this process: **' + (report.second.backup.lastSuccessfulAt ?? 'unknown') + '**' : '',
     report.secondRadar ? '- Radar rows inspected / row cap: **' + report.secondRadar.rowsInspected + ' / ' + report.secondRadar.maxRowsRead + '**' : '',
     report.secondRadar ? '- Oldest observed event age: **' + (report.secondRadar.observedWindowSeconds ?? 'unknown') + ' seconds**' : '',
+    ...(report.delta?.programs ?? []).map(p => '- ' + p.protocol + ': **' +
+      p.notifications + '** log notifications, **' + p.decodedEvents + '** decoded log events'),
+    ...(report.second?.programs ?? []).map(p => '- ' + p.protocol +
+      ': checkpoint=' + (p.checkpointContinuity ?? 'unknown') +
+      ', recoveryCursorPending=' + p.recoveryCursorPending +
+      ', lastLogAge=' + (p.secondsSinceLastLog ?? 'unknown') + 's'),
     '- Flags: ' + ((report.warnings ?? [report.errorCode]).join(', ') || 'none'),
     '',
     'Counters are process-local; no independent denominator, no proof of global completeness.',
