@@ -238,7 +238,9 @@ test('failed scheduled backup only records an error and does not stop scanner', 
   const events = [];
   out.agent.start(live.db, code => events.push(code));
   fn();
-  await new Promise(resolve => setImmediate(resolve));
+  // Wait for the real in-flight operation rather than assuming two event-loop
+  // ticks are enough on every Node version/runner CPU.
+  await out.agent.inFlight?.catch(() => {});
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(out.agent.status().lastErrorCode, 'R2_BACKUP_TRANSFER_FAILED');
   assert.ok(events.includes('R2_BACKUP_TRANSFER_FAILED'));
