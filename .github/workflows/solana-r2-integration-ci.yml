@@ -1,0 +1,72 @@
+name: Solana R2 bootstrap integration (isolated branch; no deploy)
+on:
+  push:
+    branches:
+      - feat/solana-r2-backup-bootstrap-20261109
+    paths:
+      - solana/**
+      - render.yaml
+      - .github/workflows/solana-r2-integration-ci.yml
+permissions:
+  contents: write
+  issues: write
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install application dependencies
+        run: npm ci --prefix solana --ignore-scripts --no-audit --no-fund
+      - name: Ensure separate S3 SDK lockfile is available
+        run: |
+          if [ ! -f solana/backup-r2/package-lock.json ]; then
+            npm install --prefix solana/backup-r2 --package-lock-only --ignore-scripts --no-audit --no-fund
+          fi
+      - name: Reproducible install of backup-only S3 dependencies
+        run: npm ci --prefix solana/backup-r2 --ignore-scripts --no-audit --no-fund
+      - name: Full read-only Solana scanner tests
+        run: npm test --prefix solana
+      - name: Offline WAL, R2, retention, S3, and bootstrap integration tests
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs solana/backup-r2/r2-s3-adapter.test.mjs solana/test/backup-runtime.test.mjs
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/solana-r2-backup-bootstrap-20261109
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Pin transitive SDK dependency resolution only in isolated branch
+        run: |
+          set -euo pipefail
+          if [ -f solana/backup-r2/package-lock.json ]; then exit 0; fi
+          npm install --prefix solana/backup-r2 --package-lock-only --ignore-scripts --no-audit --no-fund
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add solana/backup-r2/package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "build(solana): lock AWS S3 SDK backup-only transitive dependencies"
+            git push origin HEAD:feat/solana-r2-backup-bootstrap-20261109
+          fi
+  handoff:
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post CI status to scanner coordination issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.test.result }}
+        run: |
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body "**[CI R2 INTEGRAÇÃO — BRANCH ISOLADA]** Node 22/24 scanner + SQLite/R2/bootstrap: ${RESULT}. Run ${{ github.run_id }}. Sem R2 real, sem deploy Render, sem Cloudflare nem API Solana. Falha num job exige análise de logs antes de merge."
