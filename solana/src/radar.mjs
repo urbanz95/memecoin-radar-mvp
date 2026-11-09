@@ -89,6 +89,7 @@ function exposedToken(t, now, quote, minimumFdvUsd) {
 /** Pure deterministic projection from retained, verified, deduplicated RPC logs. */
 export function buildRadarSnapshot(observations, {
   now = Date.now(), minimumFdvUsd = 5000, limit = 50, quote = null, sampleLimit = 10000,
+  includeAllEvidence = false,
 } = {}) {
   if (!Array.isArray(observations) || !Number.isFinite(now) ||
       !Number.isSafeInteger(minimumFdvUsd) || minimumFdvUsd < 0 ||
@@ -204,5 +205,8 @@ export function buildRadarSnapshot(observations, {
       'FDV is a reserve-based proxy when evidenced, not circulating market cap, liquidity or sellable proceeds.',
       'The candidate list is NOT a recommendation to buy or a token safety determination.',
     ],
+    // Internal-only transient FDV/threshold evidence. Scanner.radar() removes
+    // this before sending a response. Unlike candidates, it includes BELOW_FLOOR.
+    ...(includeAllEvidence ? { internalRawTokenEvidence: all } : {}),
   };
 }
