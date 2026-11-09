@@ -221,6 +221,30 @@ test('CLI fails before creating SQLite when R2 is enabled without credentials', 
   await assert.rejects(readFile(f.path), { code: 'ENOENT' });
 });
 
+test('auto-prune reclaims expired orphan objects before checking remote budget', async t => {
+  const f = await fixture(t);
+  const live = new Store(f.path);
+  t.after(() => live.close());
+  const first = await publishVerifiedBackup({
+    source: live.db, directory: f.dir, store: f.remote,
+  });
+  const orphanKey = 'radar-backups/v1/22222222-2222-4222-8222-222222222222/snapshot.sqlite.gz';
+  f.remote.put(orphanKey, Buffer.from('old orphan'), { ifNoneMatch: '*' });
+  assert.ok(f.remote.data.has(orphanKey));
+  const out = await bootstrapR2Backup({
+    dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
+    env: { ...enabled, SOLANA_R2_AUTO_PRUNE: 'true',
+      SOLANA_R2_MAX_REMOTE_OBJECTS: '6' },
+  });
+  out.agent.statfsFn = async () => ({ bavail: 65536, bsize: 65536 });
+  const result = await out.agent.once(live.db);
+  assert.equal(result.fullyDownloadedAndRestored, true);
+  assert.equal(f.remote.data.has(orphanKey), false);
+  assert.equal(f.remote.data.has(first.entry.archiveKey), true);
+  assert.equal(f.remote.data.has(first.entry.manifestKey), true);
+  await out.agent.stop();
+});
+
 test('backup refuses insufficient local disk and leaves remote untouched', async t => {
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
