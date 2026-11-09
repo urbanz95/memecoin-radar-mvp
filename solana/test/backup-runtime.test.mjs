@@ -171,6 +171,41 @@ test('live Store snapshot has real checkpoint counts and sanitized status', asyn
   assert.equal(f.remote.data.has('radar-backups/v1/latest.json'), true);
   await out.agent.stop();
 });
+
+test('capacity depends on actual small SQLite size, not max 512 MiB setting', async t => {
+  const f = await fixture(t);
+  const out = await bootstrapR2Backup({
+    dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
+    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+  });
+  const live = new Store(f.path);
+  t.after(() => live.close());
+  // 256 MiB free accommodates a tiny real Store + safety reserve,
+  // but NOT a fictional 3*512MiB reservation.
+  out.agent.statfsFn = async () => ({ bavail: 4096, bsize: 65536 });
+  const result = await out.agent.once(live.db);
+  assert.equal(result.fullyDownloadedAndRestored, true);
+  await out.agent.stop();
+});
+
+test('CLI fails before creating SQLite when R2 is enabled without credentials', async t => {
+  const { execFileSync } = await import('node:child_process');
+  const f = await fixture(t);
+  const env = {
+    ...process.env,
+    SOLANA_R2_BACKUP_ENABLED: 'true',
+    SOLANA_R2_ACCOUNT_ID: '',
+    SOLANA_R2_ACCESS_KEY_ID: '',
+    SOLANA_R2_SECRET_ACCESS_KEY: '',
+    SOLANA_R2_BUCKET: '',
+    SOLANA_DB_PATH: f.path,
+  };
+  assert.throws(() => execFileSync(process.execPath, [
+    new URL('../src/cli.mjs', import.meta.url).pathname,
+  ], { env, timeout: 10000, stdio: 'pipe' }), /Command failed/);
+  await assert.rejects(readFile(f.path), { code: 'ENOENT' });
+});
+
 test('backup refuses insufficient local disk and leaves remote untouched', async t => {
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
