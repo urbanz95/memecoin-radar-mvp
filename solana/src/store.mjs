@@ -3,6 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, statSync } from "node:fs";
 import { dirname } from "node:path";
 import { canonicalEvent, CONFIRMATIONS } from "./events.mjs";
+import { installRadarRollups, recordRadarRollup, pruneRadarRollups, readRadarRollups } from "./radar-time-aggregation.mjs";
 const json = (value) => JSON.stringify(value);
 const parse = (row) => (row ? JSON.parse(row.payload) : null);
 export class Store {
@@ -47,6 +48,8 @@ export class Store {
       CREATE TABLE IF NOT EXISTS security(mint TEXT PRIMARY KEY, checked_at INTEGER NOT NULL, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS market_observations(id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS operational_metrics(id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, payload TEXT NOT NULL);`);
+    // Additive migration. Existing raw/canonical SQLite evidence is never rewritten.
+    installRadarRollups(this.db);
     // Local additive evolution: preserve every distinct raw log payload on restart.
     if (
       !this.db
@@ -209,7 +212,12 @@ export class Store {
               ).changes,
             );
         }
+        // Must be within this batch's BEGIN IMMEDIATE/COMMIT boundary.
+        // A stale duplicate can be reinserted into the bounded raw table,
+        // but its retained seen-ID never increments the rollup twice.
+        recordRadarRollup(this.db, e);
       }
+      pruneRadarRollups(this.db);
       const excess =
         Number(
           this.db.prepare("SELECT COUNT(*) n FROM event_observations").get().n,
@@ -243,6 +251,9 @@ export class Store {
     return Number(this.db.prepare(stmt).run(
       now - maxAgeMs, ...(signature === null ? [] : [signature]),
     ).changes);
+  }
+  radarRollups({ now = Date.now() } = {}) {
+    return readRadarRollups(this.db, { now });
   }
   // Bounded read-only slice for the MVP radar. Uses receivedAt, not an
   // inferred on-chain timestamp; never claims full history or global volume.
