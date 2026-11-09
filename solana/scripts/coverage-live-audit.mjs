@@ -218,6 +218,7 @@ export async function run() {
     '',
     'Counters are process-local; no independent denominator, no proof of global completeness.',
   ].filter(Boolean).join('\n') + '\n';
+  await writeFile('solana-coverage-live-summary.md', md, { mode: 0o600 });
   if (process.env.GITHUB_STEP_SUMMARY)
     await appendFile(process.env.GITHUB_STEP_SUMMARY, md);
   console.log(md);
