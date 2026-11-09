@@ -45,6 +45,11 @@ export function summarizeHealth(data, observedAt = new Date().toISOString()) {
     recoveryGapsReported: integer(diag.recoveryGapsReported),
     persistenceFailures: integer(diag.persistenceFailures),
     contextPending: integer(diag.pendingContextTransactions),
+    sqliteStorageBytes: integer(storage.storageBytes),
+    sqliteInboxRows: integer(storage.inbox),
+    sqliteRawObservationRows: integer(storage.event_observations),
+    sqliteGapRows: integer(storage.gaps),
+    sqliteErrorRows: integer(storage.errors),
     websocketConnected: typeof gauges.websocket_connected === 'boolean'
       ? gauges.websocket_connected : null,
     websocketDisconnects: integer(counters.websocket_disconnects),
@@ -246,6 +251,10 @@ export async function run() {
     report.second ? '- Storage paused: ' +
       report.second.websocketStoragePaused +
       '; storage error: ' + (report.second.websocketStorageLastErrorCode ?? 'none') : '',
+    report.second ? '- SQLite storage: ' + (report.second.sqliteStorageBytes ?? 'unknown') +
+      ' bytes; inbox rows: ' + (report.second.sqliteInboxRows ?? 'unknown') +
+      '; raw observations: ' + (report.second.sqliteRawObservationRows ?? 'unknown') +
+      '; gaps: ' + (report.second.sqliteGapRows ?? 'unknown') : '',
     report.second ? '- WebSocket stream stale: ' +
       report.second.websocketStreamStale + '; next reconnect delay ms: ' +
       (report.second.websocketReconnectDelayMs ?? 'unknown') : '',
