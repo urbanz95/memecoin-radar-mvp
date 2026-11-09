@@ -19,6 +19,11 @@ const enabled = {
   SOLANA_R2_FIRST_DELAY_SECONDS: '5',
 };
 
+const fresh = { ...enabled,
+  SOLANA_R2_ALLOW_FRESH_START: 'true',
+  SOLANA_R2_FRESH_START_NOT_AFTER: new Date(Date.now() + 3600_000).toISOString(),
+};
+
 class Remote {
   constructor() { this.data = new Map(); this.revision = 0; this.down = false; }
   async putText(key, body, options) {
@@ -87,6 +92,16 @@ test('disabled backup ignores credentials and does not create DB', async t => {
   assert.equal(result.enabled, false);
   await assert.rejects(readFile(f.path), { code: 'ENOENT' });
 });
+test('one-time fresh startup must expire and cannot be left enabled forever', () => {
+  assert.throws(() => loadR2BackupSettings({
+    ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true',
+  }), /R2_FRESH_START_EXPIRY_REQUIRED/);
+  assert.equal(loadR2BackupSettings({
+    ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true',
+    SOLANA_R2_FRESH_START_NOT_AFTER: new Date(Date.now() - 1000).toISOString(),
+  }).allowFreshStart, false);
+});
+
 test('enabled requires all private R2 env settings', () => {
   assert.throws(() => loadR2BackupSettings({
     SOLANA_R2_BACKUP_ENABLED: 'true',
@@ -104,7 +119,7 @@ test('fresh start requires an explicit migration flag and missing index', async 
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   });
   assert.equal(out.restoreStatus, 'FRESH_START_EXPLICIT');
   await out.agent.stop();
@@ -134,7 +149,7 @@ test('R2 network outage during required restore never creates fresh DB', async t
   f.remote.down = true;
   await assert.rejects(bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   }), /R2_BACKUP_RESTORE_REQUIRED/);
   await assert.rejects(readFile(f.path), { code: 'ENOENT' });
 });
@@ -146,7 +161,7 @@ test('corrupt latest snapshot fails closed even with fresh-start flag', async t 
   archive.data[archive.data.length - 1] ^= 0xff;
   await assert.rejects(bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   }), /R2_BACKUP_RESTORE_REQUIRED/);
   await assert.rejects(readFile(f.path), { code: 'ENOENT' });
 });
@@ -154,7 +169,7 @@ test('live Store snapshot has real checkpoint counts and sanitized status', asyn
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   });
   const live = new Store(f.path);
   t.after(() => live.close());
@@ -176,7 +191,7 @@ test('capacity depends on actual small SQLite size, not max 512 MiB setting', as
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   });
   const live = new Store(f.path);
   t.after(() => live.close());
@@ -210,7 +225,7 @@ test('backup refuses insufficient local disk and leaves remote untouched', async
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   });
   const live = new Store(f.path);
   t.after(() => live.close());
@@ -224,7 +239,7 @@ test('failed scheduled backup only records an error and does not stop scanner', 
   const f = await fixture(t);
   const out = await bootstrapR2Backup({
     dbPath: f.path, directory: f.dir, storeFactory: async () => f.remote,
-    env: { ...enabled, SOLANA_R2_ALLOW_FRESH_START: 'true' },
+    env: fresh,
   });
   const live = new Store(f.path);
   t.after(() => live.close());
