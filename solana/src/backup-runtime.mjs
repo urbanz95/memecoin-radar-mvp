@@ -37,10 +37,24 @@ export function loadR2BackupSettings(env = process.env) {
       !/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket ?? ''))
     throw Error('R2_BACKUP_REQUIRED_CONFIGURATION_MISSING');
 
+  const allowFreshRequested = truth(env.SOLANA_R2_ALLOW_FRESH_START,
+    'SOLANA_R2_ALLOW_FRESH_START');
+  let freshStartExpiry = null;
+  if (allowFreshRequested) {
+    const raw = env.SOLANA_R2_FRESH_START_NOT_AFTER;
+    const parsed = Date.parse(raw ?? '');
+    // A permanent fresh-start flag on an ephemeral disk could silently
+    // discard history after a future outage. Require a short dated window.
+    if (typeof raw !== 'string' || !Number.isFinite(parsed) ||
+        new Date(parsed).toISOString() !== raw ||
+        parsed > Date.now() + 24 * 3600_000)
+      throw Error('R2_FRESH_START_EXPIRY_REQUIRED');
+    freshStartExpiry = parsed;
+  }
   return Object.freeze({
     enabled: true, accountId, accessKeyId, secretAccessKey, bucket,
-    allowFreshStart: truth(env.SOLANA_R2_ALLOW_FRESH_START,
-      'SOLANA_R2_ALLOW_FRESH_START'),
+    allowFreshStart: allowFreshRequested && freshStartExpiry > Date.now(),
+    freshStartExpiry,
     autoPrune: truth(env.SOLANA_R2_AUTO_PRUNE,
       'SOLANA_R2_AUTO_PRUNE'),
     intervalMinutes: number(env, 'SOLANA_R2_INTERVAL_MINUTES', 180, 30, 1440),
