@@ -1,0 +1,31 @@
+name: Solana rolling radar + R2 regression (no deploy)
+on:
+  push:
+    branches:
+      - feat/solana-radar-rolling-aggregates-20261109
+    paths:
+      - solana/**
+      - .github/workflows/solana-rollup-regression-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    name: Rolling SQLite, scanner and R2 (Node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Reproducible Render installation
+        run: npm ci --prefix solana --ignore-scripts --no-audit --no-fund
+      - name: Full scanner suite including rolling aggregates
+        run: npm test --prefix solana
+      - name: Offline R2 backup and restore regression suites
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs solana/backup-r2/r2-s3-adapter.test.mjs solana/test/backup-runtime.test.mjs
