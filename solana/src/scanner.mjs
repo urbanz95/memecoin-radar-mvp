@@ -726,6 +726,7 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      backup: this.backupAgent?.status?.() ?? { enabled: false },
       logStream: {
         noRecentLogs,
         timeoutMs: noLogTimeoutMs,

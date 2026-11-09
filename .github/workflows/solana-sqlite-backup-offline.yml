@@ -1,0 +1,61 @@
+name: Solana SQLite offline restore proof (branch only)
+on:
+  push:
+    branches:
+      - test/solana-sqlite-restore-offline-20261108
+    paths:
+      - solana/src/backup-offline.mjs
+      - solana/src/backup-object-store.mjs
+      - solana/src/backup-retention.mjs
+      - solana/test/backup-retention.test.mjs
+      - solana/backup-r2/r2-s3-adapter.mjs
+      - solana/backup-r2/r2-s3-adapter.test.mjs
+      - solana/backup-r2/package.json
+      - solana/test/backup-object-store.test.mjs
+      - solana/test/backup-offline.test.mjs
+      - .github/workflows/solana-sqlite-backup-offline.yml
+permissions:
+  contents: read
+  issues: write
+  actions: read
+jobs:
+  restore:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install isolated pinned official AWS S3 SDK (no scanner dependency)
+        run: npm install --prefix solana/backup-r2 --ignore-scripts --no-package-lock --no-audit --no-fund
+      - name: Verify SQLite, mocked R2, and official S3 SDK adapter without credentials
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs solana/backup-r2/r2-s3-adapter.test.mjs
+  handoff:
+    needs: [restore]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write offline test result to issue 17
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.restore.result }}
+        run: |
+          if [ "$RESULT" != success ]; then
+            gh run view "${{ github.run_id }}" -R urbanz95/memecoin-radar-mvp --log-failed > /tmp/failed-jobs.txt 2>&1 || true
+            tail -n 65 /tmp/failed-jobs.txt > /tmp/failure-excerpt.txt
+            {
+              printf '%s\n\n' "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: ${RESULT}; run ${{ github.run_id }}."
+              printf '%s\n' 'Logs finais dos testes falhados:'
+              printf '%s\n' '~~~'
+              cat /tmp/failure-excerpt.txt
+              printf '%s\n' '~~~'
+            } > /tmp/status.md
+          else
+            printf '%s\n' "**[CI SQLite + R2 MOCK OFFLINE — branch isolada]** Job Node 22/24: SUCCESS; run ${{ github.run_id }}. Transporte simulado; R2 real, Render e produção intocados." > /tmp/status.md
+          fi
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file /tmp/status.md
