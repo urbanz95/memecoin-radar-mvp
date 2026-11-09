@@ -189,3 +189,18 @@ test('rollups preserve evidenced BELOW_FLOOR suppression without leaking interna
   assert.equal(projected.totals.observedDistinctMints,1);
   assert.ok(!JSON.stringify(projected).includes('internalRawTokenEvidence'));
 });
+
+
+test('a radar rollup SQLite write error aborts the entire log transaction',t=>{
+  const store=new Store(':memory:');t.after(()=>store.close());
+  const e=notification({at:Date.now()-1200,mint:'rollback-on-sqlite-failure'});
+  store.db.exec("CREATE TRIGGER fail_radar_rollup BEFORE INSERT ON radar_second_buckets BEGIN SELECT RAISE(ABORT,'fixture radar rollup disk error'); END;");
+  assert.throws(()=>store.persistLogBatch([e],{maxRows:1}),/fixture radar rollup disk error/);
+  assert.equal(store.db.prepare('SELECT COUNT(*) n FROM event_observations').get().n,0);
+  assert.equal(store.db.prepare('SELECT COUNT(*) n FROM selected_log_messages').get().n,0);
+  assert.equal(store.db.prepare('SELECT COUNT(*) n FROM radar_seen_ids').get().n,0);
+  assert.equal(store.db.prepare('SELECT COUNT(*) n FROM radar_second_buckets').get().n,0);
+  store.db.exec('DROP TRIGGER fail_radar_rollup');
+  store.persistLogBatch([e],{maxRows:1});
+  assert.equal(store.db.prepare('SELECT SUM(events) n FROM radar_second_buckets').get().n,1);
+});
