@@ -1,0 +1,25 @@
+name: Solana public WebSocket endpoint short probe (read only)
+on:
+  push:
+    branches:
+      - feat/solana-live-coverage-audit-20261109
+    paths:
+      - solana/scripts/ws-provider-smoke.mjs
+      - .github/workflows/solana-ws-provider-smoke.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    name: Compare 13s WebSocket samples without changing production
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install fixed dependencies
+        run: npm ci --prefix solana --ignore-scripts --no-audit --no-fund
+      - name: Smoke test public Solana WS endpoints without persisting log contents
+        run: node solana/scripts/ws-provider-smoke.mjs
