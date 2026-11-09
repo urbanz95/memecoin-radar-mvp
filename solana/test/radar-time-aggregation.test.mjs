@@ -162,3 +162,30 @@ test('scanner radar uses persisted aggregate source, not the raw 1-row cap',t=>{
   assert.equal(result.totals.observedDistinctMints,2);
   assert.equal(result.sample.verifiedUniqueEvents,2);
 });
+
+
+test('rollups preserve evidenced BELOW_FLOOR suppression without leaking internal raw token evidence',t=>{
+  const store=new Store(':memory:');t.after(()=>store.close());
+  const now=Date.now(),e=notification({
+    at:now-3000,mint:'low-fdv-known',eventType:'TOKEN_CREATED',
+  });
+  const supply='1000000000000000';
+  e.observations[0].totalSupplyRaw=supply;
+  e.observations[0].reserves={
+    virtualTokenRaw:supply,virtualQuoteRaw:'1000000000',
+  };
+  e.observations[0].protocolQuoteMint='11111111111111111111111111111111';
+  store.persistLogBatch([e],{maxRows:1});
+  const raw=buildRadarSnapshot(store.radarObservations({limit:1,now}),{
+    now,limit:50,sampleLimit:1,minimumFdvUsd:5000,
+    quote:{usdCents:16000,at:now,source:'test'},
+    includeAllEvidence:true,
+  });
+  assert.equal(raw.candidates.length,0);
+  assert.equal(raw.internalRawTokenEvidence[0].fdvStatus,'BELOW_FLOOR');
+  const projected=applyRadarRollups(raw,store.radarRollups({now}),{now,limit:50});
+  assert.equal(projected.candidates.length,0);
+  assert.equal(projected.totals.belowFloorNotDisplayed,1);
+  assert.equal(projected.totals.observedDistinctMints,1);
+  assert.ok(!JSON.stringify(projected).includes('internalRawTokenEvidence'));
+});
