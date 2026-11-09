@@ -1,0 +1,50 @@
+name: Solana live coverage smoke (read only, no deploy)
+on:
+  push:
+    branches:
+      - feat/solana-live-coverage-audit-20261109
+    paths:
+      - solana/scripts/coverage-live-audit.mjs
+      - solana/test/coverage-live-audit.test.mjs
+      - solana/docs/COVERAGE-LIVE-AUDIT-20261109.md
+      - .github/workflows/solana-live-coverage-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    name: Validate live audit and scanner (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install scanner dependencies
+        run: npm ci --prefix solana --ignore-scripts --no-audit --no-fund
+      - name: Run all offline scanner tests
+        run: npm test --prefix solana
+  audit:
+    name: Observe live scanner read-only (2 samples)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Collect sanitized public health and radar evidence
+        run: node solana/scripts/coverage-live-audit.mjs
+      - name: Save sanitized coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solana-live-coverage-audit
+          path: solana-coverage-live-audit.json
+          if-no-files-found: warn
+          retention-days: 7
