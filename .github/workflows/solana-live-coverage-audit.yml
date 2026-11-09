@@ -11,6 +11,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  issues: write
 jobs:
   validate:
     name: Validate live audit and scanner (Node ${{ matrix.node }})
@@ -45,6 +46,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: solana-live-coverage-audit
-          path: solana-coverage-live-audit.json
+          path: |
+            solana-coverage-live-audit.json
+            solana-coverage-live-summary.md
           if-no-files-found: warn
           retention-days: 7
+      - name: Post sanitized live audit to scanner coordination issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s solana-coverage-live-summary.md ]; then
+            gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file solana-coverage-live-summary.md
+          else
+            gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body 'Solana live coverage audit did not produce a summary; inspect the workflow run before drawing coverage conclusions.'
+          fi
