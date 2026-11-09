@@ -48,6 +48,19 @@ export function summarizeHealth(data, observedAt = new Date().toISOString()) {
     websocketConnected: typeof gauges.websocket_connected === 'boolean'
       ? gauges.websocket_connected : null,
     websocketDisconnects: integer(counters.websocket_disconnects),
+    websocketReconnects: integer(counters.reconnect_count),
+    websocketLastDisconnectAt: date(gauges.websocket_disconnected_at),
+    websocketLastConnectedAt: date(gauges.websocket_connected_at),
+    websocketLastDisconnectReason: /^[A-Z][A-Z0-9_]{1,63}$/.test(gauges.websocket_last_disconnect_reason ?? '')
+      ? gauges.websocket_last_disconnect_reason : null,
+    websocketLastTransportErrorCode: /^[A-Z][A-Z0-9_]{1,63}$/.test(gauges.websocket_last_transport_error_code ?? '')
+      ? gauges.websocket_last_transport_error_code : null,
+    websocketStoragePaused: gauges.websocket_storage_paused === true,
+    websocketStorageLastErrorCode: /^[A-Z][A-Z0-9_]{1,63}$/.test(gauges.websocket_storage_last_error_code ?? '')
+      ? gauges.websocket_storage_last_error_code : null,
+    websocketStreamStale: gauges.websocket_stream_stale === true,
+    websocketReconnectDelayMs: typeof gauges.reconnect_delay_ms === 'number'
+      ? Math.max(0,Math.round(gauges.reconnect_delay_ms)) : null,
     logStreamNoRecentLogs: data.logStream?.noRecentLogs === true,
     lastLogObservedAt: date(data.logStream?.lastObservedAt),
     backup: {
@@ -220,6 +233,22 @@ export async function run() {
     '- Network-wide coverage: **unknown, not 100%**',
     report.second ? '- Latest status: **' + report.second.status + '**' : '',
     report.second ? '- WebSocket connected: **' + report.second.websocketConnected + '**' : '',
+    report.first ? '- First WebSocket connected: **' + report.first.websocketConnected + '**' : '',
+    report.second ? '- WebSocket disconnects/reconnects this process: **' +
+      report.second.websocketDisconnects + ' / ' + report.second.websocketReconnects + '**' : '',
+    report.second ? '- Last disconnect: **' +
+      (report.second.websocketLastDisconnectReason ?? 'unknown') + '** at ' +
+      (report.second.websocketLastDisconnectAt ?? 'unknown') : '',
+    report.second ? '- Last connected at: ' +
+      (report.second.websocketLastConnectedAt ?? 'unknown') : '',
+    report.second ? '- Transport error code: ' +
+      (report.second.websocketLastTransportErrorCode ?? 'unknown') : '',
+    report.second ? '- Storage paused: ' +
+      report.second.websocketStoragePaused +
+      '; storage error: ' + (report.second.websocketStorageLastErrorCode ?? 'none') : '',
+    report.second ? '- WebSocket stream stale: ' +
+      report.second.websocketStreamStale + '; next reconnect delay ms: ' +
+      (report.second.websocketReconnectDelayMs ?? 'unknown') : '',
     report.delta ? '- New log notifications: **' + report.delta.notifications + '**' : '',
     report.delta ? '- New decoded log events: **' + report.delta.decodedEvents + '**' : '',
     report.delta ? '- New persisted log events: **' + report.delta.persistedEvents + '**' : '',
