@@ -131,3 +131,43 @@ test('read-only /radar and standalone /dashboard use persisted authentic Pump lo
   const after=store.radarObservations({limit:10});
   assert.equal(after.length,logs.observations.length);
 });
+
+
+test('cap-limited radar reports actual observed lookback rather than promising 60s/300s coverage', () => {
+  const x = buildRadarSnapshot([
+    observed('recent', 'TOKEN_BOUGHT', 1000),
+    observed('older', 'TOKEN_SOLD', 45000),
+  ], { now, sampleLimit: 2 });
+  assert.equal(x.sample.possibleTruncation, true);
+  assert.equal(x.sample.sampledLookbackSeconds, 45);
+  assert.equal(x.sample.window60sPotentiallyTruncated, true);
+  assert.equal(x.sample.window300sPotentiallyTruncated, true);
+  assert.ok(x.warnings.some(w => w.includes('row cap')));
+  assert.equal(x.coverage, 'PARTIAL');
+});
+
+test('window diagnostics distinguish 60-second threshold from 300-second threshold', () => {
+  const x = buildRadarSnapshot([
+    observed('recent', 'TOKEN_BOUGHT', 2000),
+    observed('older', 'TOKEN_SOLD', 75000),
+  ], { now, sampleLimit: 2 });
+  assert.equal(x.sample.sampledLookbackSeconds, 75);
+  assert.equal(x.sample.window60sPotentiallyTruncated, false);
+  assert.equal(x.sample.window300sPotentiallyTruncated, true);
+  const quiet = buildRadarSnapshot([
+    observed('only', 'TOKEN_BOUGHT', 2000),
+  ], { now, sampleLimit: 10 });
+  assert.equal(quiet.sample.possibleTruncation, false);
+  assert.equal(quiet.sample.window60sPotentiallyTruncated, false);
+  assert.equal(quiet.sample.window300sPotentiallyTruncated, false);
+  // A short oldest-observation age does not prove a feed gap when the cap was not hit.
+  assert.equal(quiet.coverage, 'PARTIAL');
+});
+
+test('dashboard HTML explicitly warns users about truncated event windows', () => {
+  const html = readFileSync(new URL('../static/radar.html', import.meta.url), 'utf8');
+  assert.match(html, /id="window-warning"/);
+  assert.match(html, /AMOSTRA TRUNCADA/);
+  assert.match(html, /window60sPotentiallyTruncated/);
+  assert.match(html, /window300sPotentiallyTruncated/);
+});
