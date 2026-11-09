@@ -1,6 +1,7 @@
 import { performance } from "node:perf_hooks";
 import { Store } from "./store.mjs";
 import { Metrics } from "./metrics.mjs";
+import { buildCoverageDiagnostics } from "./coverage-diagnostics.mjs";
 import { RpcClient } from "./rpc.mjs";
 import { BoundedQueue } from "./queue.mjs";
 import { LogSocket } from "./websocket.mjs";
@@ -11,6 +12,7 @@ import { decodeLogObservation } from "./log-observations.mjs";
 import { FdvEnrichmentGate } from "./market-cap-gate.mjs";
 import { SolUsdOracle } from "./sol-usd-oracle.mjs";
 import { buildRadarSnapshot } from "./radar.mjs";
+import { applyRadarRollups } from "./radar-time-aggregation.mjs";
 import { classifyContextPriority, PriorityScheduler } from "./enrichment-priority.mjs";
 import { decodeTransaction, PROGRAMS } from "./protocols/index.mjs";
 export class Scanner {
@@ -44,7 +46,7 @@ export class Scanner {
         retries: config.rpcRetries ?? 2,
       });
     this.decode = decode;
-    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled });
+    this.oracle = oracle ?? new SolUsdOracle({ enabled: config.solUsdFeedEnabled, fallbackEnabled: config.solUsdFallbackEnabled });
     this.fdvGate = new FdvEnrichmentGate({
       minimumUsd: config.fdvMinimumUsd ?? 0,
       oracle: this.oracle,
@@ -53,6 +55,13 @@ export class Scanner {
     this.priorityScheduler = new PriorityScheduler();
     this.buffer = [];
     this.stopping = false;
+    // Storage failures must not leave a live HTTP process with a permanently
+    // stopped ingest socket.
+    this.storagePaused = false;
+    this.storagePausedAt = null;
+    this.storageRetryAt = 0;
+    this.storageFailuresInRow = 0;
+    this.metrics.set("websocket_storage_paused", false);
     this.recoveryPending = false;
     this.recovering = false;
     this.activeSignatures = new Set();
@@ -77,6 +86,12 @@ export class Scanner {
       (p) => enabled.includes(p.protocol) || enabled.includes(p.programId),
     );
     if (!this.programs.length) throw Error("NO_KNOWN_PROGRAM_SELECTED");
+    this.recoveryRoundRobinOffset = 0;
+    this.programStream = new Map(this.programs.map(program => [
+      program.protocol,
+      { notifications: 0, decodedEvents: 0, decoderAlerts: 0,
+        firstLogAt: null, lastLogAt: null, lastSlot: null },
+    ]));
   }
   recordError(code, error) {
     this.metrics.inc("errors");
@@ -101,6 +116,7 @@ export class Scanner {
       metrics: this.metrics,
       reconnectMaxMs: this.config.reconnectMaxMs,
       idleTimeoutMs: this.config.idleTimeoutMs,
+      noLogTimeoutMs: this.config.wsNoLogTimeoutMs ?? 0,
       onLog: (message, programId) => this.receive(message, programId),
       onConnect: () => {
         if (this.disconnectedAt)
@@ -123,8 +139,14 @@ export class Scanner {
       },
     });
     this.socket.start();
+    if ((this.config.contextMaxAgeMs ?? 0) > 0) {
+      this.expireStaleContext();
+      this.every(() => this.expireStaleContext(), 10000);
+    }
     if (this.config.fdvMinimumUsd > 0)
       this.every(() => this.oracle.refresh(), 120000);
+    // Separate from WebSocket heartbeat: a durable-write canary controls recovery.
+    this.every(() => this.storageRecoveryWatchdog(), 5000);
     this.every(() => this.flush(), 250);
     this.every(() => this.pump(), 250);
     this.every(() => this.tickRecovery(), 5000);
@@ -135,6 +157,13 @@ export class Scanner {
     this.every(() => this.persistMetrics(), 10000);
     this.every(() => this.store.retain(), 60000);
     this.pump();
+  }
+  expireStaleContext() {
+    const n = this.store.expireStaleLogContext({
+      maxAgeMs: this.config.contextMaxAgeMs,
+    });
+    if (n > 0) this.metrics.inc("contextEnrichmentExpired", n);
+    return n;
   }
   every(fn, ms) {
     let running = false;
@@ -164,6 +193,16 @@ export class Scanner {
       return;
     }
     const receivedAt = message.receivedAt ?? new Date().toISOString();
+    const program = this.programs.find(p => p.programId === programId);
+    const stream = program ? this.programStream.get(program.protocol) : null;
+    if (stream) {
+      const at = Number.isFinite(Date.parse(receivedAt))
+        ? new Date(Date.parse(receivedAt)).toISOString() : new Date().toISOString();
+      stream.notifications++;
+      stream.firstLogAt ??= at;
+      stream.lastLogAt = at;
+      stream.lastSlot = slot;
+    }
     let logObservations = [];
     if (this.config.logObservationsEnabled !== false) {
       const notification = {
@@ -180,6 +219,7 @@ export class Scanner {
         for (const d of result.diagnostics) {
           this.metrics.inc(`logDiagnostic_${d.code}`);
           if (/UNKNOWN|INVALID|FAILURE|TRUNCATED/.test(d.code)) {
+            if (stream) stream.decoderAlerts++;
             this.metrics.inc("logDecoderFailures");
             const last = this.logDiagnostics.get(d.code) ?? 0;
             if (Date.now() - last > 60000) {
@@ -193,6 +233,7 @@ export class Scanner {
           }
         }
         if (result.observations.length) {
+          if (stream) stream.decodedEvents += result.observations.length;
           if (this.observationBuffer.length >= 1000) this.flushObservations();
           this.observationBuffer.push({
             notification,
@@ -204,6 +245,7 @@ export class Scanner {
           );
         }
       } catch (e) {
+        if (stream) stream.decoderAlerts++;
         this.recordError("LOG_OBSERVATION_DECODE_FAILED", e);
       }
     }
@@ -229,6 +271,13 @@ export class Scanner {
     const contextPriority = prioritize
       ? classifyContextPriority(logObservations, valuation) : 3;
     if (prioritize) this.metrics.inc(`contextPrioritySeenP${contextPriority}`);
+    // Under a constrained HTTP budget, focus only on opted-in priorities.
+    // This never discards or downgrades the separately persisted log events.
+    if (prioritize && contextPriority > (this.config.contextMaxPriority ?? 3)) {
+      this.metrics.inc(`contextPrioritySkippedP${contextPriority}`);
+      this.metrics.inc("contextEnrichmentExcludedByPolicy");
+      return;
+    }
     // Reserve a few of the *existing* durable slots for P0 arrivals; no
     // increase to durable capacity or shared RPC request budget.
     const maxBacklog = this.config.maxDurableBacklog ?? 250;
@@ -278,6 +327,73 @@ export class Scanner {
     if (prioritize) this.metrics.inc(`contextPriorityAdmittedP${contextPriority}`);
     if (this.buffer.length >= 100) this.flush();
   }
+  pauseForStorageError(error) {
+    if (this.stopping) return;
+    const now = Date.now();
+    if (!this.storagePaused) {
+      this.storagePaused = true;
+      this.storagePausedAt = new Date(now).toISOString();
+      this.disconnectedAt ??= this.storagePausedAt;
+      this.recoveryPending = true;
+      this.metrics.inc("websocket_storage_pauses");
+      this.metrics.set("websocket_storage_paused", true);
+      this.metrics.set("websocket_storage_paused_at", this.storagePausedAt);
+      // Preserve uncommitted buffers; do not keep ingesting while SQLite fails.
+      this.socket?.stop();
+    }
+    const code = error?.code;
+    this.metrics.set("websocket_storage_last_error_code",
+      typeof code === "string" && /^[A-Z][A-Z0-9_]{1,63}$/.test(code)
+        ? code : error?.message === "STORAGE_BUDGET_EXCEEDED"
+          ? "STORAGE_BUDGET_EXCEEDED" : "STORAGE_WRITE_ERROR");
+    this.storageFailuresInRow = Math.min(this.storageFailuresInRow + 1, 16);
+    const delay = Math.min(60000, 5000 * 2 ** Math.min(this.storageFailuresInRow - 1, 4));
+    this.storageRetryAt = now + delay;
+    this.metrics.set("websocket_storage_retry_delay_ms", delay);
+    this.metrics.set("websocket_storage_next_retry_at", new Date(this.storageRetryAt).toISOString());
+  }
+  storageRecoveryWatchdog() {
+    if (this.stopping) return;
+    if (!this.storagePaused) {
+      // start() does nothing when LogSocket already runs or is reconnecting.
+      // Respect deliberate backpressure in profiles without log persistence.
+      if (this.socket?.stopped === true &&
+          (this.config.logObservationsEnabled !== false || !this.overloadRecorded)) {
+        this.metrics.inc("websocket_unexpected_stops");
+        this.socket.start();
+      }
+      return;
+    }
+    if (Date.now() < this.storageRetryAt) return;
+    this.metrics.inc("websocket_storage_recovery_attempts");
+    try {
+      this.store.checkBudget();
+      this.flush({ allowPaused: true });
+      // An actual write verifies recovery; a successful health GET does not.
+      this.store.recordMetrics(this.health());
+      this.store.gap("PERSISTENCE_PAUSE_RECOVERED", {
+        from: this.storagePausedAt,
+        to: new Date().toISOString(),
+      });
+      this.storagePaused = false;
+      this.storagePausedAt = null;
+      this.storageRetryAt = 0;
+      this.storageFailuresInRow = 0;
+      this.metrics.set("websocket_storage_paused", false);
+      this.metrics.set("websocket_storage_next_retry_at", null);
+      this.metrics.inc("websocket_storage_recoveries");
+      this.recoveryPending = true;
+      this.socket?.start();
+      // Only subscriptions and subsequent notifications establish live health.
+    } catch (error) {
+      this.metrics.inc("websocket_storage_recovery_failures");
+      // flush() might already have scheduled retry; do not double the backoff.
+      if (this.storageRetryAt <= Date.now()) {
+        this.metrics.inc("persistenceFailures");
+        this.pauseForStorageError(error);
+      }
+    }
+  }
   flushObservations() {
     if (!this.observationBuffer.length) return;
     const batch = this.observationBuffer.splice(0, 1000);
@@ -299,11 +415,12 @@ export class Scanner {
     } catch (e) {
       this.observationBuffer.unshift(...batch);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseForStorageError(e);
       throw e;
     }
   }
-  flush() {
+  flush({ allowPaused = false } = {}) {
+    if (this.storagePaused && !allowPaused) return;
     this.flushObservations();
     if (!this.buffer.length) return;
     const items = this.buffer.splice(0, 100);
@@ -312,12 +429,12 @@ export class Scanner {
     } catch (e) {
       this.buffer.unshift(...items);
       this.metrics.inc("persistenceFailures");
-      this.socket?.stop();
+      this.pauseForStorageError(e);
       throw e;
     }
   }
   pump() {
-    if (this.stopping) return;
+    if (this.stopping || this.storagePaused) return;
     const capacity = this.config.maxDurableBacklog ?? 5000;
     const stats = this.store.stats();
     this.contextBacklog = stats.pending;
@@ -375,6 +492,18 @@ export class Scanner {
   async processObservation(observation) {
     if (this.stopping) return false;
     if (this.store.isDone(observation.signature)) return true;
+    // Avoid wasting scarce RPC on an observation that aged while queued.
+    if ((this.config.contextMaxAgeMs ?? 0) > 0 &&
+        observation.evidenceSource === "rpc:logsSubscribe" &&
+        Number.isFinite(Date.parse(observation.receivedAt)) &&
+        Date.now() - Date.parse(observation.receivedAt) > this.config.contextMaxAgeMs) {
+      const expired = this.store.expireStaleLogContext({
+        maxAgeMs: this.config.contextMaxAgeMs,
+        signature: observation.signature,
+      });
+      if (expired) this.metrics.inc("contextEnrichmentExpired", expired);
+      return false;
+    }
     if (!this.store.claim(observation.signature)) return false;
     try {
       if (
@@ -490,15 +619,20 @@ export class Scanner {
       this.metrics.inc("processingFailures");
       if (/STORAGE|SQLITE|EVENT_|RAW_AMOUNT/.test(error.message)) {
         this.metrics.inc("persistenceFailures");
-        this.socket?.stop();
+        this.pauseForStorageError(error);
       }
-      this.store.retry(observation.signature, error.code ?? error.message);
+      try {
+        this.store.retry(observation.signature, error.code ?? error.message);
+      } catch (storageError) {
+        this.metrics.inc("persistenceFailures");
+        this.pauseForStorageError(storageError);
+      }
       this.recordError("PROCESSING_FAILED", error);
       return false;
     }
   }
   async tickRecovery() {
-    if (this.stopping || this.recovering) return;
+    if (this.stopping || this.storagePaused || this.recovering) return;
     // Drain captured live data before using the shared free RPC budget for history.
     if (
       this.recoveryPending &&
@@ -507,7 +641,13 @@ export class Scanner {
       this.recovering = true;
       this.recoveryPending = false;
       try {
-        for (const p of this.programs) {
+        // Alternate which protocol receives scarce recovery RPC capacity first.
+        // The per-tick page size and total HTTP budget remain unchanged.
+        const start = this.recoveryRoundRobinOffset % this.programs.length;
+        this.recoveryRoundRobinOffset = (start + 1) % this.programs.length;
+        const order = [...this.programs.slice(start), ...this.programs.slice(0, start)];
+        this.metrics.set("recoveryFirstProtocol", order[0].protocol);
+        for (const p of order) {
           if (this.stopping) break;
           const result = await recoverProgram({
             rpc: this.rpc,
@@ -542,6 +682,7 @@ export class Scanner {
     }
   }
   async reconcile() {
+    if (this.storagePaused) return;
     const rows = this.store.nonFinalized();
     if (!rows.length) return;
     try {
@@ -568,10 +709,14 @@ export class Scanner {
   radar({ limit = 50, now = Date.now() } = {}) {
     const sampleLimit = Math.min(10000, this.config.maxObservationRows ?? 10000);
     const rows = this.store.radarObservations({ limit: sampleLimit, now });
-    return buildRadarSnapshot(rows, {
+    const raw = buildRadarSnapshot(rows, {
       now, minimumFdvUsd: this.config.fdvMinimumUsd || 5000,
       limit, quote: this.oracle.snapshot(), sampleLimit,
+      includeAllEvidence: true,
     });
+    // Aggregate activity covers observed log events independently of the
+    // 3,000-row raw evidence retention cap. Raw logs remain FDV evidence only.
+    return applyRadarRollups(raw, this.store.radarRollups({ now }), { now, limit });
   }
   market() {
     return aggregateMarket(
@@ -589,6 +734,11 @@ export class Scanner {
   health() {
     const metrics = this.metrics.snapshot();
     const storage = this.store.stats();
+    const noLogTimeoutMs = this.config.wsNoLogTimeoutMs ?? 0;
+    const lastLogAt = Date.parse(metrics.gauges.lastEventReceived ?? "");
+    const noRecentLogs = noLogTimeoutMs > 0 &&
+      (!Number.isFinite(lastLogAt) ||
+        Date.parse(metrics.measuredAt) - lastLogAt >= noLogTimeoutMs);
     return {
       schemaVersion: 1,
       chain: "solana",
@@ -596,7 +746,8 @@ export class Scanner {
       mode: "READ_ONLY",
       status: this.stopping
         ? "STOPPING"
-        : !metrics.gauges.websocket_connected ||
+        : this.storagePaused || !metrics.gauges.websocket_connected ||
+            noRecentLogs ||
             metrics.gauges.coverageOverloaded ||
             storage.pending > 50
           ? "DEGRADED"
@@ -606,6 +757,22 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      coverageDiagnostics: buildCoverageDiagnostics({
+        programs: this.programs,
+        streams: this.programStream,
+        metrics,
+        store: this.store,
+        storage,
+        config: this.config,
+        now: Date.parse(metrics.measuredAt),
+      }),
+      backup: this.backupAgent?.status?.() ?? { enabled: false },
+      logStream: {
+        noRecentLogs,
+        timeoutMs: noLogTimeoutMs,
+        lastObservedAt: Number.isFinite(lastLogAt)
+          ? new Date(lastLogAt).toISOString() : null,
+      },
       contextPriorityScheduler: {
         enabled: this.config.contextPrioritiesEnabled === true &&
           this.config.logObservationsEnabled !== false,
@@ -614,6 +781,8 @@ export class Scanner {
           this.config.priorityP0ReservedSlots ?? 8),
         logObservationsPreservedIndependently: true,
         backlogCoverage: "PARTIAL",
+        maxHttpPriority: this.config.contextMaxPriority ?? 3,
+        maxAgeMs: this.config.contextMaxAgeMs ?? 0,
       },
       fdvFilter: {
         enabled: (this.config.fdvMinimumUsd ?? 0) > 0,
@@ -621,6 +790,7 @@ export class Scanner {
         valuation: "PUMP_FUN_SOL_QUOTED_VIRTUAL_RESERVE_FDV_PROXY_NOT_CIRCULATING_MCAP",
         oraclePrice: this.oracle.snapshot(),
         oracleFailures: this.oracle.failures ?? 0,
+        fallbackSuccesses: this.oracle.fallbackSuccesses ?? 0,
         supplyCacheSize: this.fdvGate.supplies.size,
         supplyCacheEvictions: this.fdvGate.cacheEvictions,
       },
@@ -634,7 +804,8 @@ export class Scanner {
     this.socket?.stop();
     let failure;
     try {
-      while (this.buffer.length || this.observationBuffer.length) this.flush();
+      while (this.buffer.length || this.observationBuffer.length)
+        this.flush({ allowPaused: true });
     } catch (e) {
       failure = e;
     }

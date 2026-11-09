@@ -1,0 +1,43 @@
+name: Solana Render public endpoint verification
+on:
+  push:
+    branches:
+      - feat/solana-cloud-hosting-20261106
+    paths:
+      - .github/workflows/solana-render-public-check.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-remote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify public Render endpoints without private credentials
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          base='https://solana-pump-radar-mvp.onrender.com'
+          curl --fail --show-error --silent --retry 2 --retry-delay 4 --max-time 100 "$base/health" -o health.json
+          curl --fail --show-error --silent --max-time 20 "$base/radar?limit=5" -o radar.json
+          curl --fail --show-error --silent --max-time 20 "$base/dashboard" -o dashboard.html
+          code="$(curl --silent --show-error --max-time 20 --output /dev/null --write-out '%{http_code}' "$base/observations")"
+          test "$code" = '404'
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const health=JSON.parse(fs.readFileSync('health.json','utf8'));
+          const radar=JSON.parse(fs.readFileSync('radar.json','utf8'));
+          const html=fs.readFileSync('dashboard.html','utf8');
+          if (health.chain!=='solana' || health.mode!=='READ_ONLY' ||
+              radar.kind!=='SOLANA_PUMP_RADAR_MVP' || radar.coverage!=='PARTIAL' ||
+              !html.includes('Solana · Memecoin Radar')) throw Error('REMOTE_ENDPOINT_INVALID');
+          const result={deploy:'RENDER_PUBLIC_HTTP',status:health.status,
+            websocketConnected:health.metrics?.gauges?.websocket_connected??null,
+            observedDistinctMints:radar.totals?.observedDistinctMints,
+            verifiedEvents:radar.sample?.verifiedUniqueEvents,
+            sampleTruncated:radar.sample?.possibleTruncation,
+            rawEndpointsBlocked:true,remoteUrl:'https://solana-pump-radar-mvp.onrender.com/dashboard'};
+          console.log('RENDER_PUBLIC_PROOF',JSON.stringify(result));
+          if (!Number.isSafeInteger(result.observedDistinctMints)||result.observedDistinctMints < 1)
+            throw Error('REMOTE_HAS_NO_OBSERVED_MINTS');
+          NODE

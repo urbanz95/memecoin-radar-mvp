@@ -3,6 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, statSync } from "node:fs";
 import { dirname } from "node:path";
 import { canonicalEvent, CONFIRMATIONS } from "./events.mjs";
+import { installRadarRollups, recordRadarRollup, pruneRadarRollups, readRadarRollups } from "./radar-time-aggregation.mjs";
 const json = (value) => JSON.stringify(value);
 const parse = (row) => (row ? JSON.parse(row.payload) : null);
 export class Store {
@@ -47,6 +48,8 @@ export class Store {
       CREATE TABLE IF NOT EXISTS security(mint TEXT PRIMARY KEY, checked_at INTEGER NOT NULL, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS market_observations(id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS operational_metrics(id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL, payload TEXT NOT NULL);`);
+    // Additive migration. Existing raw/canonical SQLite evidence is never rewritten.
+    installRadarRollups(this.db);
     // Local additive evolution: preserve every distinct raw log payload on restart.
     if (
       !this.db
@@ -208,8 +211,12 @@ export class Store {
                 json(e),
               ).changes,
             );
+          // Same SQLite transaction as raw evidence; replayed event IDs are
+          // deduplicated even after the bounded raw table prunes old rows.
+          recordRadarRollup(this.db, e);
         }
       }
+      pruneRadarRollups(this.db);
       const excess =
         Number(
           this.db.prepare("SELECT COUNT(*) n FROM event_observations").get().n,
@@ -228,6 +235,24 @@ export class Store {
       }
       return count;
     });
+  }
+  // Close only stale, *unclaimed* live-log enrichment in the durable queue.
+  // Observations in event_observations are independent and remain untouched.
+  // Recovery entries or actively-processing rows are never modified.
+  expireStaleLogContext({ maxAgeMs, now = Date.now(), signature = null } = {}) {
+    if (!Number.isSafeInteger(maxAgeMs) || maxAgeMs < 1 || maxAgeMs > 3600000 ||
+        !Number.isFinite(now) ||
+        (signature !== null && (typeof signature !== "string" || !signature)))
+      throw Error("INVALID_CONTEXT_EXPIRY");
+    const base = "UPDATE inbox SET status='EXPIRED' WHERE status IN ('PENDING','UNAVAILABLE')" +
+      " AND received_at < ? AND json_extract(payload,'$.evidenceSource')='rpc:logsSubscribe'";
+    const stmt = signature === null ? base : base + " AND signature=?";
+    return Number(this.db.prepare(stmt).run(
+      now - maxAgeMs, ...(signature === null ? [] : [signature]),
+    ).changes);
+  }
+  radarRollups({ now = Date.now() } = {}) {
+    return readRadarRollups(this.db, { now });
   }
   // Bounded read-only slice for the MVP radar. Uses receivedAt, not an
   // inferred on-chain timestamp; never claims full history or global volume.

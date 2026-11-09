@@ -1,0 +1,48 @@
+name: Solana backup capacity benchmark (synthetic one-shot)
+on:
+  push:
+    branches:
+      - test/solana-sqlite-restore-offline-20261108
+    paths:
+      - solana/backup-r2/capacity-bench.mjs
+      - .github/workflows/solana-backup-capacity-bench.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        size_mib: [64, 128, 256]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Synthetic offline SQLite snapshot/restore capacity check
+        run: node solana/backup-r2/capacity-bench.mjs ${{ matrix.size_mib }} | tee /tmp/radar-benchmark-${{ matrix.size_mib }}.log
+      - name: Post bounded benchmark result to coordination issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          {
+            echo "**[BENCH SQLITE SINTÉTICO — ${{ matrix.size_mib }} MiB, Node 24, sem Render/R2]**"
+            echo "GitHub run ${{ github.run_id }}; sucesso do job: ${{ job.status }}"
+            echo
+            echo '~~~json'
+            if [ -f /tmp/radar-benchmark-${{ matrix.size_mib }}.log ]; then
+              grep '^SOLANA_BACKUP_CAPACITY_BENCH ' /tmp/radar-benchmark-${{ matrix.size_mib }}.log | tail -1 | sed 's/^SOLANA_BACKUP_CAPACITY_BENCH //' || true
+            else
+              echo '{"status":"NO_BENCH_OUTPUT"}'
+            fi
+            echo '~~~'
+            echo
+            echo 'Dados de GitHub runner, NÃO do Render Free. Não prova capacidade de disco/memória no Render, não autoriza deploy.'
+          } > /tmp/radar-bench-comment.md
+          gh issue comment 17 -R urbanz95/memecoin-radar-mvp --body-file /tmp/radar-bench-comment.md

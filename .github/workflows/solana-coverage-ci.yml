@@ -1,0 +1,31 @@
+name: Solana coverage evidence and recovery fairness (isolated, no deploy)
+on:
+  push:
+    branches:
+      - feat/solana-coverage-evidence-recovery-fairness-20261109
+    paths:
+      - solana/**
+      - .github/workflows/solana-coverage-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scanner-tests:
+    name: Scanner and coverage tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Reproducible installation (same command as Render)
+        run: npm ci --prefix solana --ignore-scripts --no-audit --no-fund
+      - name: Full scanner suite
+        run: npm test --prefix solana
+      - name: Offline backup, restore and R2 suites
+        run: node --test solana/test/backup-offline.test.mjs solana/test/backup-object-store.test.mjs solana/test/backup-retention.test.mjs solana/backup-r2/r2-s3-adapter.test.mjs solana/test/backup-runtime.test.mjs

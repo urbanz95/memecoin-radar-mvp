@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
 const RADAR_HTML = readFileSync(new URL("../static/radar.html", import.meta.url), "utf8");
-export function serve(scanner, { host = "127.0.0.1", port = 8788 } = {}) {
+export function serve(scanner, { host = "127.0.0.1", port = 8788, publicDashboardOnly = false } = {}) {
   const server = createServer((req, res) => {
     res.setHeader("content-type", "application/json; charset=utf-8");
     res.setHeader("cache-control", "no-store");
@@ -13,6 +13,14 @@ export function serve(scanner, { host = "127.0.0.1", port = 8788 } = {}) {
     }
     try {
       const url = new URL(req.url, "http://local");
+      // Public cloud mode hides raw transaction, wallet and evidence endpoints.
+      // Local mode retains its original read-only routes.
+      if (publicDashboardOnly &&
+          !["/dashboard", "/radar", "/health"].includes(url.pathname)) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: "NOT_FOUND" }));
+        return;
+      }
       const limit = Math.min(
         1000,
         Math.max(1, Number.parseInt(url.searchParams.get("limit"), 10) || 100),

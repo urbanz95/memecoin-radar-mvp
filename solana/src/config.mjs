@@ -46,12 +46,18 @@ export function loadConfig(env = process.env) {
     !["true", "false", "1", "0"].includes(env.SOLANA_SECURITY_ENABLED)
   )
     throw Error("INVALID_SOLANA_SECURITY_ENABLED");
+  if (env.SOLANA_SOL_USD_FALLBACK !== undefined &&
+      !["true", "false", "1", "0"].includes(env.SOLANA_SOL_USD_FALLBACK))
+    throw Error("INVALID_SOLANA_SOL_USD_FALLBACK");
   const solUsdFeed = env.SOLANA_SOL_USD_FEED ?? "off";
   if (!["off", "coingecko"].includes(solUsdFeed))
     throw Error("INVALID_SOLANA_SOL_USD_FEED");
   if (env.SOLANA_CONTEXT_PRIORITIES_ENABLED !== undefined &&
       !["true", "false", "1", "0"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED))
     throw Error("INVALID_SOLANA_CONTEXT_PRIORITIES_ENABLED");
+  if (env.SOLANA_PUBLIC_DASHBOARD_ONLY !== undefined &&
+      !["true", "false", "1", "0"].includes(env.SOLANA_PUBLIC_DASHBOARD_ONLY))
+    throw Error("INVALID_SOLANA_PUBLIC_DASHBOARD_ONLY");
   const queueConcurrency = integer(env, "SOLANA_QUEUE_CONCURRENCY", 2, 1, 32);
   const retentionDays = integer(env, "SOLANA_RETENTION_DAYS", 7, 1, 365);
   return {
@@ -62,7 +68,13 @@ export function loadConfig(env = process.env) {
     programs: [...new Set(programs)],
     fdvMinimumUsd: integer(env, "SOLANA_FDV_MINIMUM_USD", 0, 0, 1_000_000_000),
     solUsdFeedEnabled: solUsdFeed === "coingecko",
+    solUsdFallbackEnabled: ["true", "1"].includes(env.SOLANA_SOL_USD_FALLBACK),
     contextPrioritiesEnabled: ["true", "1"].includes(env.SOLANA_CONTEXT_PRIORITIES_ENABLED),
+    // Opt-in context policy: only ranks <= maxPriority enter the scarce HTTP
+    // queue. Decoded RPC-log observations are always buffered independently.
+    contextMaxPriority: integer(env, "SOLANA_CONTEXT_MAX_PRIORITY", 3, 0, 3),
+    contextMaxAgeMs: integer(env, "SOLANA_CONTEXT_MAX_AGE_MS", 0, 0, 3600000),
+    publicDashboardOnly: ["true", "1"].includes(env.SOLANA_PUBLIC_DASHBOARD_ONLY),
     priorityP0ReservedSlots: integer(env, "SOLANA_PRIORITY_RESERVED_P0_SLOTS", 8, 0, 10000),
     securityEnabled: ["true", "1"].includes(env.SOLANA_SECURITY_ENABLED),
     logObservationsEnabled: ["true", "1"].includes(
@@ -130,5 +142,7 @@ export function loadConfig(env = process.env) {
       1000,
       600000,
     ),
+    // Disabled by default for quiet programs; Pump.fun cloud can opt in.
+    wsNoLogTimeoutMs: integer(env, "SOLANA_WS_NO_LOG_TIMEOUT_MS", 0, 0, 600000),
   };
 }

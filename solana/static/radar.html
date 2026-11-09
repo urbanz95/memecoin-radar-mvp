@@ -22,9 +22,11 @@ footer{margin:22px 0;color:#aab7c9;font-size:12px}
 </head>
 <body>
 <div class="bar"><div><h1>Solana · Memecoin Radar</h1><div class="muted">Pump.fun / PumpSwap · monitorização experimental, somente leitura</div></div><span class="pill">Cobertura parcial</span></div>
+<p id="connection" role="status" class="pill">A verificar ligação ao scanner…</p>
 <div class="stats" id="stats"></div>
 <section class="card">
 <div class="bar"><h2>Tokens acompanhados</h2><span class="muted sub" id="updated"></span></div>
+<p id="window-warning" class="warn" role="status" hidden></p>
 <div class="tablewrap"><table><thead><tr><th>Token (mint)</th><th>FDV estimado</th><th>Eventos 15 s / 1 min</th><th>Compras / Vendas 1 min</th><th>Última atividade</th><th>Contexto</th></tr></thead><tbody id="tokens"></tbody></table></div>
 <p id="empty" class="muted" hidden>Não foram observados candidatos nesta amostra. Isto não significa que não existam tokens.</p>
 </section>
@@ -35,8 +37,12 @@ footer{margin:22px 0;color:#aab7c9;font-size:12px}
 let data=JSON.parse(document.getElementById('snapshot').textContent);
 const el=id=>document.getElementById(id);
 const fmt=n=>Number(n??0).toLocaleString('pt-PT');
+const isHosted=location.protocol==='http:'||location.protocol==='https:';
+const status=text=>{el('connection').textContent=text};
+const snapshotTime=()=>new Date(data.generatedAt).toLocaleString('pt-PT');
 const add=(node,tag,value,cls)=>{const child=document.createElement(tag);child.textContent=String(value);if(cls)child.className=cls;node.appendChild(child);return child};
 function render(d){
+ data=d;
  el('stats').replaceChildren();el('tokens').replaceChildren();
  const counts=[['Tokens distintos observados',d.totals?.observedDistinctMints],['FDV a partir de 5 mil USD',d.totals?.aboveFloor],['FDV desconhecido',d.totals?.unknownFdv],['Eventos de logs verificados',d.sample?.verifiedUniqueEvents]];
  counts.forEach(([name,n])=>{const box=add(el('stats'),'div','','card');add(box,'div',fmt(n),'stat');add(box,'div',name,'muted small')});
@@ -53,11 +59,74 @@ function render(d){
   el('tokens').appendChild(tr);
  });
  el('empty').hidden=(d.candidates||[]).length>0;
- el('sample').textContent='Máximo: '+fmt(d.sample?.maxRowsRead)+' observações; possível truncagem: '+(d.sample?.possibleTruncation?'sim':'não')+'.';
+ const aggregated=d.sample?.aggregateAvailable===true;
+ const capReached=d.sample?.possibleTruncation===true;
+ const warming=aggregated&&d.sample?.window300sPotentiallyTruncated===true;
+ const age=d.sample?.sampledLookbackSeconds;
+ const validAge=Number.isInteger(age)&&age>=0&&age<=300;
+ const affected=[];
+ if(d.sample?.window60sPotentiallyTruncated===true)affected.push('1 minuto');
+ if(d.sample?.window300sPotentiallyTruncated===true)affected.push('5 minutos');
+ const warning=el('window-warning');
+ warning.hidden=!(capReached||warming);
+ warning.textContent=aggregated
+  ? (capReached?'AGREGADOS LIMITADOS: demasiados tokens distintos para o limite de '+fmt(d.sample?.maxRowsRead)+'. ':
+      warming?'AGREGADOS A AQUECER: ainda não existe uma janela de 5 minutos desde o primeiro evento agregado. ':'')+
+    (Number.isInteger(d.sample?.aggregateUptimeSeconds)?
+      'Primeiro registo agregado há cerca de '+d.sample.aggregateUptimeSeconds+' segundos. ':'')+
+    (validAge?'Evento mais antigo desta janela: há '+age+' segundos. ':'')+
+    (affected.length?'As contagens de '+affected.join(' e ')+' podem estar incompletas. ':'')+
+    'Eventos ausentes da fonte RPC continuam desconhecidos.'
+  : capReached
+    ? 'AMOSTRA TRUNCADA: limite de '+fmt(d.sample?.maxRowsRead)+' eventos atingido. '+
+      (validAge?'Os registos mostrados abrangem apenas cerca de '+age+' segundos de atividade observada. '
+        :'Não é possível determinar a janela efetivamente observada. ')+
+      (affected.length?'As contagens de '+affected.join(' e ')+' podem estar incompletas. ':'')+
+      'Isto não mede perdas globais da rede.'
+    : '';
+ el('sample').textContent=aggregated
+  ? 'Contagens agregadas por segundo dos logs recebidos. '+fmt(d.sample?.rowsInspected)+
+    ' tokens distintos observados; limite de grupos: '+fmt(d.sample?.maxRowsRead)+
+    '; amostra bruta limitada: '+(d.sample?.rawSamplePotentiallyTruncated?'sim':'não')+
+    '. Cobertura da rede não quantificada.'
+  : 'Máximo: '+fmt(d.sample?.maxRowsRead)+
+    ' observações; possível truncagem: '+(capReached?'sim':'não')+
+    (validAge?'; registo mais antigo na amostra: há '+age+' s':'')+'.';
 }
 render(data);
-if(location.protocol==='http:'||location.protocol==='https:'){
- setInterval(async()=>{try{const r=await fetch('/radar?limit=50',{cache:'no-store'});if(r.ok)render(await r.json())}catch(_err){}},15000);
+if(!isHosted){
+ status('Fotografia guardada em '+snapshotTime()+' — não recebe atualizações.');
+}else{
+ const poll=async()=>{
+  try{
+   const [r,h]=await Promise.all([
+    fetch('/radar?limit=50',{cache:'no-store'}),
+    fetch('/health',{cache:'no-store'}),
+   ]);
+   if(!r.ok||!h.ok)throw Error('HTTP_FAILED');
+   const [latest,health]=await Promise.all([r.json(),h.json()]);
+   if(latest.kind!=='SOLANA_PUMP_RADAR_MVP'||health.mode!=='READ_ONLY')
+    throw Error('INVALID_DATA');
+   render(latest);
+   const ws=health.metrics?.gauges?.websocket_connected===true;
+   if (!ws) {
+    status('SEM WEBSOCKET: recolha Solana interrompida · amostra '+snapshotTime());
+   } else if (health.logStream?.noRecentLogs) {
+    status('SEM EVENTOS RECENTES: WebSocket ligado, mas o fornecedor não está a enviar logs · amostra '+snapshotTime());
+   } else if (health.status === 'OBSERVING') {
+    status('WebSocket ligado e a receber logs · cobertura parcial · amostra '+snapshotTime());
+   } else {
+    const saturated = health.metrics?.gauges?.coverageOverloaded === true;
+    status('WebSocket ligado · '+(saturated
+      ? 'enriquecimento RPC sobrecarregado'
+      : 'scanner com cobertura degradada')+' · amostra '+snapshotTime());
+   }
+  }catch(_error){
+   status('SEM LIGAÇÃO: a apresentar apenas a última fotografia de '+snapshotTime());
+  }
+ };
+ poll();
+ setInterval(poll,15000);
 }
 })();
 </script></body>
