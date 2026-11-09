@@ -72,7 +72,9 @@ function render(d){
  warning.textContent=aggregated
   ? (capReached?'AGREGADOS LIMITADOS: demasiados tokens distintos para o limite de '+fmt(d.sample?.maxRowsRead)+'. ':
       warming?'AGREGADOS A AQUECER: ainda não existe uma janela de 5 minutos desde o primeiro evento agregado. ':'')+
-    (validAge?'Dados agregados disponíveis há cerca de '+age+' segundos. ':'')+
+    (Number.isInteger(d.sample?.aggregateUptimeSeconds)?
+      'Primeiro registo agregado há cerca de '+d.sample.aggregateUptimeSeconds+' segundos. ':'')+
+    (validAge?'Evento mais antigo desta janela: há '+age+' segundos. ':'')+
     (affected.length?'As contagens de '+affected.join(' e ')+' podem estar incompletas. ':'')+
     'Eventos ausentes da fonte RPC continuam desconhecidos.'
   : capReached
