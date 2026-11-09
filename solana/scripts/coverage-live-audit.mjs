@@ -95,6 +95,13 @@ export function summarizeRadar(data) {
     rowsInspected: integer(data.sample.rowsInspected),
     verifiedUniqueEvents: integer(data.sample.verifiedUniqueEvents),
     possibleTruncation: data.sample.possibleTruncation === true,
+    maxRowsRead: integer(data.sample.maxRowsRead),
+    oldestSampleAt: date(data.sample.oldestRetainedObservationInWindow),
+    observedWindowSeconds: date(data.generatedAt) &&
+      date(data.sample.oldestRetainedObservationInWindow)
+      ? Math.max(0, Math.round((Date.parse(data.generatedAt) -
+          Date.parse(data.sample.oldestRetainedObservationInWindow)) / 1000))
+      : null,
     observedDistinctMints: integer(data.totals?.observedDistinctMints),
     // Intentionally omit candidate token IDs, signatures, wallets and prices.
   };
@@ -130,6 +137,10 @@ export function analyzeSnapshots(first, second, firstRadar, secondRadar) {
   if (second.websocketConnected !== true) warnings.push('WEBSOCKET_NOT_CONFIRMED');
   if (second.logStreamNoRecentLogs) warnings.push('NO_RECENT_LOGS');
   if (secondRadar.possibleTruncation) warnings.push('RADAR_WINDOW_MAY_BE_TRUNCATED');
+  if (secondRadar.possibleTruncation &&
+      secondRadar.observedWindowSeconds !== null &&
+      secondRadar.observedWindowSeconds < 300)
+    warnings.push('OBSERVED_RADAR_WINDOW_SHORTER_THAN_300_SECONDS');
   if (sameProcess && !observationsGrowing) warnings.push('NO_NEW_LOG_NOTIFICATIONS_IN_SAMPLE');
   if (second.backup.enabled !== true || second.backup.operational !== true)
     warnings.push('R2_BACKUP_NOT_CONFIRMED_RUNNING');
@@ -213,7 +224,8 @@ export async function run() {
     report.delta ? '- New decoded log events: **' + report.delta.decodedEvents + '**' : '',
     report.delta ? '- New persisted log events: **' + report.delta.persistedEvents + '**' : '',
     report.second ? '- R2 latest success in this process: **' + (report.second.backup.lastSuccessfulAt ?? 'unknown') + '**' : '',
-    report.secondRadar ? '- Radar rows inspected: **' + report.secondRadar.rowsInspected + '**' : '',
+    report.secondRadar ? '- Radar rows inspected / row cap: **' + report.secondRadar.rowsInspected + ' / ' + report.secondRadar.maxRowsRead + '**' : '',
+    report.secondRadar ? '- Oldest observed event age: **' + (report.secondRadar.observedWindowSeconds ?? 'unknown') + ' seconds**' : '',
     '- Flags: ' + ((report.warnings ?? [report.errorCode]).join(', ') || 'none'),
     '',
     'Counters are process-local; no independent denominator, no proof of global completeness.',
