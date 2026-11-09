@@ -63,7 +63,7 @@ Environment variables (configure only after the migration plan is ready):
 | `SOLANA_R2_INTERVAL_MINUTES` | default 180; allowed 30–1440 |
 | `SOLANA_R2_FIRST_DELAY_SECONDS` | default 120; allowed 5–3600 |
 | `SOLANA_R2_MAX_OBJECT_BYTES` | default 536870912 (512 MiB) |
-| `SOLANA_R2_MAX_REMOTE_BYTES` | default 4294967296 (4 GiB cap) |
+| `SOLANA_R2_MAX_REMOTE_BYTES` | default 6442450944 (6 GiB cap) |
 | `SOLANA_R2_MAX_REMOTE_OBJECTS` | default 64 |
 | `SOLANA_R2_MIN_SPARE_BYTES` | default 134217728 (128 MiB) |
 | `SOLANA_R2_AUTO_PRUNE` | default false; do not enable before testing cleanup on real bucket |
@@ -99,6 +99,13 @@ scanner continues. A quota/space refusal is visible via sanitized
 `latest.json` tracks at most 3 versions, but **unreferenced objects
 still physically exist**. Auto-pruning is optional and disabled by
 default pending tests of real-world listing/concurrent writers.
+When explicitly enabled, old unreferenced objects are pruned **before**
+each remote quota check (and after success), so the quota limit does
+not permanently block eligible cleanup. The default 6 GiB hard
+budget leaves headroom under R2 Standard's 10 GB-month free allowance,
+but external account usage and operations can still incur charges.
+If disabled, orphan snapshots accumulate and eventually stop backups
+at the hard object/byte limit.
 R2 Standard free tier is subject to usage/billing limitations;
 application limits are not a substitute for provider-side billing
 controls. Backup RPO = time since last *successful* snapshot; any
