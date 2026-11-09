@@ -59,24 +59,37 @@ function render(d){
   el('tokens').appendChild(tr);
  });
  el('empty').hidden=(d.candidates||[]).length>0;
+ const aggregated=d.sample?.aggregateAvailable===true;
  const capReached=d.sample?.possibleTruncation===true;
+ const warming=aggregated&&d.sample?.window300sPotentiallyTruncated===true;
  const age=d.sample?.sampledLookbackSeconds;
  const validAge=Number.isInteger(age)&&age>=0&&age<=300;
  const affected=[];
  if(d.sample?.window60sPotentiallyTruncated===true)affected.push('1 minuto');
  if(d.sample?.window300sPotentiallyTruncated===true)affected.push('5 minutos');
  const warning=el('window-warning');
- warning.hidden=!capReached;
- warning.textContent=capReached
-  ? 'AMOSTRA TRUNCADA: limite de '+fmt(d.sample?.maxRowsRead)+' eventos atingido. '+
-    (validAge?'Os registos mostrados abrangem apenas cerca de '+age+' segundos de atividade observada. '
-      :'Não é possível determinar a janela efetivamente observada. ')+
+ warning.hidden=!(capReached||warming);
+ warning.textContent=aggregated
+  ? (capReached?'AGREGADOS LIMITADOS: demasiados tokens distintos para o limite de '+fmt(d.sample?.maxRowsRead)+'. ':
+      warming?'AGREGADOS A AQUECER: ainda não existe uma janela de 5 minutos desde o primeiro evento agregado. ':'')+
+    (validAge?'Dados agregados disponíveis há cerca de '+age+' segundos. ':'')+
     (affected.length?'As contagens de '+affected.join(' e ')+' podem estar incompletas. ':'')+
-    'Isto não mede perdas globais da rede.'
-  : '';
- el('sample').textContent='Máximo: '+fmt(d.sample?.maxRowsRead)+
-  ' observações; possível truncagem: '+(capReached?'sim':'não')+
-  (validAge?'; registo mais antigo na amostra: há '+age+' s':'')+'.';
+    'Eventos ausentes da fonte RPC continuam desconhecidos.'
+  : capReached
+    ? 'AMOSTRA TRUNCADA: limite de '+fmt(d.sample?.maxRowsRead)+' eventos atingido. '+
+      (validAge?'Os registos mostrados abrangem apenas cerca de '+age+' segundos de atividade observada. '
+        :'Não é possível determinar a janela efetivamente observada. ')+
+      (affected.length?'As contagens de '+affected.join(' e ')+' podem estar incompletas. ':'')+
+      'Isto não mede perdas globais da rede.'
+    : '';
+ el('sample').textContent=aggregated
+  ? 'Contagens agregadas por segundo dos logs recebidos. '+fmt(d.sample?.rowsInspected)+
+    ' tokens distintos observados; limite de grupos: '+fmt(d.sample?.maxRowsRead)+
+    '; amostra bruta limitada: '+(d.sample?.rawSamplePotentiallyTruncated?'sim':'não')+
+    '. Cobertura da rede não quantificada.'
+  : 'Máximo: '+fmt(d.sample?.maxRowsRead)+
+    ' observações; possível truncagem: '+(capReached?'sim':'não')+
+    (validAge?'; registo mais antigo na amostra: há '+age+' s':'')+'.';
 }
 render(data);
 if(!isHosted){
