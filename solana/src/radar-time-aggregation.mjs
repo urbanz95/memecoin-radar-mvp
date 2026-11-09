@@ -105,14 +105,16 @@ const activity=(row,suffix)=>({
 // Aggregating counts does NOT yield distinct transactions, wallets or complete
 // trade history; null explicitly means not measured.
 export function applyRadarRollups(raw,rollups,{now=Date.now(),limit=50}={}) {
+  // Never serialize the internal full raw sample (including excluded mints).
+  const { internalRawTokenEvidence, ...publicRaw } = raw;
   if(!rollups) return {
-    ...raw,sample:{...raw.sample,aggregationSource:'LEGACY_BOUNDED_RAW_SAMPLE',
+    ...publicRaw,sample:{...raw.sample,aggregationSource:'LEGACY_BOUNDED_RAW_SAMPLE',
       aggregateAvailable:false,window15sPotentiallyTruncated:true,
       window60sPotentiallyTruncated:true,window300sPotentiallyTruncated:true}
   };
   if(!Number.isSafeInteger(limit)||limit<1||limit>100)
     throw Error('INVALID_RADAR_AGGREGATE_LIMIT');
-  const evidence=new Map(raw.candidates.map(x=>[x.mint,x]));
+  const evidence=new Map((internalRawTokenEvidence ?? raw.candidates).map(x=>[x.mint,x]));
   const all=rollups.rows.map(r=>{
     const known=evidence.get(r.mint);
     return {
@@ -158,7 +160,7 @@ export function applyRadarRollups(raw,rollups,{now=Date.now(),limit=50}={}) {
     coverage:'PARTIAL_UNQUANTIFIED'
   };
   return {
-    ...raw,generatedAt:new Date(now).toISOString(),sample,
+    ...publicRaw,generatedAt:new Date(now).toISOString(),sample,
     totals:{
       observedDistinctMints:all.length,eligibleOrUnknown:shown.length,
       aboveFloor:all.filter(x=>x.fdvStatus==='ABOVE_FLOOR').length,
