@@ -146,7 +146,10 @@ export function applyRadarRollups(raw,rollups,{now=Date.now(),limit=50}={}) {
     oldestRetainedObservationInWindow:oldest===null?null:new Date(oldest).toISOString(),
     maxRowsRead:rollups.maxGroupRows,
     possibleTruncation:rollups.truncated,
-    sampledLookbackSeconds:rollups.observedDurationSeconds,
+    // Oldest retained observed event, not the age of the schema/migration.
+    sampledLookbackSeconds:oldest===null?null:
+      Math.min(300,Math.max(0,Math.floor((now-oldest)/1000))),
+    aggregateUptimeSeconds:rollups.observedDurationSeconds,
     timeWindowSeconds:300,
     window15sPotentiallyTruncated:rollups.truncated||rollups.window15sWarmingUp,
     window60sPotentiallyTruncated:rollups.truncated||rollups.window60sWarmingUp,
