@@ -211,11 +211,10 @@ export class Store {
                 json(e),
               ).changes,
             );
+          // Same SQLite transaction as raw evidence; replayed event IDs are
+          // deduplicated even after the bounded raw table prunes old rows.
+          recordRadarRollup(this.db, e);
         }
-        // Must be within this batch's BEGIN IMMEDIATE/COMMIT boundary.
-        // A stale duplicate can be reinserted into the bounded raw table,
-        // but its retained seen-ID never increments the rollup twice.
-        recordRadarRollup(this.db, e);
       }
       pruneRadarRollups(this.db);
       const excess =
