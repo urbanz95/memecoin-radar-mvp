@@ -1,6 +1,7 @@
 import { performance } from "node:perf_hooks";
 import { Store } from "./store.mjs";
 import { Metrics } from "./metrics.mjs";
+import { buildCoverageDiagnostics } from "./coverage-diagnostics.mjs";
 import { RpcClient } from "./rpc.mjs";
 import { BoundedQueue } from "./queue.mjs";
 import { LogSocket } from "./websocket.mjs";
@@ -84,6 +85,12 @@ export class Scanner {
       (p) => enabled.includes(p.protocol) || enabled.includes(p.programId),
     );
     if (!this.programs.length) throw Error("NO_KNOWN_PROGRAM_SELECTED");
+    this.recoveryRoundRobinOffset = 0;
+    this.programStream = new Map(this.programs.map(program => [
+      program.protocol,
+      { notifications: 0, decodedEvents: 0, decoderAlerts: 0,
+        firstLogAt: null, lastLogAt: null, lastSlot: null },
+    ]));
   }
   recordError(code, error) {
     this.metrics.inc("errors");
@@ -185,6 +192,16 @@ export class Scanner {
       return;
     }
     const receivedAt = message.receivedAt ?? new Date().toISOString();
+    const program = this.programs.find(p => p.programId === programId);
+    const stream = program ? this.programStream.get(program.protocol) : null;
+    if (stream) {
+      const at = Number.isFinite(Date.parse(receivedAt))
+        ? new Date(Date.parse(receivedAt)).toISOString() : new Date().toISOString();
+      stream.notifications++;
+      stream.firstLogAt ??= at;
+      stream.lastLogAt = at;
+      stream.lastSlot = slot;
+    }
     let logObservations = [];
     if (this.config.logObservationsEnabled !== false) {
       const notification = {
@@ -201,6 +218,7 @@ export class Scanner {
         for (const d of result.diagnostics) {
           this.metrics.inc(`logDiagnostic_${d.code}`);
           if (/UNKNOWN|INVALID|FAILURE|TRUNCATED/.test(d.code)) {
+            if (stream) stream.decoderAlerts++;
             this.metrics.inc("logDecoderFailures");
             const last = this.logDiagnostics.get(d.code) ?? 0;
             if (Date.now() - last > 60000) {
@@ -214,6 +232,7 @@ export class Scanner {
           }
         }
         if (result.observations.length) {
+          if (stream) stream.decodedEvents += result.observations.length;
           if (this.observationBuffer.length >= 1000) this.flushObservations();
           this.observationBuffer.push({
             notification,
@@ -225,6 +244,7 @@ export class Scanner {
           );
         }
       } catch (e) {
+        if (stream) stream.decoderAlerts++;
         this.recordError("LOG_OBSERVATION_DECODE_FAILED", e);
       }
     }
@@ -620,7 +640,13 @@ export class Scanner {
       this.recovering = true;
       this.recoveryPending = false;
       try {
-        for (const p of this.programs) {
+        // Alternate which protocol receives scarce recovery RPC capacity first.
+        // The per-tick page size and total HTTP budget remain unchanged.
+        const start = this.recoveryRoundRobinOffset % this.programs.length;
+        this.recoveryRoundRobinOffset = (start + 1) % this.programs.length;
+        const order = [...this.programs.slice(start), ...this.programs.slice(0, start)];
+        this.metrics.set("recoveryFirstProtocol", order[0].protocol);
+        for (const p of order) {
           if (this.stopping) break;
           const result = await recoverProgram({
             rpc: this.rpc,
@@ -726,6 +752,15 @@ export class Scanner {
       metrics,
       storage,
       coverage: "PARTIAL",
+      coverageDiagnostics: buildCoverageDiagnostics({
+        programs: this.programs,
+        streams: this.programStream,
+        metrics,
+        store: this.store,
+        storage,
+        config: this.config,
+        now: Date.parse(metrics.measuredAt),
+      }),
       backup: this.backupAgent?.status?.() ?? { enabled: false },
       logStream: {
         noRecentLogs,
